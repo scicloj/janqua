@@ -2,7 +2,7 @@
 
 A [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
 
-Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
+Write Jank code in `.qmd` files and get live results — code output, SVG, charts (Plotly, Vega-Lite, etc.), diagrams (Mermaid, Graphviz), markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
 
 > **Experimental** — this project is at an early stage. Feedback and ideas are welcome via [GitHub issues](https://github.com/scicloj/janqua/issues) or the [Scicloj Zulip chat](https://scicloj.github.io/docs/community/chat/).
 
@@ -25,11 +25,11 @@ filters:
   - jank
 ---
 
-```{.jank}
+```{.clojure .jank}
 (+ 1 2 3)
 ```
 
-```{.jank}
+```{.clojure .jank}
 ^:kind/hiccup
 [:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
 ```

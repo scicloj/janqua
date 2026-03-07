@@ -9,8 +9,7 @@ filters:
 
 Write Jank code in `.qmd` files and get live results — code output, inline [SVG](https://en.wikipedia.org/wiki/SVG), [Plotly.js](https://plotly.com/javascript/) charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with `quarto preview`, which re-renders on every save. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the [Clojure](https://clojure.org/) ecosystem.
 
-## Status 🚧
-::: {.callout-warning}
+::: {.callout-note}
 Janqua is at an **experimental stage**. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on [GitHub](https://github.com/scicloj/janqua/issues) or reach out on the [Clojurians Zulip chat](https://scicloj.github.io/docs/community/chat/).
 :::
 
