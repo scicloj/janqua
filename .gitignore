@@ -1,9 +1,13 @@
-.clay-temp
 .cpcache
 .nrepl-port
 .lsp
 .clj-kondo
 target
-gfm
 .venv
-docs/*.qmd
+.jank-pid
+.jank-nrepl-port
+example.html
+example_files/
+/.quarto/
+**/*.quarto_ipynb
+CLAUDE.md
