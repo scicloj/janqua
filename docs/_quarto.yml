@@ -9,6 +9,7 @@ book:
     - index.qmd
     - getting-started.qmd
     - kindly.qmd
+    - how-it-works.qmd
     - example.qmd
 
 format:

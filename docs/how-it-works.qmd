@@ -1,0 +1,137 @@
+# How It Works
+
+This chapter explains the internals of Janqua — how your `{.jank}` code blocks turn into rendered output.
+
+## Architecture overview
+
+Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.
+
+```
+┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐
+│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │
+│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │
+└─────────┘     └────────┘     └──────┬──────┘     └──────────┘
+                                      │
+                                      ▼
+                               ┌──────────────┐
+                               │ Jank nREPL   │
+                               │ server       │
+                               └──────────────┘
+```
+
+The filter has two phases, executed in order:
+
+1. **`Meta`** — reads document metadata and resolves the Jank nREPL port
+2. **`CodeBlock`** — processes each `{.jank}` code block
+
+## Port discovery
+
+The filter needs to find a running Jank nREPL server. It tries several sources in order, validating that each candidate port is actually reachable before using it:
+
+1. **Frontmatter** — an explicit `jank.port` value in the document metadata
+2. **PID + port files** — `.jank-pid` and `.jank-nrepl-port` written by the lifecycle script
+3. **Environment variable** — `JANK_PORT`
+4. **Process scan** — searches for a `jank` process listening on a TCP port (via `lsof` or `ss`)
+5. **Auto-start** — if nothing is found, the filter launches `jank repl` via the lifecycle script and waits for it to be ready
+
+This chain means zero configuration for the common case: just run `quarto render` and the filter handles the rest.
+
+## Process management
+
+Jank's REPL exits when its standard input closes. To keep it alive across renders, the lifecycle script (`jank-lifecycle.sh`) pipes `tail -f /dev/null` into the REPL's stdin — an infinite stream of nothing that keeps the process running.
+
+The lifecycle script manages three files in the project root:
+
+| File | Purpose |
+|:-----|:--------|
+| `.jank-pid` | PID of the running Jank process |
+| `.jank-nrepl-port` | The nREPL port Jank is listening on |
+| `.jank-repl.log` | Jank's stdout/stderr output |
+
+A background monitor watches the Jank process and cleans up these files if it crashes.
+
+The stop command verifies the PID still belongs to a Jank process before sending a kill signal — this prevents accidentally killing an unrelated process that reused the PID.
+
+## Code evaluation
+
+Each `{.jank}` code block goes through these steps:
+
+### 1. Kindly wrapping
+
+The user's code is wrapped in a function call that captures the result and its metadata:
+
+```clojure
+;; User writes:
+^:kind/hiccup [:div "hello"]
+
+;; Filter sends to Jank:
+((fn [v]
+   ((fn [m]
+      ((fn [kind]
+         {:janqua/kind kind
+          :janqua/value (pr-str v)})
+       (when m (or (:kindly/kind m) ...))))
+    (meta v)))
+ (do ^:kind/hiccup [:div "hello"]))
+```
+
+The wrapper uses nested `fn` calls rather than `let` bindings — this works around a Jank bug where reader-attached metadata (like `^:kind/hiccup`) is lost through `let` bindings.
+
+### 2. nREPL communication
+
+The wrapped code is sent to Jank via [`clj-nrepl-eval`](https://github.com/bhauman/clojure-mcp-light), a Babashka-based nREPL client. The filter parses the response to extract:
+
+- **stdout** — anything printed during evaluation
+- **value** — the return value (serialized via `pr-str`)
+
+Session state persists between evaluations — `def`s and `require`s carry forward, so earlier code blocks can define functions used by later ones.
+
+### 3. Kind detection
+
+The filter examines the `:janqua/kind` field from the wrapper response:
+
+| Kind | Output |
+|:-----|:-------|
+| `:kind/hiccup` | Hiccup data is converted to HTML via a helper function defined in the Jank session |
+| `:kind/html` | String is inserted as raw HTML |
+| `:kind/md` or `:kind/markdown` | String is parsed as Markdown and inserted |
+| `:kind/hidden` | Output is suppressed (code still evaluates) |
+| *(none)* | Value is shown as a code block |
+
+For `kind/html` and `kind/md`, strings can't hold metadata directly (they're primitives in Jank). The convention is to wrap them in a vector: `^:kind/html ["<b>bold</b>"]` — the filter auto-unwraps the first element.
+
+### 4. Hiccup rendering
+
+When a value has `:kind/hiccup` metadata, the filter calls `janqua-hiccup->html` — a function bootstrapped in the Jank session on first use. This converts Clojure-style hiccup data structures into HTML strings:
+
+```clojure
+[:div {:class "box"} [:span "hi"]]
+;; becomes:
+"<div class=\"box\"><span>hi</span></div>"
+```
+
+This runs inside Jank (not in Lua), so it has access to the full Clojure data model.
+
+## Code block attributes
+
+The filter respects several attributes on `{.jank}` blocks:
+
+| Attribute | Effect |
+|:----------|:-------|
+| `output=html` | Force HTML output (override Kindly) |
+| `output=markdown` | Force Markdown output |
+| `output=hidden` | Suppress both code and output |
+| `echo=false` | Hide the source code, show only results |
+| `eval=false` | Show code without evaluating |
+
+Kindly metadata on the result takes precedence over `output=` when both are present.
+
+## Bootstrap sequence
+
+On the first evaluation in a document, the filter:
+
+1. Resolves the nREPL port (auto-starting Jank if needed)
+2. Sends the `janqua-hiccup->html` function definition to the Jank session
+3. Begins processing code blocks in document order
+
+Subsequent renders reuse the same Jank process, so startup cost is only paid once.
