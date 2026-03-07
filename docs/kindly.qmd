@@ -64,7 +64,7 @@ Evaluates the code but hides the result. The code itself is still shown. Useful 
 
 ## `^:kind/mermaid` — Mermaid diagrams
 
-Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. Quarto has native Mermaid support, so no external dependencies are needed:
+Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. The Mermaid JS library is loaded automatically from CDN:
 
 ```{.clojure .jank}
 ^:kind/mermaid
@@ -169,7 +169,7 @@ The convention is to wrap the value in a vector:
 ^:kind/html ["<b>hello</b>"]
 ```
 
-Janqua automatically unwraps the vector for `kind/html` and `kind/md`, extracting the first element for rendering.
+Janqua automatically unwraps the vector for all string-valued kinds (`kind/html`, `kind/md`, `kind/mermaid`, `kind/graphviz`, `kind/tex`, `kind/code`), extracting the first element for rendering.
 
 ## Code block attributes
 
