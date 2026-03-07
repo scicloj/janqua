@@ -6,13 +6,13 @@
 --
 -- Port is resolved automatically (no config needed).
 --
--- Code block options (use {clojure .jank} for editor syntax highlighting):
---   ```{clojure .jank}                — evaluate, show code + result as code block
---   ```{clojure .jank output=html}    — evaluate, render result as raw HTML (SVG, Plotly, etc.)
---   ```{clojure .jank output=markdown} — evaluate, render result as markdown (tables, etc.)
---   ```{clojure .jank output=hidden}  — evaluate silently (no code, no output)
---   ```{clojure .jank eval=false}     — show code only, don't evaluate
---   ```{clojure .jank echo=false}     — evaluate but hide the code
+-- Code block options (use {.clojure .jank} for editor syntax highlighting):
+--   ```{.clojure .jank}                — evaluate, show code + result as code block
+--   ```{.clojure .jank output=html}    — evaluate, render result as raw HTML (SVG, Plotly, etc.)
+--   ```{.clojure .jank output=markdown} — evaluate, render result as markdown (tables, etc.)
+--   ```{.clojure .jank output=hidden}  — evaluate silently (no code, no output)
+--   ```{.clojure .jank eval=false}     — show code only, don't evaluate
+--   ```{.clojure .jank echo=false}     — evaluate but hide the code
 --
 -- Kindly convention:
 --   ^:kind/hiccup [:div ...]  — auto-converts hiccup to HTML
@@ -224,18 +224,6 @@ local function next_div_id()
   return "janqua-plot-" .. janqua_div_counter
 end
 
--- Convert a Clojure value to JSON via janqua-to-json in the Jank session.
--- Returns JSON string or nil on error.
-local function clj_to_json(clj_value)
-  local raw, err = eval_jank_raw("(janqua-to-json " .. clj_value .. ")")
-  if err then return nil end
-  local json_value = parse_nrepl_output(raw)
-  if json_value then
-    return unquote_clj_string(json_value)
-  end
-  return nil
-end
-
 -- Send raw code to Jank via clj-nrepl-eval.
 -- Returns: raw output string, error string (may be nil)
 local function eval_jank_raw(code)
@@ -282,6 +270,18 @@ local function parse_nrepl_output(raw)
 
   return value, stdout
 end
+-- Convert a Clojure value to JSON via janqua-to-json in the Jank session.
+-- Returns JSON string or nil on error.
+local function clj_to_json(clj_value)
+  local raw, err = eval_jank_raw("(janqua-to-json " .. clj_value .. ")")
+  if err then return nil end
+  local json_value = parse_nrepl_output(raw)
+  if json_value then
+    return unquote_clj_string(json_value)
+  end
+  return nil
+end
+
 
 -- Bootstrap janqua helpers in the Jank session (once).
 local function ensure_bootstrap()
