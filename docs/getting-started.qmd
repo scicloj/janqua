@@ -87,6 +87,18 @@ _extensions/jank/jank-lifecycle.sh stop     # stop when done
 
 Stop the server when you're done working to free resources.
 
+## Publishing to GitHub Pages
+
+If your project is a Quarto book or website, you can publish it to [GitHub Pages](https://pages.github.com/) directly from your project directory:
+
+```bash
+quarto publish gh-pages
+```
+
+This renders the project and pushes the output to the `gh-pages` branch. GitHub Pages then serves it as a website. On first use, Quarto will create the branch and configure it for you.
+
+See the [Quarto publishing guide](https://quarto.org/docs/publishing/github-pages.html) for more options, including custom domains and GitHub Actions automation.
+
 ## Next steps
 
 - Learn about [Kindly annotations](kindly.qmd) to render HTML, SVG, charts, and tables
