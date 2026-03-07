@@ -160,6 +160,10 @@ end
 
 
 -- Jank code to bootstrap janqua helpers (sent on first connection).
+-- NOTE: janqua-hiccup->html does not escape HTML special characters in
+-- attribute values or text content. This is acceptable for a document
+-- authoring tool where the user controls the code, but means hiccup
+-- with untrusted data could produce malformed HTML.
 local janqua_bootstrap = [=[
 (defn janqua-hiccup->html [form]
   (cond
@@ -189,7 +193,7 @@ local function eval_jank_raw(code)
     return nil, "Jank nREPL port not available. Could not discover or start Jank."
   end
 
-  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 10000 " .. shell_quote(code) .. " 2>&1"
+  local cmd = "clj-nrepl-eval -p " .. shell_quote(jank_port) .. " --timeout 10000 " .. shell_quote(code) .. " 2>&1"
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()

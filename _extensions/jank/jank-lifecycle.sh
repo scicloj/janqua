@@ -204,15 +204,8 @@ safe_kill_jank() {
 
 cmd_stop() {
     if [ ! -f "$PID_FILE" ]; then
-        # Try to find jank by process name (current user only)
-        local pid
-        pid=$(pgrep -u "$(id -u)" -x jank 2>/dev/null || echo "")
-        if [ -n "$pid" ]; then
-            echo "[jank-lifecycle] Stopping jank (PID $pid)..." >&2
-            safe_kill_jank "$pid"
-        else
-            echo "[jank-lifecycle] No jank process found." >&2
-        fi
+        echo "[jank-lifecycle] No PID file found — cannot determine which jank process belongs to this project." >&2
+        echo "[jank-lifecycle] If a jank process is running, stop it manually with: kill <PID>" >&2
         rm -f "$PORT_FILE"
         return 0
     fi
