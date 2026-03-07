@@ -55,8 +55,17 @@ is_jank_process() {
     local pid="$1"
     local comm
     comm=$(ps -o comm= -p "$pid" 2>/dev/null | tr -d ' ') || return 1
-    # The process may be "jank" itself or "bash" (the wrapper that runs jank)
-    [[ "$comm" == "jank" || "$comm" == "bash" ]]
+    if [[ "$comm" == "jank" ]]; then
+        return 0
+    fi
+    # The wrapper is a bash process — verify it's actually running jank
+    if [[ "$comm" == "bash" ]]; then
+        local args
+        args=$(ps -o args= -p "$pid" 2>/dev/null) || return 1
+        [[ "$args" == *"jank repl"* ]]
+        return $?
+    fi
+    return 1
 }
 
 # Check if the jank process recorded in PID_FILE is still alive.
@@ -152,12 +161,16 @@ cmd_start() {
 
     echo "$jank_pid" > "$PID_FILE"
 
-    # Start background monitor: cleans up files when jank dies
+    # Start background monitor: cleans up files when jank dies.
+    # Only removes files if the PID inside still matches — prevents deleting
+    # a newer instance's files if jank crashed and was restarted quickly.
     (
         while kill -0 "$jank_pid" 2>/dev/null; do
             sleep 10
         done
-        rm -f "$PID_FILE" "$PORT_FILE"
+        if [ -f "$PID_FILE" ] && [ "$(cat "$PID_FILE")" = "$jank_pid" ]; then
+            rm -f "$PID_FILE" "$PORT_FILE"
+        fi
     ) &
     disown
 

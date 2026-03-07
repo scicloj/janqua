@@ -87,7 +87,7 @@ end
 -- Check if a PID is alive via kill -0.
 -- PID must be validated as numeric before calling this function.
 local function pid_alive(pid)
-  local ok = os.execute("kill -0 " .. pid .. " 2>/dev/null")
+  local ok = os.execute("kill -0 " .. shell_quote(pid) .. " 2>/dev/null")
   return ok == true or ok == 0
 end
 
@@ -137,6 +137,9 @@ local function resolve_port(meta)
   end
 
   -- 4. Process discovery via lsof/ss
+  -- NOTE: This finds any jank process, not just this project's. If multiple
+  -- projects run jank simultaneously, this could connect to the wrong session.
+  -- Steps 1-3 above are project-specific and preferred.
   local port = discover_port_from_process()
   if port then return port end
 
@@ -154,6 +157,7 @@ local function unquote_clj_string(s)
   s = s:gsub('\\"', '"')
   s = s:gsub('\\n', '\n')
   s = s:gsub('\\t', '\t')
+  s = s:gsub('\\r', '\r')
   s = s:gsub('\0BACKSLASH\0', '\\')    -- restore backslashes
   return s
 end
