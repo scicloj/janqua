@@ -151,6 +151,34 @@ The long form `^{:kindly/kind :kind/hiccup}` works too:
   [:b "Hello"] " from " [:em "Kindly"] "!"]
 ```
 
+### HTML via Kindly
+
+Use `^:kind/html` to render a string as raw HTML.
+Since strings can't hold metadata, wrap in a vector:
+
+```{.jank}
+^:kind/html
+[(str "<div style='padding:8px; border:2px solid #4a90d9; border-radius:8px;'>"
+      "<b>Computed HTML</b> via <code>kind/html</code>"
+      "</div>")]
+```
+
+### Markdown via Kindly
+
+Use `^:kind/md` for inline markdown (tables, headers, etc.):
+
+```{.jank}
+^:kind/md
+[(let [headers ["Lang" "Type" "Metadata?"]
+       rows [["Clojure" "JVM" "Yes"]
+             ["Jank" "Native" "Yes"]
+             ["ClojureScript" "JS" "Yes"]]
+       hdr (str "| " (clojure.string/join " | " headers) " |")
+       sep (str "| " (clojure.string/join " | " (map (fn [_] "---") headers)) " |")
+       body (map (fn [r] (str "| " (clojure.string/join " | " r) " |")) rows)]
+   (clojure.string/join "\n" (concat [hdr sep] body)))]
+```
+
 ### Hidden via Kindly
 
 Use `^:kind/hidden` to suppress output.
