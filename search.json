@@ -4,7 +4,17 @@
     "href": "index.html",
     "title": "Janqua",
     "section": "",
-    "text": "Overview\nJanqua is a Quarto extension for evaluating Jank code blocks in documents.\nWrite Jank code in .qmd files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the Kindly convention for rendering, compatible with the Clojure ecosystem.",
+    "text": "Overview\nJanqua is a Quarto extension for evaluating Jank code blocks in documents.\nWrite Jank code in .qmd files and get live results — code output, inline SVG, Plotly.js charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with quarto preview, which re-renders on every save. Uses the Kindly convention for rendering, compatible with the Clojure ecosystem.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#status",
+    "href": "index.html#status",
+    "title": "Janqua",
+    "section": "Status",
+    "text": "Status\nexperimental",
     "crumbs": [
       "Overview"
     ]
@@ -34,7 +44,7 @@
     "href": "index.html#clojure-ecosystem-connection",
     "title": "Janqua",
     "section": "Clojure ecosystem connection",
-    "text": "Clojure ecosystem connection\nClay is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. Clojure Civitas, the community blog, is built this way.\nJanqua brings a similar experience to Jank: you write Jank code directly in .qmd files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the Kindly convention for rendering annotations, so code patterns are transferable between the two ecosystems.",
+    "text": "Clojure ecosystem connection\nClay is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. Clojure Civitas, the community blog, is built this way. Civitas can also render .qmd files directly (not just Clay-generated ones), so Janqua documents are expected to work well with it.\nJanqua brings a similar experience to Jank: you write Jank code directly in .qmd files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the Kindly convention for rendering annotations, so code patterns are transferable between the two ecosystems.",
     "crumbs": [
       "Overview"
     ]
@@ -44,7 +54,7 @@
     "href": "index.html#how-it-works",
     "title": "Janqua",
     "section": "How it works",
-    "text": "How it works\n\nYou write a .qmd file with {.jank} code blocks\nWhen Quarto renders the document, the Janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
+    "text": "How it works\n\nYou write a .qmd file with {.jank} code blocks\nWhen Quarto renders the document, the Janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"}\n  \"Hello from Jank!\"]\nHello from Jank!\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
     "crumbs": [
       "Overview"
     ]
@@ -55,6 +65,16 @@
     "title": "Janqua",
     "section": "Future goals",
     "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, Vega-Lite, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand\nJupyter support — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#chapters",
+    "href": "index.html#chapters",
+    "title": "Janqua",
+    "section": "Chapters",
+    "text": "Chapters\n\nGetting Started — prerequisites, installation, first document, rendering\nKindly Annotations — controlling output format with metadata\nHow It Works — architecture, port discovery, process management, evaluation pipeline\nLive Demo — evaluated examples of all output kinds",
     "crumbs": [
       "Overview"
     ]
@@ -74,7 +94,7 @@
     "href": "getting-started.html#prerequisites",
     "title": "1  Getting Started",
     "section": "",
-    "text": "Quarto — the publishing system\nJank — the Jank compiler and REPL\nBabashka — fast Clojure scripting runtime\nbbin — tool installer for Babashka\nclj-nrepl-eval — nREPL client (install via bbin):\n\nbbin install io.github.bhauman/clojure-mcp-light\n\nquarto --version\njank --version\nbb --version\nclj-nrepl-eval --help",
+    "text": "Quarto — the publishing system\nJank — the Jank compiler and REPL\nBabashka — fast Clojure scripting runtime\nbbin — tool installer for Babashka\nclj-nrepl-eval — nREPL client (install via bbin, which provides the clj-nrepl-eval command):\n\nbbin install io.github.bhauman/clojure-mcp-light\n\nquarto --version\njank --version\nbb --version\nclj-nrepl-eval --help",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -154,7 +174,7 @@
     "href": "kindly.html",
     "title": "2  Kindly Annotations",
     "section": "",
-    "text": "2.1 ^:kind/hiccup — HTML from data\nKindly is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.\nWithout an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.\nConverts a hiccup vector to HTML. Hiccup represents HTML as nested Clojure vectors:\nThe vector [:tag {:attr \"value\"} content] becomes &lt;tag attr=\"value\"&gt;content&lt;/tag&gt;.",
+    "text": "2.1 ^:kind/hiccup — HTML from data\nKindly is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.\nWithout an annotation, results display as code output:\nAdd Kindly metadata to control how a value is rendered.\nConverts a hiccup vector to HTML. Hiccup represents HTML as nested Clojure vectors:\nThe vector [:tag {:attr \"value\"} content] becomes &lt;tag attr=\"value\"&gt;content&lt;/tag&gt;.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -164,7 +184,7 @@
     "href": "kindly.html#kindhiccup-html-from-data",
     "title": "2  Kindly Annotations",
     "section": "",
-    "text": "```{.jank}\n^:kind/hiccup\n[:svg {:width \"100\" :height \"100\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:circle {:cx \"50\" :cy \"50\" :r \"40\" :fill \"coral\"}]]\n```",
+    "text": "^:kind/hiccup\n[:svg {:width \"100\" :height \"100\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:circle {:cx \"50\" :cy \"50\" :r \"40\" :fill \"coral\"}]]",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -174,7 +194,7 @@
     "href": "kindly.html#kindhtml-raw-html",
     "title": "2  Kindly Annotations",
     "section": "2.2 ^:kind/html — raw HTML",
-    "text": "2.2 ^:kind/html — raw HTML\nRenders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:\n```{.jank}\n^:kind/html\n[(str \"&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;\")]\n```\nThe vector is automatically unwrapped — Janqua extracts the first element for rendering.",
+    "text": "2.2 ^:kind/html — raw HTML\nRenders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:\n^:kind/html\n[\"&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;\"]\nbold and italic\nThe vector is automatically unwrapped — Janqua extracts the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -184,7 +204,7 @@
     "href": "kindly.html#kindmd-markdown",
     "title": "2  Kindly Annotations",
     "section": "2.3 ^:kind/md — markdown",
-    "text": "2.3 ^:kind/md — markdown\nRenders a string as markdown. Same wrapping rule as kind/html:\n```{.jank}\n^:kind/md\n[(str \"| a | b |\\n| --- | --- |\\n| 1 | 2 |\")]\n```",
+    "text": "2.3 ^:kind/md — markdown\nRenders a string as markdown. Same wrapping rule as kind/html:\n^:kind/md\n[\"| a | b |\\n| --- | --- |\\n| 1 | 2 |\"]\n\n\n\na\nb\n\n\n\n\n1\n2",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -194,17 +214,7 @@
     "href": "kindly.html#kindhidden-suppress-output",
     "title": "2  Kindly Annotations",
     "section": "2.4 ^:kind/hidden — suppress output",
-    "text": "2.4 ^:kind/hidden — suppress output\nEvaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:\n```{.jank}\n^:kind/hidden\n[(def my-data [1 2 3])]\n```",
-    "crumbs": [
-      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
-    ]
-  },
-  {
-    "objectID": "kindly.html#long-form",
-    "href": "kindly.html#long-form",
-    "title": "2  Kindly Annotations",
-    "section": "2.5 Long form",
-    "text": "2.5 Long form\nThe shorthand ^:kind/hiccup is equivalent to the explicit ^{:kindly/kind :kind/hiccup}:\n```{.jank}\n^{:kindly/kind :kind/hiccup}\n[:div \"hello\"]\n```\nUse whichever you prefer. The shorthand is more concise; the long form is explicit.",
+    "text": "2.4 ^:kind/hidden — suppress output\nEvaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:\n^:kind/hidden\n[(def my-data [1 2 3])]",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -213,8 +223,8 @@
     "objectID": "kindly.html#annotating-in-library-functions",
     "href": "kindly.html#annotating-in-library-functions",
     "title": "2  Kindly Annotations",
-    "section": "2.6 Annotating in library functions",
-    "text": "2.6 Annotating in library functions\nThe ^:kind/... reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with with-meta or vary-meta, which means library functions can annotate their return values. The caller doesn’t need to know about the rendering — the function handles it.\nFor example, a bar-chart function could generate a Plotly plot and tag it as HTML:\n(defn bar-chart [labels values]\n  (let [html (str \"&lt;div id='chart'&gt;&lt;/div&gt;\"\n                  \"&lt;script&gt;Plotly.newPlot('chart', [{x: \"\n                  (pr-str labels) \", y: \" (pr-str values)\n                  \", type: 'bar'}])&lt;/script&gt;\")]\n    (with-meta [html] {:kindly/kind :kind/html})))\nThen in a code block, simply calling the function renders the chart — no annotation needed:\n```{.jank}\n(bar-chart [\"a\" \"b\" \"c\"] [10 20 15])\n```\nThis is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.",
+    "section": "2.5 Annotating in library functions",
+    "text": "2.5 Annotating in library functions\nThe ^:kind/... reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with with-meta or vary-meta, which means library functions can annotate their return values. The caller doesn’t need to know about the rendering — the function handles it.\nFor example, a function that builds an SVG bar chart and tags it as hiccup:\n(defn bar-chart [labels values]\n  (let [bar-width 40\n        gap 10\n        max-val (apply max values)\n        height 120\n        bars (map-indexed\n               (fn [i [label val]]\n                 (let [x (+ 10 (* i (+ bar-width gap)))\n                       bar-height (* (/ val max-val) height)]\n                   [:g\n                     [:rect {:x x :y (- height bar-height)\n                             :width bar-width :height bar-height\n                             :fill \"steelblue\"}]\n                     [:text {:x (+ x (/ bar-width 2)) :y (+ height 15)\n                             :text-anchor \"middle\" :font-size \"12\"}\n                       label]]))\n               (map vector labels values))\n        total-width (+ 20 (* (count labels) (+ bar-width gap)))]\n    (with-meta\n      (into [:svg {:width total-width :height (+ height 25)\n                   :xmlns \"http://www.w3.org/2000/svg\"}] bars)\n      {:kindly/kind :kind/hiccup})))\n\n#'user/bar-chart\n\nNow simply calling the function renders the chart — no annotation needed at the call site:\n(bar-chart [\"a\" \"b\" \"c\"] [10 20 15])\nabc\nThis is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -223,8 +233,8 @@
     "objectID": "kindly.html#why-wrap-strings-in-vectors",
     "href": "kindly.html#why-wrap-strings-in-vectors",
     "title": "2  Kindly Annotations",
-    "section": "2.7 Why wrap strings in vectors?",
-    "text": "2.7 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
+    "section": "2.6 Why wrap strings in vectors?",
+    "text": "2.6 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nhello\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -233,8 +243,8 @@
     "objectID": "kindly.html#code-block-attributes",
     "href": "kindly.html#code-block-attributes",
     "title": "2  Kindly Annotations",
-    "section": "2.8 Code block attributes",
-    "text": "2.8 Code block attributes\nThese attributes go on the code fence and control display independently of Kindly:\n\n\n\nAttribute\nEffect\n\n\n\n\necho=false\nHide the source code, show only the result\n\n\neval=false\nShow code without evaluating it\n\n\n\n```{.jank echo=false}\n^:kind/hiccup\n[:div \"Only the rendered HTML appears — no source code shown\"]\n```",
+    "section": "2.7 Code block attributes",
+    "text": "2.7 Code block attributes\nThese attributes go on the code fence and control display independently of Kindly. See the Quarto documentation on code cells for more options.\n\n\n\nAttribute\nEffect\n\n\n\n\necho=false\nHide the source code, show only the result\n\n\neval=false\nShow code without evaluating it\n\n\n\nOnly the rendered HTML appears — no source code shown",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -243,8 +253,8 @@
     "objectID": "kindly.html#summary",
     "href": "kindly.html#summary",
     "title": "2  Kindly Annotations",
-    "section": "2.9 Summary",
-    "text": "2.9 Summary\n\n\n\nKind\nValue type\nRenders as\n\n\n\n\n^:kind/hiccup\nvector (hiccup)\nHTML\n\n\n^:kind/html\n[string]\nraw HTML\n\n\n^:kind/md\n[string]\nmarkdown\n\n\n^:kind/hidden\nany\nnothing (evaluates silently)\n\n\n(none)\nany\ncode output",
+    "section": "2.8 Summary",
+    "text": "2.8 Summary\n\n\n\nKind\nValue type\nRenders as\n\n\n\n\n^:kind/hiccup\nvector (hiccup)\nHTML\n\n\n^:kind/html\n[string]\nraw HTML\n\n\n^:kind/md\n[string]\nmarkdown\n\n\n^:kind/hidden\nany\nnothing (evaluates silently)\n\n\n(none)\nany\ncode output",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -254,7 +264,7 @@
     "href": "how-it-works.html",
     "title": "3  How It Works",
     "section": "",
-    "text": "3.1 Architecture overview\nThis chapter explains the internals of Janqua — how your {.jank} code blocks turn into rendered output.\nJanqua is a Pandoc Lua filter. When Quarto renders a .qmd file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the .jank class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.\nThe filter has two phases, executed in order:",
+    "text": "3.1 Architecture overview\nThis chapter explains the internals of Janqua — how your {.jank} code blocks turn into rendered output.\nJanqua is a Pandoc Lua filter. When Quarto renders a .qmd file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the .jank class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.\nflowchart LR\n  qmd[.qmd file] --&gt; pandoc[Pandoc]\n  pandoc --&gt; lua[Lua filter]\n  lua --&gt; nrepl[Jank nREPL server]\n  nrepl --&gt; lua\n  lua --&gt; out[HTML / PDF]\nThe filter has two phases, executed in order:",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
     ]
@@ -264,7 +274,7 @@
     "href": "how-it-works.html#architecture-overview",
     "title": "3  How It Works",
     "section": "",
-    "text": "┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐\n│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │\n│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │\n└─────────┘     └────────┘     └──────┬──────┘     └──────────┘\n                                      │\n                                      ▼\n                               ┌──────────────┐\n                               │ Jank nREPL   │\n                               │ server       │\n                               └──────────────┘\n\n\nMeta — reads document metadata and resolves the Jank nREPL port\nCodeBlock — processes each {.jank} code block",
+    "text": "Meta — reads document metadata and resolves the Jank nREPL port\nCodeBlock — processes each {.jank} code block",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
     ]
@@ -380,11 +390,11 @@
     ]
   },
   {
-    "objectID": "example.html#plotly-chart",
-    "href": "example.html#plotly-chart",
+    "objectID": "example.html#plotly.js-chart",
+    "href": "example.html#plotly.js-chart",
     "title": "4  Live Demo",
-    "section": "4.6 Plotly chart",
-    "text": "4.6 Plotly chart\n^:kind/html\n[(let [xs (vec (map #(* 0.5 %) (range 20)))\n       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]\n   (str \"&lt;div id=\\\"plot1\\\"&gt;&lt;/div&gt;\"\n        \"&lt;script src=\\\"https://cdn.plot.ly/plotly-2.35.0.min.js\\\"&gt;&lt;/script&gt;\"\n        \"&lt;script&gt;Plotly.newPlot('plot1', \"\n        (to-json {:data [{:x xs :y ys\n                          :type \"scatter\" :mode \"lines+markers\"\n                          :name \"y = x² - 0.5x\"}]\n                  :layout {:title \"Quadratic from Jank\"\n                           :xaxis {:title \"x\"}\n                           :yaxis {:title \"y\"}}})\n        \");&lt;/script&gt;\"))]",
+    "section": "4.6 Plotly.js chart",
+    "text": "4.6 Plotly.js chart\n^:kind/html\n[(let [xs (vec (map #(* 0.5 %) (range 20)))\n       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]\n   (str \"&lt;div id=\\\"plot1\\\"&gt;&lt;/div&gt;\"\n        \"&lt;script src=\\\"https://cdn.plot.ly/plotly-2.35.0.min.js\\\"&gt;&lt;/script&gt;\"\n        \"&lt;script&gt;Plotly.newPlot('plot1', \"\n        (to-json {:data [{:x xs :y ys\n                          :type \"scatter\" :mode \"lines+markers\"\n                          :name \"y = x² - 0.5x\"}]\n                  :layout {:title \"Quadratic from Jank\"\n                           :xaxis {:title \"x\"}\n                           :yaxis {:title \"y\"}}})\n        \");&lt;/script&gt;\"))]",
     "crumbs": [
       "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]

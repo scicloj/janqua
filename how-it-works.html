@@ -105,6 +105,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<script src="site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 </head>
@@ -225,17 +228,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This chapter explains the internals of Janqua — how your <code>{.jank}</code> code blocks turn into rendered output.</p>
 <section id="architecture-overview" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="architecture-overview"><span class="header-section-number">3.1</span> Architecture overview</h2>
-<p>Janqua is a <a href="https://pandoc.org/lua-filters.html">Pandoc Lua filter</a>. When Quarto renders a <code>.qmd</code> file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the <code>.jank</code> class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.</p>
-<pre><code>┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐
-│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │
-│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │
-└─────────┘     └────────┘     └──────┬──────┘     └──────────┘
-                                      │
-                                      ▼
-                               ┌──────────────┐
-                               │ Jank nREPL   │
-                               │ server       │
-                               └──────────────┘</code></pre>
+<p>Janqua is a <a href="https://pandoc.org/lua-filters.html">Pandoc Lua filter</a>. When Quarto renders a <code>.qmd</code> file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the <code>.jank</code> class, evaluates them via a Jank <a href="https://nrepl.org/">nREPL</a> server, and replaces them with the appropriate output.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  qmd[.qmd file] --&gt; pandoc[Pandoc]
+  pandoc --&gt; lua[Lua filter]
+  lua --&gt; nrepl[Jank nREPL server]
+  nrepl --&gt; lua
+  lua --&gt; out[HTML / PDF]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
 <p>The filter has two phases, executed in order:</p>
 <ol type="1">
 <li><strong><code>Meta</code></strong> — reads document metadata and resolves the Jank nREPL port</li>
@@ -289,23 +299,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="kindly-wrapping" class="level3" data-number="3.4.1">
 <h3 data-number="3.4.1" class="anchored" data-anchor-id="kindly-wrapping"><span class="header-section-number">3.4.1</span> 1. Kindly wrapping</h3>
 <p>The user’s code is wrapped in a function call that captures the result and its metadata:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; User writes:</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">;; Filter sends to Jank:</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>((<span class="kw">fn</span> [v]</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>   ((<span class="kw">fn</span> [m]</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      ((<span class="kw">fn</span> [kind]</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         {<span class="at">:janqua/kind</span> kind</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">:janqua/value</span> (<span class="kw">pr-str</span> v)})</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">when</span> m (<span class="kw">or</span> (<span class="at">:kindly/kind</span> m) ...))))</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">meta</span> v)))</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> (<span class="kw">do</span> ^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; User writes:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">;; Filter sends to Jank:</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>((<span class="kw">fn</span> [v]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>   ((<span class="kw">fn</span> [m]</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      ((<span class="kw">fn</span> [kind]</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         {<span class="at">:janqua/kind</span> kind</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">:janqua/value</span> (<span class="kw">pr-str</span> v)})</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">when</span> m (<span class="kw">or</span> (<span class="at">:kindly/kind</span> m) ...))))</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">meta</span> v)))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a> (<span class="kw">do</span> ^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The wrapper uses nested <code>fn</code> calls rather than <code>let</code> bindings — this works around a Jank bug where reader-attached metadata (like <code>^:kind/hiccup</code>) is lost through <code>let</code> bindings.</p>
 </section>
 <section id="nrepl-communication" class="level3" data-number="3.4.2">
 <h3 data-number="3.4.2" class="anchored" data-anchor-id="nrepl-communication"><span class="header-section-number">3.4.2</span> 2. nREPL communication</h3>
-<p>The wrapped code is sent to Jank via <a href="https://github.com/bhauman/clojure-mcp-light"><code>clj-nrepl-eval</code></a>, a Babashka-based nREPL client. The filter parses the response to extract:</p>
+<p>The wrapped code is sent to Jank via <a href="https://github.com/bhauman/clojure-mcp-light"><code>clj-nrepl-eval</code></a>, a <a href="https://github.com/babashka/babashka">Babashka</a>-based nREPL client. The filter parses the response to extract:</p>
 <ul>
 <li><strong>stdout</strong> — anything printed during evaluation</li>
 <li><strong>value</strong> — the return value (serialized via <code>pr-str</code>)</li>
@@ -354,9 +364,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="hiccup-rendering" class="level3" data-number="3.4.4">
 <h3 data-number="3.4.4" class="anchored" data-anchor-id="hiccup-rendering"><span class="header-section-number">3.4.4</span> 4. Hiccup rendering</h3>
 <p>When a value has <code>:kind/hiccup</code> metadata, the filter calls <code>janqua-hiccup-&gt;html</code> — a function bootstrapped in the Jank session on first use. This converts Clojure-style hiccup data structures into HTML strings:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:class</span> <span class="st">"box"</span>} [<span class="at">:span</span> <span class="st">"hi"</span>]]</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">;; becomes:</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">"&lt;div class=</span><span class="sc">\"</span><span class="st">box</span><span class="sc">\"</span><span class="st">&gt;&lt;span&gt;hi&lt;/span&gt;&lt;/div&gt;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:class</span> <span class="st">"box"</span>} [<span class="at">:span</span> <span class="st">"hi"</span>]]</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">;; becomes:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">"&lt;div class=</span><span class="sc">\"</span><span class="st">box</span><span class="sc">\"</span><span class="st">&gt;&lt;span&gt;hi&lt;/span&gt;&lt;/div&gt;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This runs inside Jank (not in Lua), so it has access to the full Clojure data model.</p>
 </section>
 </section>

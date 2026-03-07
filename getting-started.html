@@ -225,7 +225,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong><a href="https://jank-lang.org">Jank</a></strong> — the Jank compiler and REPL</li>
 <li><strong><a href="https://github.com/babashka/babashka#installation">Babashka</a></strong> — fast Clojure scripting runtime</li>
 <li><strong><a href="https://github.com/babashka/bbin#installation">bbin</a></strong> — tool installer for Babashka</li>
-<li><strong>clj-nrepl-eval</strong> — nREPL client (install via bbin):</li>
+<li><strong>clj-nrepl-eval</strong> — <a href="https://nrepl.org/">nREPL</a> client (install via bbin, which provides the <code>clj-nrepl-eval</code> command):</li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">bbin</span> install io.github.bhauman/clojure-mcp-light</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Verify everything is available:</p>
@@ -261,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="in">^:kind/hiccup</span></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="in">[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Note the <code>{.jank}</code> syntax — the dot prefix is required (it’s Pandoc class syntax). The <code>filters: [jank]</code> in the frontmatter tells Quarto to use the Janqua filter.</p>
+<p>Note the <code>{.jank}</code> syntax — the dot prefix is required (it’s <a href="https://pandoc.org/MANUAL.html#divs-and-spans">Pandoc class syntax</a>). The <code>filters: [jank]</code> in the <a href="https://quarto.org/docs/authoring/front-matter.html">frontmatter</a> tells Quarto to use the Janqua filter.</p>
 </section>
 <section id="render-it" class="level2" data-number="1.5">
 <h2 data-number="1.5" class="anchored" data-anchor-id="render-it"><span class="header-section-number">1.5</span> Render it</h2>

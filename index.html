@@ -186,11 +186,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
   <ul class="collapse">
+  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status</a></li>
   <li><a href="#what-is-quarto" id="toc-what-is-quarto" class="nav-link" data-scroll-target="#what-is-quarto">What is Quarto?</a></li>
   <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
   <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
   <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How it works</a></li>
   <li><a href="#future-goals" id="toc-future-goals" class="nav-link" data-scroll-target="#future-goals">Future goals</a></li>
+  <li><a href="#chapters" id="toc-chapters" class="nav-link" data-scroll-target="#chapters">Chapters</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -221,7 +223,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="overview" class="level1 unnumbered">
 <h1 class="unnumbered">Overview</h1>
 <p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
-<p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the Clojure ecosystem.</p>
+<p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline <a href="https://en.wikipedia.org/wiki/SVG">SVG</a>, <a href="https://plotly.com/javascript/">Plotly.js</a> charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with <code>quarto preview</code>, which re-renders on every save. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the <a href="https://clojure.org/">Clojure</a> ecosystem.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -235,6 +237,10 @@ Note
 <p>Janqua is at an <strong>experimental stage</strong>. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on <a href="https://github.com/scicloj/janqua/issues">GitHub</a> or reach out on the <a href="https://scicloj.github.io/docs/community/chat/">Clojurians Zulip chat</a>.</p>
 </div>
 </div>
+<section id="status" class="level2">
+<h2 class="anchored" data-anchor-id="status">Status</h2>
+<p>experimental</p>
+</section>
 <section id="what-is-quarto" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
 <p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
@@ -247,11 +253,11 @@ Note
 </section>
 <section id="what-is-jank" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-jank">What is Jank?</h2>
-<p><a href="https://jank-lang.org">Jank</a> is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which Janqua uses to evaluate code interactively during document rendering.</p>
+<p><a href="https://jank-lang.org">Jank</a> is a <a href="https://clojure.org/">Clojure</a> dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an <a href="https://nrepl.org/">nREPL</a> server, which Janqua uses to evaluate code interactively during document rendering.</p>
 </section>
 <section id="clojure-ecosystem-connection" class="level2">
 <h2 class="anchored" data-anchor-id="clojure-ecosystem-connection">Clojure ecosystem connection</h2>
-<p><a href="https://scicloj.github.io/clay">Clay</a> is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. <a href="https://clojurecivitas.org/">Clojure Civitas</a>, the community blog, is built this way.</p>
+<p><a href="https://scicloj.github.io/clay">Clay</a> is a Clojure tool for data visualization and <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a>. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. <a href="https://clojurecivitas.org/">Clojure Civitas</a>, the community blog, is built this way. Civitas can also render <code>.qmd</code> files directly (not just Clay-generated ones), so Janqua documents are expected to work well with it.</p>
 <p>Janqua brings a similar experience to Jank: you write Jank code directly in <code>.qmd</code> files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations, so code patterns are transferable between the two ecosystems.</p>
 </section>
 <section id="how-it-works" class="level2">
@@ -263,17 +269,28 @@ Note
 <li>Results are inserted into the document — as code output, HTML, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>} <span class="st">"Hello from Jank!"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>}</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Hello from Jank!"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div style="color: coral; font-size: 24px;">Hello from Jank!</div>
 <p>The Jank process starts automatically on first render and stays running for fast re-evaluation. See <a href="./getting-started.html">Getting Started</a> to try it out, or jump to the <a href="./example.html">Live Demo</a> to see evaluated examples.</p>
 </section>
 <section id="future-goals" class="level2">
 <h2 class="anchored" data-anchor-id="future-goals">Future goals</h2>
 <ul>
 <li><strong><a href="https://clojurecivitas.org/">Clojure Civitas</a> integration</strong> — enabling community members to publish Jank posts on the blog</li>
-<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, Vega-Lite, images, etc.)</li>
+<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, <a href="https://vega.github.io/vega-lite/">Vega-Lite</a>, images, etc.)</li>
 <li><strong>Easier setup</strong> — reducing the number of prerequisites and simplifying installation</li>
 <li><strong><a href="https://scicloj.github.io/clay">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
 <li><strong>Jupyter support</strong> — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments</li>
+</ul>
+</section>
+<section id="chapters" class="level2">
+<h2 class="anchored" data-anchor-id="chapters">Chapters</h2>
+<ul>
+<li><a href="./getting-started.html">Getting Started</a> — prerequisites, installation, first document, rendering</li>
+<li><a href="./kindly.html">Kindly Annotations</a> — controlling output format with metadata</li>
+<li><a href="./how-it-works.html">How It Works</a> — architecture, port discovery, process management, evaluation pipeline</li>
+<li><a href="./example.html">Live Demo</a> — evaluated examples of all output kinds</li>
 </ul>
 
 
