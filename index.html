@@ -184,6 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
   <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
   <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How it works</a></li>
+  <li><a href="#future-goals" id="toc-future-goals" class="nav-link" data-scroll-target="#future-goals">Future goals</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -215,6 +216,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 class="unnumbered">Overview</h1>
 <p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
 <p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the Clojure ecosystem.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Janqua is at an <strong>experimental stage</strong>. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on <a href="https://github.com/scicloj/janqua/issues">GitHub</a> or reach out on the <a href="https://scicloj.github.io/docs/community/chat/">Scicloj Zulip chat</a>.</p>
+</div>
+</div>
 <section id="what-is-quarto" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
 <p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
@@ -245,6 +259,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>} <span class="st">"Hello from Jank!"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The Jank process starts automatically on first render and stays running for fast re-evaluation. See <a href="./getting-started.html">Getting Started</a> to try it out, or jump to the <a href="./example.html">Live Demo</a> to see evaluated examples.</p>
+</section>
+<section id="future-goals" class="level2">
+<h2 class="anchored" data-anchor-id="future-goals">Future goals</h2>
+<ul>
+<li><strong><a href="https://clojurecivitas.org/">Clojure Civitas</a> integration</strong> — enabling community members to publish Jank posts on the blog</li>
+<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, Vega-Lite, images, etc.)</li>
+<li><strong>Easier setup</strong> — reducing the number of prerequisites and simplifying installation</li>
+<li><strong><a href="https://scicloj.github.io/clay">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
+</ul>
 
 
 </section>

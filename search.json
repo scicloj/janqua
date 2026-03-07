@@ -50,6 +50,16 @@
     ]
   },
   {
+    "objectID": "index.html#future-goals",
+    "href": "index.html#future-goals",
+    "title": "Janqua",
+    "section": "Future goals",
+    "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, Vega-Lite, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
     "objectID": "getting-started.html",
     "href": "getting-started.html",
     "title": "1  Getting Started",
