@@ -406,7 +406,7 @@ function CodeBlock(el)
       end
       if #output_parts > 0 then
         table.insert(blocks, pandoc.Div(
-          pandoc.CodeBlock(table.concat(output_parts, "\n")),
+          pandoc.CodeBlock(table.concat(output_parts, "\n"), pandoc.Attr("", {"clojure"})),
           pandoc.Attr("", {"cell-output", "cell-output-stdout"})
         ))
       end
