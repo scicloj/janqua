@@ -90,7 +90,7 @@ Since strings can't hold metadata, wrap the expression in a vector:
       "</div>")]
 ```
 
-## Plotly chart
+## [Plotly.js](https://plotly.com/javascript/) chart
 
 ```{.jank}
 ^:kind/html
@@ -122,9 +122,9 @@ Use `^:kind/md` to render a string as markdown:
    (clojure.string/join "\n" (concat [header-line sep-line] row-lines)))]
 ```
 
-## LaTeX math
+## [LaTeX](https://en.wikipedia.org/wiki/LaTeX) math
 
-Since `kind/md` output is processed as markdown, LaTeX math works via `$$...$$` syntax. Quarto renders it with MathJax:
+Since `kind/md` output is processed as markdown, LaTeX math works via `$$...$$` syntax. Quarto renders it with [MathJax](https://www.mathjax.org/):
 
 ```{.jank}
 ^:kind/md

@@ -2,11 +2,14 @@
 
 **Janqua** is a [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
 
-Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
+Write Jank code in `.qmd` files and get live results — code output, inline [SVG](https://en.wikipedia.org/wiki/SVG), [Plotly.js](https://plotly.com/javascript/) charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the [Clojure](https://clojure.org/) ecosystem.
 
 ::: {.callout-note}
-Janqua is at an **experimental stage**. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on [GitHub](https://github.com/scicloj/janqua/issues) or reach out on the [Scicloj Zulip chat](https://scicloj.github.io/docs/community/chat/).
+Janqua is at an **experimental stage**. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on [GitHub](https://github.com/scicloj/janqua/issues) or reach out on the [Clojurians Zulip chat](https://scicloj.github.io/docs/community/chat/).
 :::
+
+## Status
+experimental
 
 ## What is Quarto?
 
@@ -20,11 +23,11 @@ Quarto supports several project types:
 
 ## What is Jank?
 
-[Jank](https://jank-lang.org) is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which Janqua uses to evaluate code interactively during document rendering.
+[Jank](https://jank-lang.org) is a [Clojure](https://clojure.org/) dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
 
 ## Clojure ecosystem connection
 
-[Clay](https://scicloj.github.io/clay) is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. [Clojure Civitas](https://clojurecivitas.org/), the community blog, is built this way.
+[Clay](https://scicloj.github.io/clay) is a Clojure tool for data visualization and [literate programming](https://en.wikipedia.org/wiki/Literate_programming). Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. [Clojure Civitas](https://clojurecivitas.org/), the community blog, is built this way.
 
 Janqua brings a similar experience to Jank: you write Jank code directly in `.qmd` files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations, so code patterns are transferable between the two ecosystems.
 
@@ -45,7 +48,7 @@ The Jank process starts automatically on first render and stays running for fast
 ## Future goals
 
 - **[Clojure Civitas](https://clojurecivitas.org/) integration** — enabling community members to publish Jank posts on the blog
-- **Broader Kindly support** — more visualization kinds (tables, Vega-Lite, images, etc.)
+- **Broader Kindly support** — more visualization kinds (tables, [Vega-Lite](https://vega.github.io/vega-lite/), images, etc.)
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
 - **[Clay](https://scicloj.github.io/clay) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
 - **Jupyter support** — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments

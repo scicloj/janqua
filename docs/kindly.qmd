@@ -1,6 +1,6 @@
 # Kindly Annotations
 
-[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.
+[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly [metadata](https://clojure.org/reference/metadata), so the same code patterns work in both Jank+Quarto and Clojure+Clay.
 
 Without an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.
 
@@ -68,9 +68,9 @@ Use whichever you prefer. The shorthand is more concise; the long form is explic
 
 ## Annotating in library functions
 
-The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with `with-meta` or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
+The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with [`with-meta`](https://clojuredocs.org/clojure.core/with-meta) or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
 
-For example, a `bar-chart` function could generate a Plotly plot and tag it as HTML:
+For example, a `bar-chart` function could generate a [Plotly.js](https://plotly.com/javascript/) plot and tag it as HTML:
 
 ```clojure
 (defn bar-chart [labels values]

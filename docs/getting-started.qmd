@@ -6,7 +6,7 @@
 2. **[Jank](https://jank-lang.org)** — the Jank compiler and REPL
 3. **[Babashka](https://github.com/babashka/babashka#installation)** — fast Clojure scripting runtime
 4. **[bbin](https://github.com/babashka/bbin#installation)** — tool installer for Babashka
-5. **clj-nrepl-eval** — nREPL client (install via bbin):
+5. **clj-nrepl-eval** — [nREPL](https://nrepl.org/) client (install via bbin, which provides the `clj-nrepl-eval` command):
 
 ```bash
 bbin install io.github.bhauman/clojure-mcp-light
@@ -57,7 +57,7 @@ filters:
 ```
 ````
 
-Note the `{.jank}` syntax — the dot prefix is required (it's Pandoc class syntax). The `filters: [jank]` in the frontmatter tells Quarto to use the Janqua filter.
+Note the `{.jank}` syntax — the dot prefix is required (it's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans)). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) tells Quarto to use the Janqua filter.
 
 ## Render it
 

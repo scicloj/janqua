@@ -4,7 +4,7 @@ This chapter explains the internals of Janqua — how your `{.jank}` code blocks
 
 ## Architecture overview
 
-Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.
+Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class, evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
 
 ```
 ┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐
@@ -79,7 +79,7 @@ The wrapper uses nested `fn` calls rather than `let` bindings — this works aro
 
 ### 2. nREPL communication
 
-The wrapped code is sent to Jank via [`clj-nrepl-eval`](https://github.com/bhauman/clojure-mcp-light), a Babashka-based nREPL client. The filter parses the response to extract:
+The wrapped code is sent to Jank via [`clj-nrepl-eval`](https://github.com/bhauman/clojure-mcp-light), a [Babashka](https://github.com/babashka/babashka)-based nREPL client. The filter parses the response to extract:
 
 - **stdout** — anything printed during evaluation
 - **value** — the return value (serialized via `pr-str`)
