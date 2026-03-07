@@ -21,8 +21,15 @@
 
 local jank_port = nil
 
+-- Shell-escape a string for use inside single quotes.
+-- Replaces ' with '\'' (end quote, escaped quote, reopen quote).
+local function shell_quote(s)
+  return "'" .. s:gsub("'", "'\\''") .. "'"
+end
+
 -- Check whether a port is actually reachable (TCP connect test).
 -- Uses bash /dev/tcp (works on Linux and macOS with bash 3+).
+-- Port must be validated as numeric before calling this function.
 local function port_reachable(port)
   local ok = os.execute(
     "bash -c 'echo > /dev/tcp/127.0.0.1/" .. port .. "' 2>/dev/null"
@@ -30,14 +37,15 @@ local function port_reachable(port)
   return ok == true or ok == 0
 end
 
--- Read a port from a file, returns string or nil.
-local function read_port_file(path)
+-- Read a single number from a file (used for PID and port files).
+-- Returns the number as a string, or nil if the file is missing/corrupt.
+local function read_number_file(path)
   local f = io.open(path, "r")
   if f then
-    local port = f:read("*l")
+    local content = f:read("*l")
     f:close()
-    if port and port:match("^%d+$") then
-      return port
+    if content and content:match("^%d+$") then
+      return content
     end
   end
   return nil
@@ -77,21 +85,18 @@ local function lifecycle_script()
 end
 
 -- Check if a PID is alive via kill -0.
+-- PID must be validated as numeric before calling this function.
 local function pid_alive(pid)
   local ok = os.execute("kill -0 " .. pid .. " 2>/dev/null")
   return ok == true or ok == 0
-end
-
--- Read PID from .jank-pid file, returns string or nil.
-local function read_pid_file()
-  return read_port_file(".jank-pid")  -- same format: single number on a line
 end
 
 -- Start jank repl via lifecycle script and return the port.
 local function auto_start_jank()
   io.stderr:write("[jank filter] No running Jank found. Starting via lifecycle script...\n")
 
-  local handle = io.popen(lifecycle_script() .. " start 2>/dev/null")
+  local cmd = shell_quote(lifecycle_script()) .. " start 2>/dev/null"
+  local handle = io.popen(cmd)
   local port = handle:read("*l")
   handle:close()
 
@@ -112,26 +117,26 @@ local function resolve_port(meta)
     local port = meta.jank.port
     if port then
       port = pandoc.utils.stringify(port)
-      if port_reachable(port) then return port end
+      if port:match("^%d+$") and port_reachable(port) then return port end
       io.stderr:write("[jank filter] Port " .. port .. " from frontmatter is not reachable, trying next.\n")
     end
   end
 
   -- 2. PID file + port file (managed by lifecycle script)
-  local pid = read_pid_file()
+  local pid = read_number_file(".jank-pid")
   if pid and pid_alive(pid) then
-    local port = read_port_file(".jank-nrepl-port")
+    local port = read_number_file(".jank-nrepl-port")
     if port and port_reachable(port) then return port end
   end
 
   -- 3. Environment variable
   local env_port = os.getenv("JANK_PORT")
-  if env_port and env_port ~= "" then
+  if env_port and env_port:match("^%d+$") then
     if port_reachable(env_port) then return env_port end
     io.stderr:write("[jank filter] Port " .. env_port .. " from JANK_PORT is not reachable, trying next.\n")
   end
 
-  -- 4. Process discovery via ss
+  -- 4. Process discovery via lsof/ss
   local port = discover_port_from_process()
   if port then return port end
 
@@ -184,8 +189,7 @@ local function eval_jank_raw(code)
     return nil, "Jank nREPL port not available. Could not discover or start Jank."
   end
 
-  local escaped = code:gsub("'", "'\\''")
-  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 10000 '" .. escaped .. "' 2>&1"
+  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 10000 " .. shell_quote(code) .. " 2>&1"
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()

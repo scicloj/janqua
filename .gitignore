@@ -6,6 +6,7 @@ target
 .venv
 .jank-pid
 .jank-nrepl-port
+.jank-repl.log
 /.quarto/
 **/*.quarto_ipynb
 CLAUDE.md

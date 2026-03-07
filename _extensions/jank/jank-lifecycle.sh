@@ -26,19 +26,48 @@ fi
 
 PID_FILE="$PROJECT_ROOT/.jank-pid"
 PORT_FILE="$PROJECT_ROOT/.jank-nrepl-port"
-LOG_FILE="/tmp/jank-repl.log"
+LOG_FILE="$PROJECT_ROOT/.jank-repl.log"
+
+# Validate that a string is a positive integer (PID or port).
+is_number() {
+    [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+# Read and validate a PID from the PID file.
+# Returns the PID via stdout, or returns 1 if invalid/missing.
+read_pid() {
+    if [ ! -f "$PID_FILE" ]; then
+        return 1
+    fi
+    local pid
+    pid=$(cat "$PID_FILE")
+    if ! is_number "$pid"; then
+        echo "WARNING: Corrupt PID file, removing." >&2
+        rm -f "$PID_FILE" "$PORT_FILE"
+        return 1
+    fi
+    echo "$pid"
+}
+
+# Check if a given PID belongs to a jank-related process.
+# Prevents accidentally killing an unrelated process that reused the PID.
+is_jank_process() {
+    local pid="$1"
+    local comm
+    comm=$(ps -o comm= -p "$pid" 2>/dev/null | tr -d ' ') || return 1
+    # The process may be "jank" itself or "bash" (the wrapper that runs jank)
+    [[ "$comm" == "jank" || "$comm" == "bash" ]]
+}
 
 # Check if the jank process recorded in PID_FILE is still alive.
 is_running() {
-    if [ -f "$PID_FILE" ]; then
-        local pid
-        pid=$(cat "$PID_FILE")
-        if kill -0 "$pid" 2>/dev/null; then
-            return 0
-        fi
-        # Stale PID file — clean up
-        rm -f "$PID_FILE" "$PORT_FILE"
+    local pid
+    pid=$(read_pid) || return 1
+    if kill -0 "$pid" 2>/dev/null && is_jank_process "$pid"; then
+        return 0
     fi
+    # Stale PID file — process is dead or reused by another program
+    rm -f "$PID_FILE" "$PORT_FILE"
     return 1
 }
 
@@ -57,7 +86,7 @@ discover_port() {
             port=$(lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null \
                    | awk '/jank.*LISTEN/ {split($NF, a, ":"); print a[2]}' | head -1)
         fi
-        if [ -n "$port" ]; then
+        if [ -n "$port" ] && is_number "$port"; then
             echo "$port"
             return 0
         fi
@@ -73,7 +102,7 @@ discover_port() {
             port=$(ss -tlnp 2>/dev/null | grep '"jank"' \
                    | awk '{print $4}' | awk -F: '{print $NF}' | head -1)
         fi
-        if [ -n "$port" ]; then
+        if [ -n "$port" ] && is_number "$port"; then
             echo "$port"
             return 0
         fi
@@ -91,7 +120,7 @@ cmd_start() {
         fi
         # PID alive but no port file — rediscover
         local pid
-        pid=$(cat "$PID_FILE")
+        pid=$(read_pid)
         local port
         port=$(discover_port "$pid") || true
         if [ -n "$port" ]; then
@@ -157,14 +186,30 @@ cmd_start() {
     exit 1
 }
 
+# Kill a process and its children, with safety checks.
+safe_kill_jank() {
+    local pid="$1"
+
+    # Verify the PID still belongs to a jank-related process
+    if ! is_jank_process "$pid"; then
+        echo "WARNING: PID $pid is no longer a jank process, skipping kill." >&2
+        return 0
+    fi
+
+    # Kill the specific process and its direct children (tail, jank subprocess)
+    # rather than the whole process group, to avoid collateral damage.
+    kill "$pid" 2>/dev/null || true
+    pkill -P "$pid" 2>/dev/null || true
+}
+
 cmd_stop() {
     if [ ! -f "$PID_FILE" ]; then
-        # Try to find jank by process name
+        # Try to find jank by process name (current user only)
         local pid
-        pid=$(pgrep -x jank 2>/dev/null || echo "")
+        pid=$(pgrep -u "$(id -u)" -x jank 2>/dev/null || echo "")
         if [ -n "$pid" ]; then
             echo "[jank-lifecycle] Stopping jank (PID $pid)..." >&2
-            kill "$pid" 2>/dev/null || true
+            safe_kill_jank "$pid"
         else
             echo "[jank-lifecycle] No jank process found." >&2
         fi
@@ -173,17 +218,13 @@ cmd_stop() {
     fi
 
     local pid
-    pid=$(cat "$PID_FILE")
-    echo "[jank-lifecycle] Stopping jank (PID $pid)..." >&2
+    pid=$(read_pid) || {
+        rm -f "$PID_FILE" "$PORT_FILE"
+        return 0
+    }
 
-    # Kill jank and its parent bash wrapper (same process group)
-    local pgid
-    pgid=$(ps -o pgid= -p "$pid" 2>/dev/null | tr -d ' ')
-    if [ -n "$pgid" ]; then
-        kill -- -"$pgid" 2>/dev/null || true
-    fi
-    # Also signal the specific PID in case PGID kill missed it
-    kill "$pid" 2>/dev/null || true
+    echo "[jank-lifecycle] Stopping jank (PID $pid)..." >&2
+    safe_kill_jank "$pid"
 
     rm -f "$PID_FILE" "$PORT_FILE"
     echo "[jank-lifecycle] Jank stopped." >&2
@@ -192,7 +233,7 @@ cmd_stop() {
 cmd_status() {
     if is_running; then
         local pid
-        pid=$(cat "$PID_FILE")
+        pid=$(read_pid)
         if [ -f "$PORT_FILE" ]; then
             local port
             port=$(cat "$PORT_FILE")
@@ -203,9 +244,9 @@ cmd_status() {
         exit 0
     fi
 
-    # Check for untracked jank processes
+    # Check for untracked jank processes (current user only)
     local pid
-    pid=$(pgrep -x jank 2>/dev/null || echo "")
+    pid=$(pgrep -u "$(id -u)" -x jank 2>/dev/null || echo "")
     if [ -n "$pid" ]; then
         local port
         port=$(discover_port "$pid") || true
