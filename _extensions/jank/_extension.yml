@@ -1,0 +1,6 @@
+title: Jank
+author: scicloj
+version: 0.1.0
+contributes:
+  filters:
+    - jank.lua
