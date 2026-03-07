@@ -27,7 +27,7 @@ The filter needs to find a running Jank nREPL server. It tries several sources i
 1. **Frontmatter** — an explicit `jank.port` value in the document metadata
 2. **PID + port files** — `.jank-pid` and `.jank-nrepl-port` written by the lifecycle script
 3. **Environment variable** — `JANK_PORT`
-4. **Process scan** — searches for a `jank` process listening on a TCP port (via `lsof` or `ss`)
+4. **Process scan** — searches for a `jank` process listening on a TCP port (via `lsof` or `ss`). Note: if multiple projects run Jank simultaneously, this step could find the wrong one — steps 1–3 are project-specific and preferred.
 5. **Auto-start** — if nothing is found, the filter launches `jank repl` via the lifecycle script and waits for it to be ready
 
 This chain means zero configuration for the common case: just run `quarto render` and the filter handles the rest.
@@ -44,9 +44,9 @@ The lifecycle script manages three files in the project root:
 | `.jank-nrepl-port` | The nREPL port Jank is listening on |
 | `.jank-repl.log` | Jank's stdout/stderr output |
 
-A background monitor watches the Jank process and cleans up these files if it crashes.
+A background monitor watches the Jank process and cleans up these files if it crashes. It verifies the PID in the file still matches before deleting, to avoid removing a newer instance's files if Jank was restarted quickly.
 
-The stop command verifies the PID still belongs to a Jank process before sending a kill signal — this prevents accidentally killing an unrelated process that reused the PID.
+The stop command verifies the PID still belongs to a Jank process before sending a kill signal — checking both the process name and command line arguments. This prevents accidentally killing an unrelated process that reused the PID. If no PID file exists, stop refuses to guess and asks the user to kill manually.
 
 ## Code evaluation
 
@@ -92,7 +92,7 @@ The filter examines the `:janqua/kind` field from the wrapper response:
 | `:kind/html` | String is inserted as raw HTML |
 | `:kind/md` or `:kind/markdown` | String is parsed as Markdown and inserted |
 | `:kind/hidden` | Output is suppressed (code still evaluates) |
-| *(none)* | Value is shown as a code block |
+| *(none)* | Value is shown as a syntax-highlighted code block |
 
 For `kind/html` and `kind/md`, strings can't hold metadata directly (they're primitives in Jank). The convention is to wrap them in a vector: `^:kind/html ["<b>bold</b>"]` — the filter auto-unwraps the first element.
 
