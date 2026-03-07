@@ -103,7 +103,7 @@ The filter examines the `:janqua/kind` field from the wrapper response:
 | `:kind/highcharts` | Map is rendered as a Highcharts chart |
 | *(none)* | Value is shown as a syntax-highlighted code block |
 
-For `kind/html` and `kind/md`, strings can't hold metadata directly (they're primitives in Jank). The convention is to wrap them in a vector: `^:kind/html ["<b>bold</b>"]` — the filter auto-unwraps the first element.
+For string-valued kinds (`kind/html`, `kind/md`, `kind/mermaid`, `kind/graphviz`, `kind/tex`, `kind/code`), strings can't hold metadata directly (they're primitives in Jank). The convention is to wrap them in a vector: `^:kind/html ["<b>bold</b>"]` — the filter auto-unwraps the first element.
 
 ### 4. Hiccup rendering
 
@@ -116,6 +116,22 @@ When a value has `:kind/hiccup` metadata, the filter calls `janqua-hiccup->html`
 ```
 
 This runs inside Jank (not in Lua), so it has access to the full Clojure data model.
+
+### 5. JS chart rendering
+
+For chart kinds (`kind/plotly`, `kind/vega-lite`, `kind/echarts`, `kind/cytoscape`, `kind/highcharts`), the filter:
+
+1. Converts the Clojure value to JSON by calling `janqua-to-json` — a function bootstrapped in the Jank session alongside `janqua-hiccup->html`
+2. Emits a `<div>` with a unique ID and a `<script>` tag that loads the chart library from CDN and renders the spec
+
+Each chart kind loads its own library (e.g., Plotly.js, Vega-Lite + Vega Embed, ECharts) from a CDN. Multiple charts on the same page get unique div IDs to avoid collisions.
+
+### 6. Diagram rendering
+
+Mermaid and Graphviz diagrams can't use Quarto's native `{mermaid}` / `{dot}` blocks — those are processed as executable cells in an earlier pipeline stage, before Lua filters run.
+
+- **Mermaid**: The filter loads the Mermaid JS library from CDN and calls `mermaid.render()` client-side, similar to the JS chart pattern.
+- **Graphviz**: The filter pipes the DOT source through the `dot -Tsvg` command and embeds the resulting SVG directly. This requires Graphviz to be installed on the build machine.
 
 ## Code block attributes
 
@@ -136,7 +152,7 @@ Kindly metadata on the result takes precedence over `output=` when both are pres
 On the first evaluation in a document, the filter:
 
 1. Resolves the nREPL port (auto-starting Jank if needed)
-2. Sends the `janqua-hiccup->html` function definition to the Jank session
+2. Sends bootstrap definitions to the Jank session: `janqua-hiccup->html` (hiccup-to-HTML conversion) and `janqua-to-json` (Clojure data-to-JSON conversion for chart kinds)
 3. Begins processing code blocks in document order
 
 Subsequent renders reuse the same Jank process, so startup cost is only paid once.
