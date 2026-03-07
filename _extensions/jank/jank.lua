@@ -13,6 +13,11 @@
 --   ```{.jank output=hidden}  — evaluate silently (no code, no output)
 --   ```{.jank eval=false}     — show code only, don't evaluate
 --   ```{.jank echo=false}     — evaluate but hide the code
+--
+-- Kindly convention:
+--   ^:kind/hiccup [:div ...]  — auto-converts hiccup to HTML
+--   ^:kind/html "..."         — renders string as raw HTML (on metadata-capable values)
+--   ^:kind/hidden [...]       — suppresses both code and output
 
 local jank_port = nil
 
@@ -148,23 +153,52 @@ local function unquote_clj_string(s)
   return s
 end
 
--- Evaluate Jank code via clj-nrepl-eval.
--- Returns: value string, stdout string (may be nil), error string (may be nil)
-local function eval_jank(code)
+
+-- Jank code to bootstrap janqua helpers (sent on first connection).
+local janqua_bootstrap = [=[
+(defn janqua-hiccup->html [form]
+  (cond
+    (string? form) form
+    (number? form) (str form)
+    (vector? form)
+    (let [tag (name (first form))
+          has-attrs (map? (second form))
+          attrs (if has-attrs (second form) {})
+          children (if has-attrs (drop 2 form) (rest form))
+          attr-str (apply str
+                     (map (fn [[k v]]
+                            (str " " (name k) "=\"" v "\""))
+                          attrs))]
+      (str "<" tag attr-str ">"
+           (apply str (map janqua-hiccup->html children))
+           "</" tag ">"))
+    :else (str form)))
+]=]
+
+local janqua_bootstrapped = false
+
+-- Send raw code to Jank via clj-nrepl-eval.
+-- Returns: raw output string, error string (may be nil)
+local function eval_jank_raw(code)
   if not jank_port then
-    return nil, nil, "Jank nREPL port not available. Could not discover or start Jank."
+    return nil, "Jank nREPL port not available. Could not discover or start Jank."
   end
 
   local escaped = code:gsub("'", "'\\''")
-  local cmd = "clj-nrepl-eval -p " .. jank_port .. " '" .. escaped .. "' 2>&1"
+  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 60000 '" .. escaped .. "' 2>&1"
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()
 
   if raw:match("ConnectException") or raw:match("Connection refused") then
-    return nil, nil, "Cannot connect to Jank nREPL on port " .. jank_port .. ". Is `jank repl` running?"
+    return nil, "Cannot connect to Jank nREPL on port " .. jank_port .. ". Is `jank repl` running?"
   end
 
+  return raw, nil
+end
+
+-- Parse clj-nrepl-eval output into value + stdout.
+local function parse_nrepl_output(raw)
   local lines = {}
   for line in raw:gmatch("[^\n]+") do
     table.insert(lines, line)
@@ -188,7 +222,66 @@ local function eval_jank(code)
     stdout = table.concat(stdout_lines, "\n")
   end
 
-  return value, stdout, nil
+  return value, stdout
+end
+
+-- Bootstrap janqua helpers in the Jank session (once).
+local function ensure_bootstrap()
+  if janqua_bootstrapped then return end
+  local raw, err = eval_jank_raw(janqua_bootstrap)
+  if err then
+    io.stderr:write("[jank filter] WARNING: Failed to bootstrap janqua helpers: " .. err .. "\n")
+    return
+  end
+  janqua_bootstrapped = true
+end
+
+-- Wrap user code to extract Kindly metadata from the result.
+-- Uses fn call instead of let to work around a Jank bug where let bindings
+-- lose reader-attached metadata (e.g. ^:kind/hiccup).
+local function wrap_with_kindly(code)
+  return '((fn [v__janqua]'
+    .. ' ((fn [m__janqua]'
+    .. ' ((fn [kind__janqua]'
+    .. ' {:janqua/kind kind__janqua'
+    .. ' :janqua/value (pr-str (if (get-in m__janqua [:kindly/options :wrapped-value]) (first v__janqua) v__janqua))})'
+    .. ' (when m__janqua'
+    .. ' (or (:kindly/kind m__janqua)'
+    .. ' (some (fn [k] (when (and (keyword? k) (= (namespace k) "kind") (get m__janqua k)) k))'
+    .. ' (keys m__janqua))))))'
+    .. ' (meta v__janqua)))'
+    .. ' (do ' .. code .. '))'
+end
+
+-- Parse the wrapper response to extract kind and value.
+local function parse_kindly_response(value_str)
+  if not value_str then return nil, nil end
+
+  -- Match :janqua/kind value
+  local kind = value_str:match(":janqua/kind (:kind/[%w_-]+)")
+
+  -- Match :janqua/value — everything between :janqua/value and the final }
+  local raw_value = value_str:match(":janqua/value (.+)}%s*$")
+
+  return kind, raw_value
+end
+
+-- Evaluate Jank code via clj-nrepl-eval with Kindly wrapper.
+-- Returns: value string, stdout string, error string, kind string (all may be nil)
+local function eval_jank(code)
+  ensure_bootstrap()
+
+  local wrapped = wrap_with_kindly(code)
+  local raw, err = eval_jank_raw(wrapped)
+  if err then return nil, nil, err, nil end
+
+  local value, stdout = parse_nrepl_output(raw)
+  local kind, actual_value = parse_kindly_response(value)
+
+  -- Unquote the pr-str serialization layer from the wrapper
+  actual_value = unquote_clj_string(actual_value)
+
+  return actual_value, stdout, nil, kind
 end
 
 -- Extract the Jank port from document metadata.
@@ -215,6 +308,34 @@ function CodeBlock(el)
     echo = false
   end
 
+  -- Evaluate first so Kindly metadata can influence echo/output_mode
+  local value, stdout, err, kind = nil, nil, nil, nil
+  if eval then
+    value, stdout, err, kind = eval_jank(code)
+
+    -- Kindly metadata overrides the output= attribute
+    if kind then
+      if kind == ":kind/hiccup" then
+        -- Convert hiccup to HTML via a second eval
+        local html_raw, html_err = eval_jank_raw("(janqua-hiccup->html " .. unquote_clj_string(value) .. ")")
+        if not html_err then
+          local html_value = parse_nrepl_output(html_raw)
+          if html_value then
+            value = html_value
+          end
+        end
+        output_mode = "html"
+      elseif kind == ":kind/html" then
+        output_mode = "html"
+      elseif kind == ":kind/md" or kind == ":kind/markdown" then
+        output_mode = "markdown"
+      elseif kind == ":kind/hidden" then
+        output_mode = "hidden"
+        echo = false
+      end
+    end
+  end
+
   local blocks = {}
 
   -- Show code (as clojure for syntax highlighting)
@@ -222,10 +343,8 @@ function CodeBlock(el)
     table.insert(blocks, pandoc.CodeBlock(code, pandoc.Attr("", {"clojure"})))
   end
 
-  -- Evaluate
+  -- Render output
   if eval then
-    local value, stdout, err = eval_jank(code)
-
     if err then
       table.insert(blocks, pandoc.Div(
         pandoc.CodeBlock(err, pandoc.Attr("", {"error"})),

@@ -121,3 +121,43 @@ Printed output still appears as a code block:
 ```{.jank}
 (do (println "computing...") (* 6 7))
 ```
+
+## Kindly convention
+
+The [Kindly](https://scicloj.github.io/kindly-noted/) convention uses metadata
+to annotate values with their rendering intent. This is compatible with the
+Clojure ecosystem (Clay, Portal, etc.).
+
+### Hiccup via Kindly
+
+Annotate a hiccup vector with `^:kind/hiccup` — the filter converts it to HTML automatically
+(no `output=html` needed):
+
+```{.jank}
+^:kind/hiccup
+[:svg {:width "200" :height "120" :xmlns "http://www.w3.org/2000/svg"}
+  [:rect {:width "200" :height "120" :fill "#e8f4f8" :rx "8"}]
+  [:circle {:cx "60" :cy "60" :r "35" :fill "#4a90d9"}]
+  [:circle {:cx "140" :cy "60" :r "35" :fill "#d94a4a"}]
+  [:text {:x "100" :y "110" :text-anchor "middle" :font-size "12" :fill "#555"}
+    "Kindly hiccup"]]
+```
+
+The long form `^{:kindly/kind :kind/hiccup}` works too:
+
+```{.jank}
+^{:kindly/kind :kind/hiccup}
+[:div {:style "padding:12px; background:#f0f0f0; border-radius:8px;"}
+  [:b "Hello"] " from " [:em "Kindly"] "!"]
+```
+
+### Hidden via Kindly
+
+Use `^:kind/hidden` to suppress output.
+Note: Kindly metadata only works on values that can hold metadata (vectors, maps),
+not on expression results like strings or vars. For arbitrary code, use `output=hidden`.
+
+```{.jank}
+^:kind/hidden
+[(def kindly-secret 42)]
+```
