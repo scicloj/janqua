@@ -197,6 +197,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#nrepl-communication" id="toc-nrepl-communication" class="nav-link" data-scroll-target="#nrepl-communication"><span class="header-section-number">3.4.2</span> 2. nREPL communication</a></li>
   <li><a href="#kind-detection" id="toc-kind-detection" class="nav-link" data-scroll-target="#kind-detection"><span class="header-section-number">3.4.3</span> 3. Kind detection</a></li>
   <li><a href="#hiccup-rendering" id="toc-hiccup-rendering" class="nav-link" data-scroll-target="#hiccup-rendering"><span class="header-section-number">3.4.4</span> 4. Hiccup rendering</a></li>
+  <li><a href="#js-chart-rendering" id="toc-js-chart-rendering" class="nav-link" data-scroll-target="#js-chart-rendering"><span class="header-section-number">3.4.5</span> 5. JS chart rendering</a></li>
+  <li><a href="#diagram-rendering" id="toc-diagram-rendering" class="nav-link" data-scroll-target="#diagram-rendering"><span class="header-section-number">3.4.6</span> 6. Diagram rendering</a></li>
   </ul></li>
   <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">3.5</span> Code block attributes</a></li>
   <li><a href="#bootstrap-sequence" id="toc-bootstrap-sequence" class="nav-link" data-scroll-target="#bootstrap-sequence"><span class="header-section-number">3.6</span> Bootstrap sequence</a></li>
@@ -225,10 +227,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This chapter explains the internals of Janqua — how your <code>{.jank}</code> code blocks turn into rendered output.</p>
+<p>This chapter explains the internals of Janqua — how your <code>{.clojure .jank}</code> code blocks turn into rendered output.</p>
 <section id="architecture-overview" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="architecture-overview"><span class="header-section-number">3.1</span> Architecture overview</h2>
-<p>Janqua is a <a href="https://pandoc.org/lua-filters.html">Pandoc Lua filter</a>. When Quarto renders a <code>.qmd</code> file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the <code>.jank</code> class, evaluates them via a Jank <a href="https://nrepl.org/">nREPL</a> server, and replaces them with the appropriate output.</p>
+<p>Janqua is a <a href="https://pandoc.org/lua-filters.html">Pandoc Lua filter</a>. When Quarto renders a <code>.qmd</code> file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the <code>.jank</code> class (typically written as <code>{.clojure .jank}</code> for editor syntax highlighting), evaluates them via a Jank <a href="https://nrepl.org/">nREPL</a> server, and replaces them with the appropriate output.</p>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -249,7 +251,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The filter has two phases, executed in order:</p>
 <ol type="1">
 <li><strong><code>Meta</code></strong> — reads document metadata and resolves the Jank nREPL port</li>
-<li><strong><code>CodeBlock</code></strong> — processes each <code>{.jank}</code> code block</li>
+<li><strong><code>CodeBlock</code></strong> — processes each <code>{.clojure .jank}</code> code block</li>
 </ol>
 </section>
 <section id="port-discovery" class="level2" data-number="3.2">
@@ -259,7 +261,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><strong>Frontmatter</strong> — an explicit <code>jank.port</code> value in the document metadata</li>
 <li><strong>PID + port files</strong> — <code>.jank-pid</code> and <code>.jank-nrepl-port</code> written by the lifecycle script</li>
 <li><strong>Environment variable</strong> — <code>JANK_PORT</code></li>
-<li><strong>Process scan</strong> — searches for a <code>jank</code> process listening on a TCP port (via <code>lsof</code> or <code>ss</code>)</li>
+<li><strong>Process scan</strong> — searches for a <code>jank</code> process listening on a TCP port (via <code>lsof</code> or <code>ss</code>). Note: if multiple projects run Jank simultaneously, this step could find the wrong one — steps 1–3 are project-specific and preferred.</li>
 <li><strong>Auto-start</strong> — if nothing is found, the filter launches <code>jank repl</code> via the lifecycle script and waits for it to be ready</li>
 </ol>
 <p>This chain means zero configuration for the common case: just run <code>quarto render</code> and the filter handles the rest.</p>
@@ -290,12 +292,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>A background monitor watches the Jank process and cleans up these files if it crashes.</p>
-<p>The stop command verifies the PID still belongs to a Jank process before sending a kill signal — this prevents accidentally killing an unrelated process that reused the PID.</p>
+<p>A background monitor watches the Jank process and cleans up these files if it crashes. It verifies the PID in the file still matches before deleting, to avoid removing a newer instance’s files if Jank was restarted quickly.</p>
+<p>The stop command verifies the PID still belongs to a Jank process before sending a kill signal — checking both the process name and command line arguments. This prevents accidentally killing an unrelated process that reused the PID. If no PID file exists, stop refuses to guess and asks the user to kill manually.</p>
 </section>
 <section id="code-evaluation" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="code-evaluation"><span class="header-section-number">3.4</span> Code evaluation</h2>
-<p>Each <code>{.jank}</code> code block goes through these steps:</p>
+<p>Each <code>{.clojure .jank}</code> code block goes through these steps:</p>
 <section id="kindly-wrapping" class="level3" data-number="3.4.1">
 <h3 data-number="3.4.1" class="anchored" data-anchor-id="kindly-wrapping"><span class="header-section-number">3.4.1</span> 1. Kindly wrapping</h3>
 <p>The user’s code is wrapped in a function call that captures the result and its metadata:</p>
@@ -354,12 +356,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">Output is suppressed (code still evaluates)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;"><code>:kind/mermaid</code></td>
+<td style="text-align: left;">String is rendered as a Mermaid diagram (client-side JS)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/graphviz</code></td>
+<td style="text-align: left;">String is rendered as a Graphviz SVG via the <code>dot</code> command</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/tex</code></td>
+<td style="text-align: left;">String is rendered as a LaTeX formula</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/code</code></td>
+<td style="text-align: left;">String is displayed as syntax-highlighted Clojure code</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/vega-lite</code></td>
+<td style="text-align: left;">Map is rendered as a Vega-Lite chart</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/plotly</code></td>
+<td style="text-align: left;">Map is rendered as a Plotly chart</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/echarts</code></td>
+<td style="text-align: left;">Map is rendered as an ECharts chart</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/cytoscape</code></td>
+<td style="text-align: left;">Map is rendered as a Cytoscape graph</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/highcharts</code></td>
+<td style="text-align: left;">Map is rendered as a Highcharts chart</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><em>(none)</em></td>
-<td style="text-align: left;">Value is shown as a code block</td>
+<td style="text-align: left;">Value is shown as a syntax-highlighted code block</td>
 </tr>
 </tbody>
 </table>
-<p>For <code>kind/html</code> and <code>kind/md</code>, strings can’t hold metadata directly (they’re primitives in Jank). The convention is to wrap them in a vector: <code>^:kind/html ["&lt;b&gt;bold&lt;/b&gt;"]</code> — the filter auto-unwraps the first element.</p>
+<p>For string-valued kinds (<code>kind/html</code>, <code>kind/md</code>, <code>kind/mermaid</code>, <code>kind/graphviz</code>, <code>kind/tex</code>, <code>kind/code</code>), strings can’t hold metadata directly (they’re primitives in Jank). The convention is to wrap them in a vector: <code>^:kind/html ["&lt;b&gt;bold&lt;/b&gt;"]</code> — the filter auto-unwraps the first element.</p>
 </section>
 <section id="hiccup-rendering" class="level3" data-number="3.4.4">
 <h3 data-number="3.4.4" class="anchored" data-anchor-id="hiccup-rendering"><span class="header-section-number">3.4.4</span> 4. Hiccup rendering</h3>
@@ -369,10 +407,27 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="st">"&lt;div class=</span><span class="sc">\"</span><span class="st">box</span><span class="sc">\"</span><span class="st">&gt;&lt;span&gt;hi&lt;/span&gt;&lt;/div&gt;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This runs inside Jank (not in Lua), so it has access to the full Clojure data model.</p>
 </section>
+<section id="js-chart-rendering" class="level3" data-number="3.4.5">
+<h3 data-number="3.4.5" class="anchored" data-anchor-id="js-chart-rendering"><span class="header-section-number">3.4.5</span> 5. JS chart rendering</h3>
+<p>For chart kinds (<code>kind/plotly</code>, <code>kind/vega-lite</code>, <code>kind/echarts</code>, <code>kind/cytoscape</code>, <code>kind/highcharts</code>), the filter:</p>
+<ol type="1">
+<li>Converts the Clojure value to JSON by calling <code>janqua-to-json</code> — a function bootstrapped in the Jank session alongside <code>janqua-hiccup-&gt;html</code></li>
+<li>Emits a <code>&lt;div&gt;</code> with a unique ID and a <code>&lt;script&gt;</code> tag that loads the chart library from CDN and renders the spec</li>
+</ol>
+<p>Each chart kind loads its own library (e.g., Plotly.js, Vega-Lite + Vega Embed, ECharts) from a CDN. Multiple charts on the same page get unique div IDs to avoid collisions.</p>
+</section>
+<section id="diagram-rendering" class="level3" data-number="3.4.6">
+<h3 data-number="3.4.6" class="anchored" data-anchor-id="diagram-rendering"><span class="header-section-number">3.4.6</span> 6. Diagram rendering</h3>
+<p>Mermaid and Graphviz diagrams can’t use Quarto’s native <code>{mermaid}</code> / <code>{dot}</code> blocks — those are processed as executable cells in an earlier pipeline stage, before Lua filters run.</p>
+<ul>
+<li><strong>Mermaid</strong>: The filter loads the Mermaid JS library from CDN and calls <code>mermaid.render()</code> client-side, similar to the JS chart pattern.</li>
+<li><strong>Graphviz</strong>: The filter pipes the DOT source through the <code>dot -Tsvg</code> command and embeds the resulting SVG directly. This requires Graphviz to be installed on the build machine.</li>
+</ul>
+</section>
 </section>
 <section id="code-block-attributes" class="level2" data-number="3.5">
 <h2 data-number="3.5" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">3.5</span> Code block attributes</h2>
-<p>The filter respects several attributes on <code>{.jank}</code> blocks:</p>
+<p>The filter respects several attributes on <code>{.clojure .jank}</code> blocks:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -410,7 +465,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>On the first evaluation in a document, the filter:</p>
 <ol type="1">
 <li>Resolves the nREPL port (auto-starting Jank if needed)</li>
-<li>Sends the <code>janqua-hiccup-&gt;html</code> function definition to the Jank session</li>
+<li>Sends bootstrap definitions to the Jank session: <code>janqua-hiccup-&gt;html</code> (hiccup-to-HTML conversion) and <code>janqua-to-json</code> (Clojure data-to-JSON conversion for chart kinds)</li>
 <li>Begins processing code blocks in document order</li>
 </ol>
 <p>Subsequent renders reuse the same Jank process, so startup cost is only paid once.</p>

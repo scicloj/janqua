@@ -106,6 +106,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -189,10 +218,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#kindhtml-raw-html" id="toc-kindhtml-raw-html" class="nav-link" data-scroll-target="#kindhtml-raw-html"><span class="header-section-number">2.2</span> <code>^:kind/html</code> — raw HTML</a></li>
   <li><a href="#kindmd-markdown" id="toc-kindmd-markdown" class="nav-link" data-scroll-target="#kindmd-markdown"><span class="header-section-number">2.3</span> <code>^:kind/md</code> — markdown</a></li>
   <li><a href="#kindhidden-suppress-output" id="toc-kindhidden-suppress-output" class="nav-link" data-scroll-target="#kindhidden-suppress-output"><span class="header-section-number">2.4</span> <code>^:kind/hidden</code> — suppress output</a></li>
-  <li><a href="#annotating-in-library-functions" id="toc-annotating-in-library-functions" class="nav-link" data-scroll-target="#annotating-in-library-functions"><span class="header-section-number">2.5</span> Annotating in library functions</a></li>
-  <li><a href="#why-wrap-strings-in-vectors" id="toc-why-wrap-strings-in-vectors" class="nav-link" data-scroll-target="#why-wrap-strings-in-vectors"><span class="header-section-number">2.6</span> Why wrap strings in vectors?</a></li>
-  <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">2.7</span> Code block attributes</a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">2.8</span> Summary</a></li>
+  <li><a href="#kindmermaid-mermaid-diagrams" id="toc-kindmermaid-mermaid-diagrams" class="nav-link" data-scroll-target="#kindmermaid-mermaid-diagrams"><span class="header-section-number">2.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</a></li>
+  <li><a href="#kindgraphviz-graphviz-diagrams" id="toc-kindgraphviz-graphviz-diagrams" class="nav-link" data-scroll-target="#kindgraphviz-graphviz-diagrams"><span class="header-section-number">2.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</a></li>
+  <li><a href="#kindtex-latex-formulas" id="toc-kindtex-latex-formulas" class="nav-link" data-scroll-target="#kindtex-latex-formulas"><span class="header-section-number">2.7</span> <code>^:kind/tex</code> — LaTeX formulas</a></li>
+  <li><a href="#kindcode-code-display" id="toc-kindcode-code-display" class="nav-link" data-scroll-target="#kindcode-code-display"><span class="header-section-number">2.8</span> <code>^:kind/code</code> — code display</a></li>
+  <li><a href="#kindvega-lite-vega-lite-charts" id="toc-kindvega-lite-vega-lite-charts" class="nav-link" data-scroll-target="#kindvega-lite-vega-lite-charts"><span class="header-section-number">2.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</a></li>
+  <li><a href="#kindplotly-plotly-charts" id="toc-kindplotly-plotly-charts" class="nav-link" data-scroll-target="#kindplotly-plotly-charts"><span class="header-section-number">2.10</span> <code>^:kind/plotly</code> — Plotly charts</a></li>
+  <li><a href="#annotating-in-library-functions" id="toc-annotating-in-library-functions" class="nav-link" data-scroll-target="#annotating-in-library-functions"><span class="header-section-number">2.11</span> Annotating in library functions</a></li>
+  <li><a href="#why-wrap-strings-in-vectors" id="toc-why-wrap-strings-in-vectors" class="nav-link" data-scroll-target="#why-wrap-strings-in-vectors"><span class="header-section-number">2.12</span> Why wrap strings in vectors?</a></li>
+  <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">2.14</span> Summary</a></li>
   </ul>
 </nav>
     </div>
@@ -274,50 +309,144 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hidden</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>[(<span class="bu">def</span><span class="fu"> my-data </span>[<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>])]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="annotating-in-library-functions" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="annotating-in-library-functions"><span class="header-section-number">2.5</span> Annotating in library functions</h2>
+<section id="kindmermaid-mermaid-diagrams" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="kindmermaid-mermaid-diagrams"><span class="header-section-number">2.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</h2>
+<p>Renders a string as a <a href="https://mermaid.js.org/">Mermaid</a> diagram. Quarto has native Mermaid support, so no external dependencies are needed:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/mermaid</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"graph LR</span><span class="sc">\n</span><span class="st">  A[Start] --&gt; B{Decision}</span><span class="sc">\n</span><span class="st">  B --&gt;|Yes| C[OK]</span><span class="sc">\n</span><span class="st">  B --&gt;|No| D[Cancel]"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="janqua-plot-1"></div><script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";const el = document.getElementById("janqua-plot-1");const {svg} = await mermaid.render("janqua-plot-1-svg", "graph LR\n  A[Start] --> B{Decision}\n  B -->|Yes| C[OK]\n  B -->|No| D[Cancel]");el.innerHTML = svg;</script>
+</section>
+<section id="kindgraphviz-graphviz-diagrams" class="level2" data-number="2.6">
+<h2 data-number="2.6" class="anchored" data-anchor-id="kindgraphviz-graphviz-diagrams"><span class="header-section-number">2.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</h2>
+<p>Renders a string as a <a href="https://graphviz.org/">Graphviz</a> DOT diagram. Requires Graphviz to be installed:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/graphviz</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"digraph { rankdir=LR; A -&gt; B -&gt; C; A -&gt; C; }"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<!--?xml version="1.0" encoding="UTF-8" standalone="no"?-->
+
+<!-- Generated by graphviz version 2.43.0 (0)
+ -->
+<!-- Title: %3 Pages: 1 -->
+<svg width="242pt" height="67pt" viewbox="0.00 0.00 242.00 67.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 63)">
+<title>%3</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-63 238,-63 238,4 -4,4"></polygon>
+<!-- A -->
+<g id="node1" class="node">
+<title>A</title>
+<ellipse fill="none" stroke="black" cx="27" cy="-18" rx="27" ry="18"></ellipse>
+<text text-anchor="middle" x="27" y="-14.3" font-family="Times,serif" font-size="14.00">A</text>
+</g>
+<!-- B -->
+<g id="node2" class="node">
+<title>B</title>
+<ellipse fill="none" stroke="black" cx="117" cy="-41" rx="27" ry="18"></ellipse>
+<text text-anchor="middle" x="117" y="-37.3" font-family="Times,serif" font-size="14.00">B</text>
+</g>
+<!-- A&#45;&gt;B -->
+<g id="edge1" class="edge">
+<title>A-&gt;B</title>
+<path fill="none" stroke="black" d="M52.51,-24.41C61.57,-26.77 72.01,-29.5 81.78,-32.05"></path>
+<polygon fill="black" stroke="black" points="81.06,-35.49 91.62,-34.63 82.83,-28.71 81.06,-35.49"></polygon>
+</g>
+<!-- C -->
+<g id="node3" class="node">
+<title>C</title>
+<ellipse fill="none" stroke="black" cx="207" cy="-18" rx="27" ry="18"></ellipse>
+<text text-anchor="middle" x="207" y="-14.3" font-family="Times,serif" font-size="14.00">C</text>
+</g>
+<!-- A&#45;&gt;C -->
+<g id="edge3" class="edge">
+<title>A-&gt;C</title>
+<path fill="none" stroke="black" d="M53.92,-15.95C65.03,-15.17 78.14,-14.38 90,-14 113.99,-13.23 120.01,-13.23 144,-14 152.43,-14.27 161.5,-14.75 170.02,-15.28"></path>
+<polygon fill="black" stroke="black" points="169.87,-18.78 180.08,-15.95 170.33,-11.8 169.87,-18.78"></polygon>
+</g>
+<!-- B&#45;&gt;C -->
+<g id="edge2" class="edge">
+<title>B-&gt;C</title>
+<path fill="none" stroke="black" d="M142.51,-34.59C151.57,-32.23 162.01,-29.5 171.78,-26.95"></path>
+<polygon fill="black" stroke="black" points="172.83,-30.29 181.62,-24.37 171.06,-23.51 172.83,-30.29"></polygon>
+</g>
+</g>
+</svg>
+
+</section>
+<section id="kindtex-latex-formulas" class="level2" data-number="2.7">
+<h2 data-number="2.7" class="anchored" data-anchor-id="kindtex-latex-formulas"><span class="header-section-number">2.7</span> <code>^:kind/tex</code> — LaTeX formulas</h2>
+<p>Renders a string as a LaTeX formula via MathJax:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/tex</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"</span><span class="sc">\\</span><span class="st">int_0^</span><span class="sc">\\</span><span class="st">infty e^{-x^2} dx = </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">sqrt{</span><span class="sc">\\</span><span class="st">pi}}{2}"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span class="math display">\[\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}\]</span></p>
+</section>
+<section id="kindcode-code-display" class="level2" data-number="2.8">
+<h2 data-number="2.8" class="anchored" data-anchor-id="kindcode-code-display"><span class="header-section-number">2.8</span> <code>^:kind/code</code> — code display</h2>
+<p>Renders a string as syntax-highlighted Clojure code (for display, not evaluation):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/code</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"(defn hello [name]</span><span class="sc">\n</span><span class="st">  (str </span><span class="sc">\"</span><span class="st">Hello, </span><span class="sc">\"</span><span class="st"> name </span><span class="sc">\"</span><span class="st">!</span><span class="sc">\"</span><span class="st">))"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> hello </span>[<span class="kw">name</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">str</span> <span class="st">"Hello, "</span> <span class="kw">name</span> <span class="st">"!"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="kindvega-lite-vega-lite-charts" class="level2" data-number="2.9">
+<h2 data-number="2.9" class="anchored" data-anchor-id="kindvega-lite-vega-lite-charts"><span class="header-section-number">2.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</h2>
+<p>Renders a map as a <a href="https://vega.github.io/vega-lite/">Vega-Lite</a> chart. The JS library is loaded automatically from CDN:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/vega-lite</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>{<span class="at">:data</span> {<span class="at">:values</span> [{<span class="at">:x</span> <span class="st">"A"</span> <span class="at">:y</span> <span class="dv">28</span>} {<span class="at">:x</span> <span class="st">"B"</span> <span class="at">:y</span> <span class="dv">55</span>} {<span class="at">:x</span> <span class="st">"C"</span> <span class="at">:y</span> <span class="dv">43</span>}]}</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:mark</span> <span class="at">:bar</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:encoding</span> {<span class="at">:x</span> {<span class="at">:field</span> <span class="at">:x</span> <span class="at">:type</span> <span class="at">:nominal</span>}</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>            <span class="at">:y</span> {<span class="at">:field</span> <span class="at">:y</span> <span class="at">:type</span> <span class="at">:quantitative</span>}}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="janqua-plot-2"></div><script src="https://cdn.jsdelivr.net/npm/vega@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script><script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script><script>vegaEmbed("#janqua-plot-2", {"data": {"values": [{"x": "A", "y": 28}, {"x": "B", "y": 55}, {"x": "C", "y": 43}]}, "mark": "bar", "encoding": {"x": {"field": "x", "type": "nominal"}, "y": {"field": "y", "type": "quantitative"}}});</script>
+</section>
+<section id="kindplotly-plotly-charts" class="level2" data-number="2.10">
+<h2 data-number="2.10" class="anchored" data-anchor-id="kindplotly-plotly-charts"><span class="header-section-number">2.10</span> <code>^:kind/plotly</code> — Plotly charts</h2>
+<p>Renders a map as a <a href="https://plotly.com/javascript/">Plotly.js</a> chart. The spec should have <code>:data</code> and <code>:layout</code> keys:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/plotly</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>{<span class="at">:data</span> [{<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span> <span class="dv">4</span>] <span class="at">:y</span> [<span class="dv">10</span> <span class="dv">15</span> <span class="dv">13</span> <span class="dv">17</span>] <span class="at">:type</span> <span class="st">"scatter"</span> <span class="at">:mode</span> <span class="st">"lines+markers"</span>}]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a> <span class="at">:layout</span> {<span class="at">:title</span> <span class="st">"Simple Plotly Chart"</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="janqua-plot-3"></div><script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script><script>var spec={"data": [{"x": [1, 2, 3, 4], "y": [10, 15, 13, 17], "type": "scatter", "mode": "lines+markers"}], "layout": {"title": "Simple Plotly Chart"}};Plotly.newPlot("janqua-plot-3", spec.data, spec.layout);</script>
+</section>
+<section id="annotating-in-library-functions" class="level2" data-number="2.11">
+<h2 data-number="2.11" class="anchored" data-anchor-id="annotating-in-library-functions"><span class="header-section-number">2.11</span> Annotating in library functions</h2>
 <p>The <code>^:kind/...</code> reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with <a href="https://clojuredocs.org/clojure.core/with-meta"><code>with-meta</code></a> or <code>vary-meta</code>, which means <strong>library functions can annotate their return values</strong>. The caller doesn’t need to know about the rendering — the function handles it.</p>
 <p>For example, a function that builds an SVG bar chart and tags it as hiccup:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> bar-chart </span>[labels values]</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [bar-width <span class="dv">40</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        gap <span class="dv">10</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        max-val (<span class="kw">apply</span> <span class="kw">max</span> values)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        height <span class="dv">120</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        bars (map-indexed</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>               (<span class="kw">fn</span> [i [label <span class="kw">val</span>]]</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">let</span> [x (<span class="kw">+</span> <span class="dv">10</span> (<span class="kw">*</span> i (<span class="kw">+</span> bar-width gap)))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                       bar-height (<span class="kw">*</span> (<span class="kw">/</span> <span class="kw">val</span> max-val) height)]</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                   [<span class="at">:g</span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                     [<span class="at">:rect</span> {<span class="at">:x</span> x <span class="at">:y</span> (<span class="kw">-</span> height bar-height)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:width</span> bar-width <span class="at">:height</span> bar-height</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:fill</span> <span class="st">"steelblue"</span>}]</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>                     [<span class="at">:text</span> {<span class="at">:x</span> (<span class="kw">+</span> x (<span class="kw">/</span> bar-width <span class="dv">2</span>)) <span class="at">:y</span> (<span class="kw">+</span> height <span class="dv">15</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:text-anchor</span> <span class="st">"middle"</span> <span class="at">:font-size</span> <span class="st">"12"</span>}</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>                       label]]))</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>               (<span class="kw">map</span> <span class="kw">vector</span> labels values))</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        total-width (<span class="kw">+</span> <span class="dv">20</span> (<span class="kw">*</span> (<span class="kw">count</span> labels) (<span class="kw">+</span> bar-width gap)))]</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">with-meta</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">into</span> [<span class="at">:svg</span> {<span class="at">:width</span> total-width <span class="at">:height</span> (<span class="kw">+</span> height <span class="dv">25</span>)</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>                   <span class="at">:xmlns</span> <span class="st">"http://www.w3.org/2000/svg"</span>}] bars)</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      {<span class="at">:kindly/kind</span> <span class="at">:kind/hiccup</span>})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> bar-chart </span>[labels values]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  (<span class="kw">let</span> [bar-width <span class="dv">40</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>        gap <span class="dv">10</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>        max-val (<span class="kw">apply</span> <span class="kw">max</span> values)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        height <span class="dv">120</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        bars (map-indexed</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>               (<span class="kw">fn</span> [i [label <span class="kw">val</span>]]</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                 (<span class="kw">let</span> [x (<span class="kw">+</span> <span class="dv">10</span> (<span class="kw">*</span> i (<span class="kw">+</span> bar-width gap)))</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                       bar-height (<span class="kw">*</span> (<span class="kw">/</span> <span class="kw">val</span> max-val) height)]</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>                   [<span class="at">:g</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>                     [<span class="at">:rect</span> {<span class="at">:x</span> x <span class="at">:y</span> (<span class="kw">-</span> height bar-height)</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:width</span> bar-width <span class="at">:height</span> bar-height</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:fill</span> <span class="st">"steelblue"</span>}]</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>                     [<span class="at">:text</span> {<span class="at">:x</span> (<span class="kw">+</span> x (<span class="kw">/</span> bar-width <span class="dv">2</span>)) <span class="at">:y</span> (<span class="kw">+</span> height <span class="dv">15</span>)</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>                             <span class="at">:text-anchor</span> <span class="st">"middle"</span> <span class="at">:font-size</span> <span class="st">"12"</span>}</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>                       label]]))</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>               (<span class="kw">map</span> <span class="kw">vector</span> labels values))</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>        total-width (<span class="kw">+</span> <span class="dv">20</span> (<span class="kw">*</span> (<span class="kw">count</span> labels) (<span class="kw">+</span> bar-width gap)))]</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">with-meta</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>      (<span class="kw">into</span> [<span class="at">:svg</span> {<span class="at">:width</span> total-width <span class="at">:height</span> (<span class="kw">+</span> height <span class="dv">25</span>)</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>                   <span class="at">:xmlns</span> <span class="st">"http://www.w3.org/2000/svg"</span>}] bars)</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>      {<span class="at">:kindly/kind</span> <span class="at">:kind/hiccup</span>})))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="va">#'user/bar-chart</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="va">#'user/bar-chart</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Now simply calling the function renders the chart — no annotation needed at the call site:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>(bar-chart [<span class="st">"a"</span> <span class="st">"b"</span> <span class="st">"c"</span>] [<span class="dv">10</span> <span class="dv">20</span> <span class="dv">15</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>(bar-chart [<span class="st">"a"</span> <span class="st">"b"</span> <span class="st">"c"</span>] [<span class="dv">10</span> <span class="dv">20</span> <span class="dv">15</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <svg width="170" height="145" xmlns="http://www.w3.org/2000/svg"><g><rect x="10" y="60" width="40" height="60" fill="steelblue"></rect><text x="30" y="135" text-anchor="middle" font-size="12">a</text></g><g><rect x="60" y="0" width="40" height="120" fill="steelblue"></rect><text x="80" y="135" text-anchor="middle" font-size="12">b</text></g><g><rect x="110" y="30" width="40" height="90" fill="steelblue"></rect><text x="130" y="135" text-anchor="middle" font-size="12">c</text></g></svg>
 <p>This is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.</p>
 </section>
-<section id="why-wrap-strings-in-vectors" class="level2" data-number="2.6">
-<h2 data-number="2.6" class="anchored" data-anchor-id="why-wrap-strings-in-vectors"><span class="header-section-number">2.6</span> Why wrap strings in vectors?</h2>
+<section id="why-wrap-strings-in-vectors" class="level2" data-number="2.12">
+<h2 data-number="2.12" class="anchored" data-anchor-id="why-wrap-strings-in-vectors"><span class="header-section-number">2.12</span> Why wrap strings in vectors?</h2>
 <p>In Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So <code>^:kind/html "hello"</code> won’t work.</p>
 <p>The convention is to wrap the value in a vector:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/html</span> [<span class="st">"&lt;b&gt;hello&lt;/b&gt;"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/html</span> [<span class="st">"&lt;b&gt;hello&lt;/b&gt;"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <b>hello</b>
 <p>Janqua automatically unwraps the vector for <code>kind/html</code> and <code>kind/md</code>, extracting the first element for rendering.</p>
 </section>
-<section id="code-block-attributes" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">2.7</span> Code block attributes</h2>
+<section id="code-block-attributes" class="level2" data-number="2.13">
+<h2 data-number="2.13" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</h2>
 <p>These attributes go on the code fence and control display independently of Kindly. See the <a href="https://quarto.org/docs/reference/cells/">Quarto documentation on code cells</a> for more options.</p>
 <table class="caption-top table">
 <thead>
@@ -339,8 +468,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 <div>Only the rendered HTML appears — no source code shown</div>
 </section>
-<section id="summary" class="level2" data-number="2.8">
-<h2 data-number="2.8" class="anchored" data-anchor-id="summary"><span class="header-section-number">2.8</span> Summary</h2>
+<section id="summary" class="level2" data-number="2.14">
+<h2 data-number="2.14" class="anchored" data-anchor-id="summary"><span class="header-section-number">2.14</span> Summary</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -371,6 +500,51 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: left;">nothing (evaluates silently)</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;"><code>^:kind/mermaid</code></td>
+<td style="text-align: left;"><code>[string]</code></td>
+<td style="text-align: left;">Mermaid diagram</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>^:kind/graphviz</code></td>
+<td style="text-align: left;"><code>[string]</code></td>
+<td style="text-align: left;">Graphviz diagram</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>^:kind/tex</code></td>
+<td style="text-align: left;"><code>[string]</code></td>
+<td style="text-align: left;">LaTeX formula</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>^:kind/code</code></td>
+<td style="text-align: left;"><code>[string]</code></td>
+<td style="text-align: left;">syntax-highlighted code</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>^:kind/vega-lite</code></td>
+<td style="text-align: left;">map</td>
+<td style="text-align: left;">Vega-Lite chart</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>^:kind/plotly</code></td>
+<td style="text-align: left;">map</td>
+<td style="text-align: left;">Plotly chart</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>^:kind/echarts</code></td>
+<td style="text-align: left;">map</td>
+<td style="text-align: left;">ECharts chart</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>^:kind/cytoscape</code></td>
+<td style="text-align: left;">map</td>
+<td style="text-align: left;">Cytoscape graph</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>^:kind/highcharts</code></td>
+<td style="text-align: left;">map</td>
+<td style="text-align: left;">Highcharts chart</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><em>(none)</em></td>
 <td style="text-align: left;">any</td>
 <td style="text-align: left;">code output</td>
