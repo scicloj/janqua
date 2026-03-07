@@ -1,8 +1,10 @@
 ---
-title: "Jank Quickstart"
+title: "Live Demo"
 filters:
   - jank
 ---
+
+This page contains live Jank code — each block is evaluated during rendering, and the results appear below.
 
 ## Basics
 

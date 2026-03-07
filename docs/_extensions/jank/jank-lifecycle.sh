@@ -1,0 +1,1 @@
+../../../_extensions/jank/jank-lifecycle.sh

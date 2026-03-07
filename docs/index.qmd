@@ -1,0 +1,39 @@
+# Overview {.unnumbered}
+
+**janqua** is a [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
+
+Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
+
+## What is Quarto?
+
+[Quarto](https://quarto.org) is an open-source publishing system for technical documents. You write `.qmd` (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.
+
+Quarto supports several project types:
+
+- **Single documents** — a standalone `.qmd` file rendered to HTML
+- **[Websites](https://quarto.org/docs/websites/)** — multiple pages with navigation, like a documentation site
+- **[Books](https://quarto.org/docs/books/)** — chapters rendered as a navigable book (like this one)
+
+## What is Jank?
+
+[Jank](https://jank-lang.org) is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which janqua uses to evaluate code interactively during document rendering.
+
+## Clojure ecosystem connection
+
+[Clay](https://scicloj.github.io/clay) is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. [Clojure Civitas](https://clojurecivitas.org/), the community blog, is built this way.
+
+janqua brings a similar experience to Jank: you write Jank code directly in `.qmd` files, and the Quarto filter evaluates it during rendering. Both janqua and Clay use the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations, so code patterns are transferable between the two ecosystems.
+
+## How it works
+
+1. You write a `.qmd` file with `{.jank}` code blocks
+2. When Quarto renders the document, the janqua filter intercepts these blocks
+3. Each block is sent to a Jank nREPL server for evaluation
+4. Results are inserted into the document — as code output, HTML, or markdown — based on [Kindly annotations](kindly.qmd)
+
+```clojure
+^:kind/hiccup
+[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
+```
+
+The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Live Demo](example.qmd) to see evaluated examples.

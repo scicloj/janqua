@@ -1,0 +1,16 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "janqua"
+  subtitle: "Jank code in Quarto documents"
+  chapters:
+    - index.qmd
+    - getting-started.qmd
+    - kindly.qmd
+    - example.qmd
+
+format:
+  html:
+    theme: cosmo

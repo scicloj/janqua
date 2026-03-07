@@ -6,9 +6,9 @@ target
 .venv
 .jank-pid
 .jank-nrepl-port
-example.html
-example_files/
 /.quarto/
 **/*.quarto_ipynb
 CLAUDE.md
 .claude/
+docs/_book/
+docs/.quarto/

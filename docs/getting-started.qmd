@@ -1,0 +1,93 @@
+# Getting Started
+
+## Prerequisites
+
+1. **[Quarto](https://quarto.org/docs/get-started/)** — the publishing system
+2. **[Jank](https://jank-lang.org)** — the Jank compiler and REPL
+3. **[Babashka](https://github.com/babashka/babashka#installation)** — fast Clojure scripting runtime
+4. **[bbin](https://github.com/babashka/bbin#installation)** — tool installer for Babashka
+5. **clj-nrepl-eval** — nREPL client (install via bbin):
+
+```bash
+bbin install io.github.bhauman/clojure-mcp-light
+```
+
+Verify everything is available:
+
+```bash
+quarto --version
+jank --version
+bb --version
+clj-nrepl-eval --help
+```
+
+## Create a project
+
+```bash
+mkdir my-jank-doc
+cd my-jank-doc
+```
+
+## Install the extension
+
+Run this **inside your project directory** — it creates an `_extensions/` folder there:
+
+```bash
+quarto add scicloj/janqua
+```
+
+## Write a document
+
+Create a file called `hello.qmd`:
+
+````markdown
+---
+title: "Hello Jank"
+filters:
+  - jank
+---
+
+```{.jank}
+(+ 1 2 3)
+```
+
+```{.jank}
+^:kind/hiccup
+[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
+```
+````
+
+Note the `{.jank}` syntax — the dot prefix is required (it's Pandoc class syntax). The `filters: [jank]` in the frontmatter tells Quarto to use the janqua filter.
+
+## Render it
+
+```bash
+quarto render hello.qmd
+```
+
+This starts a Jank nREPL server (if one isn't already running), evaluates the code blocks, and produces `hello.html`.
+
+For a live-reloading workflow, use `quarto preview` instead — it re-renders automatically each time you save:
+
+```bash
+quarto preview hello.qmd
+```
+
+This opens a browser with live preview. Edit your `.qmd`, save, and the page refreshes with updated results. Press Ctrl-C to stop.
+
+## Managing the Jank process
+
+The Jank nREPL server starts on the first render and stays running for fast re-evaluation. You can manage it with the lifecycle script:
+
+```bash
+_extensions/jank/jank-lifecycle.sh status   # check if running
+_extensions/jank/jank-lifecycle.sh start    # start manually
+_extensions/jank/jank-lifecycle.sh stop     # stop when done
+```
+
+Stop the server when you're done working to free resources.
+
+## Next steps
+
+- Learn about [Kindly annotations](kindly.qmd) to render HTML, SVG, charts, and tables
+- See the [Live Demo](example.qmd) for evaluated examples

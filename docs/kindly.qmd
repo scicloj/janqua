@@ -1,0 +1,105 @@
+# Kindly Annotations
+
+[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.
+
+Without an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.
+
+## `^:kind/hiccup` — HTML from data
+
+Converts a [hiccup](https://github.com/weavejester/hiccup) vector to HTML. Hiccup represents HTML as nested Clojure vectors:
+
+````markdown
+```{.jank}
+^:kind/hiccup
+[:svg {:width "100" :height "100" :xmlns "http://www.w3.org/2000/svg"}
+  [:circle {:cx "50" :cy "50" :r "40" :fill "coral"}]]
+```
+````
+
+The vector `[:tag {:attr "value"} content]` becomes `<tag attr="value">content</tag>`.
+
+## `^:kind/html` — raw HTML
+
+Renders a string as raw HTML. Since strings can't hold metadata in Clojure, wrap the expression in a vector:
+
+````markdown
+```{.jank}
+^:kind/html
+[(str "<b>bold</b> and <em>italic</em>")]
+```
+````
+
+The vector is automatically unwrapped — janqua extracts the first element for rendering.
+
+## `^:kind/md` — markdown
+
+Renders a string as markdown. Same wrapping rule as `kind/html`:
+
+````markdown
+```{.jank}
+^:kind/md
+[(str "| a | b |\n| --- | --- |\n| 1 | 2 |")]
+```
+````
+
+## `^:kind/hidden` — suppress output
+
+Evaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:
+
+````markdown
+```{.jank}
+^:kind/hidden
+[(def my-data [1 2 3])]
+```
+````
+
+## Long form
+
+The shorthand `^:kind/hiccup` is equivalent to the explicit `^{:kindly/kind :kind/hiccup}`:
+
+````markdown
+```{.jank}
+^{:kindly/kind :kind/hiccup}
+[:div "hello"]
+```
+````
+
+Use whichever you prefer. The shorthand is more concise; the long form is explicit.
+
+## Why wrap strings in vectors?
+
+In Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So `^:kind/html "hello"` won't work.
+
+The convention is to wrap the value in a vector:
+
+```clojure
+^:kind/html ["<b>hello</b>"]
+```
+
+janqua automatically unwraps the vector for `kind/html` and `kind/md`, extracting the first element for rendering.
+
+## Code block attributes
+
+These attributes go on the code fence and control display independently of Kindly:
+
+| Attribute | Effect |
+|:----------|:-------|
+| `echo=false` | Hide the source code, show only the result |
+| `eval=false` | Show code without evaluating it |
+
+````markdown
+```{.jank echo=false}
+^:kind/hiccup
+[:div "Only the rendered HTML appears — no source code shown"]
+```
+````
+
+## Summary
+
+| Kind | Value type | Renders as |
+|:-----|:-----------|:-----------|
+| `^:kind/hiccup` | vector (hiccup) | HTML |
+| `^:kind/html` | `[string]` | raw HTML |
+| `^:kind/md` | `[string]` | markdown |
+| `^:kind/hidden` | any | nothing (evaluates silently) |
+| _(none)_ | any | code output |
