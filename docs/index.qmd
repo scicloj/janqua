@@ -46,7 +46,7 @@ Janqua brings a similar experience to Jank: you write Jank code directly in `.qm
 ```{.jank}
 ^:kind/hiccup
 [:div {:style "color: coral; font-size: 24px;"}
-  jjjjj"Hello from Jank!"]
+  "Hello from Jank!"]
 ```
 
 The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Live Demo](example.qmd) to see evaluated examples.
@@ -58,3 +58,10 @@ The Jank process starts automatically on first render and stays running for fast
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
 - **[Clay](https://scicloj.github.io/clay) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
 - **Jupyter support** — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments
+
+## Chapters
+
+- [Getting Started](getting-started.qmd) — prerequisites, installation, first document, rendering
+- [Kindly Annotations](kindly.qmd) — controlling output format with metadata
+- [How It Works](how-it-works.qmd) — architecture, port discovery, process management, evaluation pipeline
+- [Live Demo](example.qmd) — evaluated examples of all output kinds

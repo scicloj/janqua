@@ -6,17 +6,13 @@ This chapter explains the internals of Janqua — how your `{.jank}` code blocks
 
 Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class, evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
 
-```
-┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐
-│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │
-│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │
-└─────────┘     └────────┘     └──────┬──────┘     └──────────┘
-                                      │
-                                      ▼
-                               ┌──────────────┐
-                               │ Jank nREPL   │
-                               │ server       │
-                               └──────────────┘
+```{mermaid}
+flowchart LR
+  qmd[.qmd file] --> pandoc[Pandoc]
+  pandoc --> lua[Lua filter]
+  lua --> nrepl[Jank nREPL server]
+  nrepl --> lua
+  lua --> out[HTML / PDF]
 ```
 
 The filter has two phases, executed in order:
