@@ -57,7 +57,7 @@ filters:
 ```
 ````
 
-Note the `{.jank}` syntax — the dot prefix is required (it's Pandoc class syntax). The `filters: [jank]` in the frontmatter tells Quarto to use the janqua filter.
+Note the `{.jank}` syntax — the dot prefix is required (it's Pandoc class syntax). The `filters: [jank]` in the frontmatter tells Quarto to use the Janqua filter.
 
 ## Render it
 

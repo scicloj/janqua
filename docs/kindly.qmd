@@ -1,6 +1,6 @@
 # Kindly Annotations
 
-[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.
+[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.
 
 Without an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.
 
@@ -29,7 +29,7 @@ Renders a string as raw HTML. Since strings can't hold metadata in Clojure, wrap
 ```
 ````
 
-The vector is automatically unwrapped — janqua extracts the first element for rendering.
+The vector is automatically unwrapped — Janqua extracts the first element for rendering.
 
 ## `^:kind/md` — markdown
 
@@ -76,7 +76,7 @@ The convention is to wrap the value in a vector:
 ^:kind/html ["<b>hello</b>"]
 ```
 
-janqua automatically unwraps the vector for `kind/html` and `kind/md`, extracting the first element for rendering.
+Janqua automatically unwraps the vector for `kind/html` and `kind/md`, extracting the first element for rendering.
 
 ## Code block attributes
 
