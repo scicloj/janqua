@@ -2,7 +2,7 @@
 
 A [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
 
-Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more.
+Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
 
 ## Prerequisites
 
@@ -51,14 +51,39 @@ Then write Jank code blocks:
 
 The filter automatically starts a Jank nREPL server if one isn't running.
 
-### Output modes
+### Rendering with Kindly
 
-| Syntax | Result |
-|:-------|:-------|
-| `` ```{.jank} `` | Code block (default) |
-| `` ```{.jank output=html} `` | Raw HTML — SVG, Plotly charts, etc. |
-| `` ```{.jank output=markdown} `` | Parsed markdown — tables, etc. |
-| `` ```{.jank output=hidden} `` | Evaluate silently (no code, no output) |
+Annotate values with Kindly metadata to control how they render:
+
+| Kind | Usage | Effect |
+|:-----|:------|:-------|
+| `:kind/hiccup` | `^:kind/hiccup [:div "hello"]` | Converts hiccup to HTML |
+| `:kind/html` | `^:kind/html ["<b>bold</b>"]` | Renders string as raw HTML |
+| `:kind/md` | `^:kind/md ["# Title"]` | Renders string as markdown |
+| `:kind/hidden` | `^:kind/hidden [expr]` | Evaluates but hides the result |
+
+For `:kind/html` and `:kind/md`, wrap string expressions in a vector
+(strings can't hold metadata):
+
+````markdown
+```{.jank}
+^:kind/hiccup
+[:svg {:width "100" :height "100" :xmlns "http://www.w3.org/2000/svg"}
+  [:circle {:cx "50" :cy "50" :r "40" :fill "coral"}]]
+```
+
+```{.jank}
+^:kind/html
+[(str "<b>" "computed" "</b>")]
+```
+
+```{.jank}
+^:kind/md
+[(str "| a | b |\n| --- | --- |\n| 1 | 2 |")]
+```
+````
+
+The long form `^{:kindly/kind :kind/hiccup}` also works.
 
 ### Additional attributes
 
@@ -66,26 +91,6 @@ The filter automatically starts a Jank nREPL server if one isn't running.
 |:----------|:-------|
 | `echo=false` | Hide the source code, show only the result |
 | `eval=false` | Show code without evaluating it |
-
-### Example: inline SVG
-
-````markdown
-```{.jank output=html}
-(str "<svg width='100' height='100' xmlns='http://www.w3.org/2000/svg'>"
-     "<circle cx='50' cy='50' r='40' fill='coral'/>"
-     "</svg>")
-```
-````
-
-### Example: markdown table
-
-````markdown
-```{.jank output=markdown}
-(let [header "| x | x² |\n| --- | --- |"
-      rows (map (fn [x] (str "| " x " | " (* x x) " |")) (range 1 6))]
-  (clojure.string/join "\n" (cons header rows)))
-```
-````
 
 ## Managing the Jank process
 
