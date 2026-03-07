@@ -120,4 +120,4 @@ quarto preview example.qmd
 
 ## License
 
-EPL-2.0
+MIT
