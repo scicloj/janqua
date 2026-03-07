@@ -10,16 +10,6 @@
     ]
   },
   {
-    "objectID": "index.html#status",
-    "href": "index.html#status",
-    "title": "Janqua",
-    "section": "Status 🚧",
-    "text": "Status 🚧\n\n\n\n\n\n\nWarning\n\n\n\nJanqua is at an experimental stage. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on GitHub or reach out on the Clojurians Zulip chat.",
-    "crumbs": [
-      "Overview"
-    ]
-  },
-  {
     "objectID": "index.html#what-is-quarto",
     "href": "index.html#what-is-quarto",
     "title": "Janqua",

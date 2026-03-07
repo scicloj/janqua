@@ -189,7 +189,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
   <ul class="collapse">
-  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status 🚧</a></li>
   <li><a href="#what-is-quarto" id="toc-what-is-quarto" class="nav-link" data-scroll-target="#what-is-quarto">What is Quarto?</a></li>
   <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
   <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
@@ -227,22 +226,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 class="unnumbered">Overview</h1>
 <p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
 <p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline <a href="https://en.wikipedia.org/wiki/SVG">SVG</a>, <a href="https://plotly.com/javascript/">Plotly.js</a> charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with <code>quarto preview</code>, which re-renders on every save. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the <a href="https://clojure.org/">Clojure</a> ecosystem.</p>
-<section id="status" class="level2">
-<h2 class="anchored" data-anchor-id="status">Status 🚧</h2>
-<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Warning
+Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <p>Janqua is at an <strong>experimental stage</strong>. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on <a href="https://github.com/scicloj/janqua/issues">GitHub</a> or reach out on the <a href="https://scicloj.github.io/docs/community/chat/">Clojurians Zulip chat</a>.</p>
 </div>
 </div>
-</section>
 <section id="what-is-quarto" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
 <p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
