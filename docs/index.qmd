@@ -48,3 +48,4 @@ The Jank process starts automatically on first render and stays running for fast
 - **Broader Kindly support** — more visualization kinds (tables, Vega-Lite, images, etc.)
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
 - **[Clay](https://scicloj.github.io/clay) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
+- **Jupyter support** — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments
