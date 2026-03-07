@@ -62,6 +62,64 @@ Evaluates the code but hides the result. The code itself is still shown. Useful 
 [(def my-data [1 2 3])]
 ```
 
+## `^:kind/mermaid` — Mermaid diagrams
+
+Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. Quarto has native Mermaid support, so no external dependencies are needed:
+
+```{clojure .jank}
+^:kind/mermaid
+["graph LR\n  A[Start] --> B{Decision}\n  B -->|Yes| C[OK]\n  B -->|No| D[Cancel]"]
+```
+
+## `^:kind/graphviz` — Graphviz diagrams
+
+Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. Requires Graphviz to be installed:
+
+```{clojure .jank}
+^:kind/graphviz
+["digraph { rankdir=LR; A -> B -> C; A -> C; }"]
+```
+
+## `^:kind/tex` — LaTeX formulas
+
+Renders a string as a LaTeX formula via MathJax:
+
+```{clojure .jank}
+^:kind/tex
+["\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}"]
+```
+
+## `^:kind/code` — code display
+
+Renders a string as syntax-highlighted Clojure code (for display, not evaluation):
+
+```{clojure .jank}
+^:kind/code
+["(defn hello [name]\n  (str \"Hello, \" name \"!\"))"]
+```
+
+## `^:kind/vega-lite` — Vega-Lite charts
+
+Renders a map as a [Vega-Lite](https://vega.github.io/vega-lite/) chart. The JS library is loaded automatically from CDN:
+
+```{clojure .jank}
+^:kind/vega-lite
+{:data {:values [{:x "A" :y 28} {:x "B" :y 55} {:x "C" :y 43}]}
+ :mark :bar
+ :encoding {:x {:field :x :type :nominal}
+            :y {:field :y :type :quantitative}}}
+```
+
+## `^:kind/plotly` — Plotly charts
+
+Renders a map as a [Plotly.js](https://plotly.com/javascript/) chart. The spec should have `:data` and `:layout` keys:
+
+```{clojure .jank}
+^:kind/plotly
+{:data [{:x [1 2 3 4] :y [10 15 13 17] :type "scatter" :mode "lines+markers"}]
+ :layout {:title "Simple Plotly Chart"}}
+```
+
 ## Annotating in library functions
 
 The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with [`with-meta`](https://clojuredocs.org/clojure.core/with-meta) or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
@@ -135,4 +193,13 @@ These attributes go on the code fence and control display independently of Kindl
 | `^:kind/html` | `[string]` | raw HTML |
 | `^:kind/md` | `[string]` | markdown |
 | `^:kind/hidden` | any | nothing (evaluates silently) |
+| `^:kind/mermaid` | `[string]` | Mermaid diagram |
+| `^:kind/graphviz` | `[string]` | Graphviz diagram |
+| `^:kind/tex` | `[string]` | LaTeX formula |
+| `^:kind/code` | `[string]` | syntax-highlighted code |
+| `^:kind/vega-lite` | map | Vega-Lite chart |
+| `^:kind/plotly` | map | Plotly chart |
+| `^:kind/echarts` | map | ECharts chart |
+| `^:kind/cytoscape` | map | Cytoscape graph |
+| `^:kind/highcharts` | map | Highcharts chart |
 | _(none)_ | any | code output |

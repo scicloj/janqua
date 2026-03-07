@@ -16,8 +16,18 @@
 --
 -- Kindly convention:
 --   ^:kind/hiccup [:div ...]  — auto-converts hiccup to HTML
---   ^:kind/html "..."         — renders string as raw HTML (on metadata-capable values)
+--   ^:kind/html "..."         — renders string as raw HTML
+--   ^:kind/md "..."           — renders string as markdown
 --   ^:kind/hidden [...]       — suppresses output (code still shown)
+--   ^:kind/mermaid "..."      — Mermaid diagram (Quarto native)
+--   ^:kind/graphviz "..."     — Graphviz DOT diagram (Quarto native)
+--   ^:kind/tex "..."          — TeX/LaTeX formula
+--   ^:kind/code "..."         — syntax-highlighted Clojure code display
+--   ^:kind/vega-lite {...}    — Vega-Lite chart (via CDN)
+--   ^:kind/plotly {...}       — Plotly chart (via CDN)
+--   ^:kind/echarts {...}      — ECharts chart (via CDN)
+--   ^:kind/cytoscape {...}    — Cytoscape graph (via CDN)
+--   ^:kind/highcharts {...}   — Highcharts chart (via CDN)
 
 local jank_port = nil
 
@@ -186,9 +196,45 @@ local janqua_bootstrap = [=[
            (apply str (map janqua-hiccup->html children))
            "</" tag ">"))
     :else (str form)))
+(defn janqua-to-json [v]
+  (cond
+    (nil? v) "null"
+    (true? v) "true"
+    (false? v) "false"
+    (string? v) (str "\"" v "\"")
+    (keyword? v) (str "\"" (name v) "\"")
+    (number? v) (str v)
+    (vector? v) (str "[" (clojure.string/join ", " (map janqua-to-json v)) "]")
+    (seq? v) (str "[" (clojure.string/join ", " (map janqua-to-json v)) "]")
+    (map? v) (str "{"
+               (clojure.string/join ", "
+                 (map (fn [[k val]]
+                        (str (janqua-to-json k) ": " (janqua-to-json val)))
+                      v))
+               "}")
+    :else (str v)))
 ]=]
 
 local janqua_bootstrapped = false
+local janqua_div_counter = 0
+
+-- Generate a unique div ID for JS-rendered outputs.
+local function next_div_id()
+  janqua_div_counter = janqua_div_counter + 1
+  return "janqua-plot-" .. janqua_div_counter
+end
+
+-- Convert a Clojure value to JSON via janqua-to-json in the Jank session.
+-- Returns JSON string or nil on error.
+local function clj_to_json(clj_value)
+  local raw, err = eval_jank_raw("(janqua-to-json " .. clj_value .. ")")
+  if err then return nil end
+  local json_value = parse_nrepl_output(raw)
+  if json_value then
+    return unquote_clj_string(json_value)
+  end
+  return nil
+end
 
 -- Send raw code to Jank via clj-nrepl-eval.
 -- Returns: raw output string, error string (may be nil)
@@ -258,7 +304,7 @@ local function wrap_with_kindly(code)
     .. ' {:janqua/kind kind__janqua'
     .. ' :janqua/value (pr-str'
     .. ' (if (or (get-in m__janqua [:kindly/options :wrapped-value])'
-    .. '         (and (#{:kind/html :kind/md :kind/markdown} kind__janqua)'
+    .. '         (and (#{:kind/html :kind/md :kind/markdown :kind/mermaid :kind/graphviz :kind/tex :kind/code} kind__janqua)'
     .. '              (vector? v__janqua)))'
     .. '   (first v__janqua) v__janqua))})'
     .. ' (when m__janqua'
@@ -354,6 +400,24 @@ function CodeBlock(el)
         output_mode = "markdown"
       elseif kind == ":kind/hidden" then
         output_mode = "hidden"
+      elseif kind == ":kind/mermaid" then
+        output_mode = "mermaid"
+      elseif kind == ":kind/graphviz" then
+        output_mode = "graphviz"
+      elseif kind == ":kind/tex" then
+        output_mode = "tex"
+      elseif kind == ":kind/code" then
+        output_mode = "code-display"
+      elseif kind == ":kind/vega-lite" then
+        output_mode = "vega-lite"
+      elseif kind == ":kind/plotly" then
+        output_mode = "plotly"
+      elseif kind == ":kind/echarts" then
+        output_mode = "echarts"
+      elseif kind == ":kind/cytoscape" then
+        output_mode = "cytoscape"
+      elseif kind == ":kind/highcharts" then
+        output_mode = "highcharts"
       end
     end
   end
@@ -401,6 +465,98 @@ function CodeBlock(el)
         local doc = pandoc.read(md, "markdown")
         for _, block in ipairs(doc.blocks) do
           table.insert(blocks, block)
+        end
+      end
+    elseif output_mode == "mermaid" then
+      -- Mermaid diagram — Quarto renders natively
+      if value then
+        local diagram = unquote_clj_string(value)
+        table.insert(blocks, pandoc.CodeBlock(diagram, pandoc.Attr("", {"mermaid"})))
+      end
+    elseif output_mode == "graphviz" then
+      -- Graphviz DOT diagram — Quarto renders natively
+      if value then
+        local dot = unquote_clj_string(value)
+        table.insert(blocks, pandoc.CodeBlock(dot, pandoc.Attr("", {"dot"})))
+      end
+    elseif output_mode == "tex" then
+      -- TeX formula — wrap in $$...$$ and render as markdown
+      if value then
+        local tex = unquote_clj_string(value)
+        local md = "$$" .. tex .. "$$"
+        local doc = pandoc.read(md, "markdown")
+        for _, block in ipairs(doc.blocks) do
+          table.insert(blocks, block)
+        end
+      end
+    elseif output_mode == "code-display" then
+      -- Syntax-highlighted code display (not evaluated)
+      if value then
+        local code_str = unquote_clj_string(value)
+        table.insert(blocks, pandoc.CodeBlock(code_str, pandoc.Attr("", {"clojure"})))
+      end
+    elseif output_mode == "vega-lite" then
+      -- Vega-Lite chart via vegaEmbed
+      if value then
+        local json = clj_to_json(unquote_clj_string(value))
+        if json then
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '"></div>'
+            .. '<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>'
+            .. '<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>'
+            .. '<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>'
+            .. '<script>vegaEmbed("#' .. div_id .. '", ' .. json .. ');</script>'
+          table.insert(blocks, pandoc.RawBlock("html", html))
+        end
+      end
+    elseif output_mode == "plotly" then
+      -- Plotly chart
+      if value then
+        local json = clj_to_json(unquote_clj_string(value))
+        if json then
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '"></div>'
+            .. '<script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>'
+            .. '<script>var spec=' .. json .. ';'
+            .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
+          table.insert(blocks, pandoc.RawBlock("html", html))
+        end
+      end
+    elseif output_mode == "echarts" then
+      -- ECharts chart
+      if value then
+        local json = clj_to_json(unquote_clj_string(value))
+        if json then
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
+            .. '<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>'
+            .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
+          table.insert(blocks, pandoc.RawBlock("html", html))
+        end
+      end
+    elseif output_mode == "cytoscape" then
+      -- Cytoscape graph
+      if value then
+        local json = clj_to_json(unquote_clj_string(value))
+        if json then
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
+            .. '<script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js"></script>'
+            .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
+            .. 'cytoscape(spec);</script>'
+          table.insert(blocks, pandoc.RawBlock("html", html))
+        end
+      end
+    elseif output_mode == "highcharts" then
+      -- Highcharts chart
+      if value then
+        local json = clj_to_json(unquote_clj_string(value))
+        if json then
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '"></div>'
+            .. '<script src="https://code.highcharts.com/highcharts.js"></script>'
+            .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
+          table.insert(blocks, pandoc.RawBlock("html", html))
         end
       end
     else

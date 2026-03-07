@@ -32,29 +32,6 @@ Printed output appears alongside the return value:
 (do (println "computing...") (* 6 7))
 ```
 
-## Setup helpers
-
-```{clojure .jank}
-^:kind/hidden
-[(defn to-json [v]
-   (cond
-     (nil? v) "null"
-     (true? v) "true"
-     (false? v) "false"
-     (string? v) (str "\"" v "\"")
-     (keyword? v) (str "\"" (name v) "\"")
-     (number? v) (str v)
-     (vector? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
-     (seq? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
-     (map? v) (str "{"
-                (clojure.string/join ", "
-                  (map (fn [[k val]]
-                         (str (to-json k) ": " (to-json val)))
-                       v))
-                "}")
-     :else (str v)))]
-```
-
 ## Hiccup
 
 Annotate a vector with `^:kind/hiccup` to render it as HTML:
@@ -92,20 +69,18 @@ Since strings can't hold metadata, wrap the expression in a vector:
 
 ## [Plotly.js](https://plotly.com/javascript/) chart
 
+Use `^:kind/plotly` with a map containing `:data` and `:layout` keys:
+
 ```{clojure .jank}
-^:kind/html
-[(let [xs (vec (map #(* 0.5 %) (range 20)))
-       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]
-   (str "<div id=\"plot1\"></div>"
-        "<script src=\"https://cdn.plot.ly/plotly-2.35.0.min.js\"></script>"
-        "<script>Plotly.newPlot('plot1', "
-        (to-json {:data [{:x xs :y ys
-                          :type "scatter" :mode "lines+markers"
-                          :name "y = x² - 0.5x"}]
-                  :layout {:title "Quadratic from Jank"
-                           :xaxis {:title "x"}
-                           :yaxis {:title "y"}}})
-        ");</script>"))]
+(let [xs (vec (map #(* 0.5 %) (range 20)))
+      ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]
+  ^:kind/plotly
+  {:data [{:x xs :y ys
+           :type "scatter" :mode "lines+markers"
+           :name "y = x^2 - 0.5x"}]
+   :layout {:title "Quadratic from Jank"
+            :xaxis {:title "x"}
+            :yaxis {:title "y"}}})
 ```
 
 ## Markdown table
@@ -141,20 +116,24 @@ You can also build formulas from computed values:
         "$$\\sum_{k=1}^{" n "} k = \\frac{" n " \\cdot " (+ n 1) "}{2} = " result "$$"))]
 ```
 
+Or use `^:kind/tex` for a standalone formula:
+
+```{clojure .jank}
+^:kind/tex
+["\\sum_{k=1}^{n} k^2 = \\frac{n(n+1)(2n+1)}{6}"]
+```
+
 ## Annotating in library functions
 
-Metadata doesn't have to be in the code block — functions can attach it to their return values with `with-meta`. Define a `bar-chart` function that produces a Plotly chart and tags it as `:kind/html`:
+Metadata doesn't have to be in the code block — functions can attach it to their return values with `with-meta`. Define a `bar-chart` function that produces a Plotly chart and tags it as `:kind/plotly`:
 
 ```{clojure .jank}
 ^:kind/hidden
 [(defn bar-chart [labels values]
    (with-meta
-     [(str "<div id='bar1'></div>"
-           "<script>Plotly.newPlot('bar1', "
-           (to-json {:data [{:x labels :y values :type "bar"}]
-                     :layout {:title "Bar Chart"}})
-           ");</script>")]
-     {:kindly/kind :kind/html}))]
+     {:data [{:x labels :y values :type "bar"}]
+      :layout {:title "Bar Chart"}}
+     {:kindly/kind :kind/plotly}))]
 ```
 
 Now just call the function — no annotation needed at the call site:
