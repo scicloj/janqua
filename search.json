@@ -13,8 +13,8 @@
     "objectID": "index.html#status",
     "href": "index.html#status",
     "title": "Janqua",
-    "section": "Status",
-    "text": "Status\nexperimental",
+    "section": "Status 🚧",
+    "text": "Status 🚧\n\n\n\n\n\n\nWarning\n\n\n\nJanqua is at an experimental stage. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on GitHub or reach out on the Clojurians Zulip chat.",
     "crumbs": [
       "Overview"
     ]
@@ -54,7 +54,7 @@
     "href": "index.html#how-it-works",
     "title": "Janqua",
     "section": "How it works",
-    "text": "How it works\n\nYou write a .qmd file with {.clojure .jank} code blocks\nWhen Quarto renders the document, the Janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"}\n  \"Hello from Jank!\"]\nHello from Jank!\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
+    "text": "How it works\n\nYou write a .qmd file with {.clojure .jank} code blocks\nWhen Quarto renders the document, the Janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"}\n  \"Hello from Jank!\"]\nHello from Jank!\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
     "crumbs": [
       "Overview"
     ]
@@ -64,7 +64,7 @@
     "href": "index.html#future-goals",
     "title": "Janqua",
     "section": "Future goals",
-    "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, Vega-Lite, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand\nJupyter support — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments",
+    "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand\nJupyter support — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments",
     "crumbs": [
       "Overview"
     ]
@@ -84,7 +84,7 @@
     "href": "getting-started.html",
     "title": "1  Getting Started",
     "section": "",
-    "text": "1.1 Prerequisites\nVerify everything is available:",
+    "text": "1.1 Prerequisites\nVerify everything is available:\nOptional: Graphviz is needed for ^:kind/graphviz diagrams (dot must be on your PATH).",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -124,7 +124,7 @@
     "href": "getting-started.html#write-a-document",
     "title": "1  Getting Started",
     "section": "1.4 Write a document",
-    "text": "1.4 Write a document\nCreate a file called hello.qmd:\n---\ntitle: \"Hello Jank\"\nfilters:\n  - jank\n---\n\n```{.clojure .jank}\n(+ 1 2 3)\n```\n\n```{.clojure .jank}\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\n```\nNote the {.clojure .jank} syntax: clojure enables syntax highlighting (in editors and rendered output), and .jank tells the Janqua filter to evaluate the block. The dot prefix on .jank is Pandoc class syntax. The filters: [jank] in the frontmatter tells Quarto to use the Janqua filter.",
+    "text": "1.4 Write a document\nCreate a file called hello.qmd:\n---\ntitle: \"Hello Jank\"\nfilters:\n  - jank\n---\n\n```{.clojure .jank}\n(+ 1 2 3)\n```\n\n```{.clojure .jank}\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\n```\nNote the {.clojure .jank} syntax: .clojure enables syntax highlighting (in editors and rendered output), and .jank tells the Janqua filter to evaluate the block. Both use dot prefixes — that’s Pandoc class syntax. The filters: [jank] in the frontmatter tells Quarto to use the Janqua filter.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -224,7 +224,7 @@
     "href": "kindly.html#kindmermaid-mermaid-diagrams",
     "title": "2  Kindly Annotations",
     "section": "2.5 ^:kind/mermaid — Mermaid diagrams",
-    "text": "2.5 ^:kind/mermaid — Mermaid diagrams\nRenders a string as a Mermaid diagram. Quarto has native Mermaid support, so no external dependencies are needed:\n^:kind/mermaid\n[\"graph LR\\n  A[Start] --&gt; B{Decision}\\n  B --&gt;|Yes| C[OK]\\n  B --&gt;|No| D[Cancel]\"]",
+    "text": "2.5 ^:kind/mermaid — Mermaid diagrams\nRenders a string as a Mermaid diagram. The Mermaid JS library is loaded automatically from CDN:\n^:kind/mermaid\n[\"graph LR\\n  A[Start] --&gt; B{Decision}\\n  B --&gt;|Yes| C[OK]\\n  B --&gt;|No| D[Cancel]\"]",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -294,7 +294,7 @@
     "href": "kindly.html#why-wrap-strings-in-vectors",
     "title": "2  Kindly Annotations",
     "section": "2.12 Why wrap strings in vectors?",
-    "text": "2.12 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nhello\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
+    "text": "2.12 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nhello\nJanqua automatically unwraps the vector for all string-valued kinds (kind/html, kind/md, kind/mermaid, kind/graphviz, kind/tex, kind/code), extracting the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]

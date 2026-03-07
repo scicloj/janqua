@@ -135,6 +135,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Janqua</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/scicloj/janqua" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -186,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
   <ul class="collapse">
-  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status</a></li>
+  <li><a href="#status" id="toc-status" class="nav-link" data-scroll-target="#status">Status 🚧</a></li>
   <li><a href="#what-is-quarto" id="toc-what-is-quarto" class="nav-link" data-scroll-target="#what-is-quarto">What is Quarto?</a></li>
   <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
   <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
@@ -195,7 +198,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#chapters" id="toc-chapters" class="nav-link" data-scroll-target="#chapters">Chapters</a></li>
   </ul></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -224,22 +227,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h1 class="unnumbered">Overview</h1>
 <p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
 <p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline <a href="https://en.wikipedia.org/wiki/SVG">SVG</a>, <a href="https://plotly.com/javascript/">Plotly.js</a> charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with <code>quarto preview</code>, which re-renders on every save. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the <a href="https://clojure.org/">Clojure</a> ecosystem.</p>
-<div class="callout callout-style-default callout-note callout-titled">
+<section id="status" class="level2">
+<h2 class="anchored" data-anchor-id="status">Status 🚧</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+Warning
 </div>
 </div>
 <div class="callout-body-container callout-body">
 <p>Janqua is at an <strong>experimental stage</strong>. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on <a href="https://github.com/scicloj/janqua/issues">GitHub</a> or reach out on the <a href="https://scicloj.github.io/docs/community/chat/">Clojurians Zulip chat</a>.</p>
 </div>
 </div>
-<section id="status" class="level2">
-<h2 class="anchored" data-anchor-id="status">Status</h2>
-<p>experimental</p>
 </section>
 <section id="what-is-quarto" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
@@ -266,7 +268,7 @@ Note
 <li>You write a <code>.qmd</code> file with <code>{.clojure .jank}</code> code blocks</li>
 <li>When Quarto renders the document, the Janqua filter intercepts these blocks</li>
 <li>Each block is sent to a Jank nREPL server for evaluation</li>
-<li>Results are inserted into the document — as code output, HTML, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
+<li>Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
 </ol>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>}</span>
@@ -278,7 +280,7 @@ Note
 <h2 class="anchored" data-anchor-id="future-goals">Future goals</h2>
 <ul>
 <li><strong><a href="https://clojurecivitas.org/">Clojure Civitas</a> integration</strong> — enabling community members to publish Jank posts on the blog</li>
-<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, <a href="https://vega.github.io/vega-lite/">Vega-Lite</a>, images, etc.)</li>
+<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, images, etc.)</li>
 <li><strong>Easier setup</strong> — reducing the number of prerequisites and simplifying installation</li>
 <li><strong><a href="https://scicloj.github.io/clay">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
 <li><strong>Jupyter support</strong> — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments</li>
@@ -712,4 +714,4 @@ Note
 
 
 
-</body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

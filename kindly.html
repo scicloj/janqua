@@ -165,6 +165,9 @@ window.Quarto = {
       </a>
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Janqua</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/scicloj/janqua" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -229,7 +232,7 @@ window.Quarto = {
   <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</a></li>
   <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">2.14</span> Summary</a></li>
   </ul>
-</nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -311,7 +314,7 @@ window.Quarto = {
 </section>
 <section id="kindmermaid-mermaid-diagrams" class="level2" data-number="2.5">
 <h2 data-number="2.5" class="anchored" data-anchor-id="kindmermaid-mermaid-diagrams"><span class="header-section-number">2.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</h2>
-<p>Renders a string as a <a href="https://mermaid.js.org/">Mermaid</a> diagram. Quarto has native Mermaid support, so no external dependencies are needed:</p>
+<p>Renders a string as a <a href="https://mermaid.js.org/">Mermaid</a> diagram. The Mermaid JS library is loaded automatically from CDN:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/mermaid</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"graph LR</span><span class="sc">\n</span><span class="st">  A[Start] --&gt; B{Decision}</span><span class="sc">\n</span><span class="st">  B --&gt;|Yes| C[OK]</span><span class="sc">\n</span><span class="st">  B --&gt;|No| D[Cancel]"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="janqua-plot-1"></div><script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";const el = document.getElementById("janqua-plot-1");const {svg} = await mermaid.render("janqua-plot-1-svg", "graph LR\n  A[Start] --> B{Decision}\n  B -->|Yes| C[OK]\n  B -->|No| D[Cancel]");el.innerHTML = svg;</script>
@@ -443,7 +446,7 @@ window.Quarto = {
 <p>The convention is to wrap the value in a vector:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/html</span> [<span class="st">"&lt;b&gt;hello&lt;/b&gt;"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <b>hello</b>
-<p>Janqua automatically unwraps the vector for <code>kind/html</code> and <code>kind/md</code>, extracting the first element for rendering.</p>
+<p>Janqua automatically unwraps the vector for all string-valued kinds (<code>kind/html</code>, <code>kind/md</code>, <code>kind/mermaid</code>, <code>kind/graphviz</code>, <code>kind/tex</code>, <code>kind/code</code>), extracting the first element for rendering.</p>
 </section>
 <section id="code-block-attributes" class="level2" data-number="2.13">
 <h2 data-number="2.13" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</h2>
@@ -973,4 +976,4 @@ window.Quarto = {
 
 
 
-</body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
