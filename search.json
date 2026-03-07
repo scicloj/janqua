@@ -54,7 +54,7 @@
     "href": "index.html#future-goals",
     "title": "Janqua",
     "section": "Future goals",
-    "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, Vega-Lite, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand",
+    "text": "Future goals\n\nClojure Civitas integration — enabling community members to publish Jank posts on the blog\nBroader Kindly support — more visualization kinds (tables, Vega-Lite, images, etc.)\nEasier setup — reducing the number of prerequisites and simplifying installation\nClay support for Jank — a namespace-as-a-notebook experience, where Jank source files render as documents without writing .qmd by hand\nJupyter support — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments",
     "crumbs": [
       "Overview"
     ]
@@ -250,103 +250,173 @@
     ]
   },
   {
+    "objectID": "how-it-works.html",
+    "href": "how-it-works.html",
+    "title": "3  How It Works",
+    "section": "",
+    "text": "3.1 Architecture overview\nThis chapter explains the internals of Janqua — how your {.jank} code blocks turn into rendered output.\nJanqua is a Pandoc Lua filter. When Quarto renders a .qmd file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the .jank class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.\nThe filter has two phases, executed in order:",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#architecture-overview",
+    "href": "how-it-works.html#architecture-overview",
+    "title": "3  How It Works",
+    "section": "",
+    "text": "┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐\n│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │\n│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │\n└─────────┘     └────────┘     └──────┬──────┘     └──────────┘\n                                      │\n                                      ▼\n                               ┌──────────────┐\n                               │ Jank nREPL   │\n                               │ server       │\n                               └──────────────┘\n\n\nMeta — reads document metadata and resolves the Jank nREPL port\nCodeBlock — processes each {.jank} code block",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#port-discovery",
+    "href": "how-it-works.html#port-discovery",
+    "title": "3  How It Works",
+    "section": "3.2 Port discovery",
+    "text": "3.2 Port discovery\nThe filter needs to find a running Jank nREPL server. It tries several sources in order, validating that each candidate port is actually reachable before using it:\n\nFrontmatter — an explicit jank.port value in the document metadata\nPID + port files — .jank-pid and .jank-nrepl-port written by the lifecycle script\nEnvironment variable — JANK_PORT\nProcess scan — searches for a jank process listening on a TCP port (via lsof or ss)\nAuto-start — if nothing is found, the filter launches jank repl via the lifecycle script and waits for it to be ready\n\nThis chain means zero configuration for the common case: just run quarto render and the filter handles the rest.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#process-management",
+    "href": "how-it-works.html#process-management",
+    "title": "3  How It Works",
+    "section": "3.3 Process management",
+    "text": "3.3 Process management\nJank’s REPL exits when its standard input closes. To keep it alive across renders, the lifecycle script (jank-lifecycle.sh) pipes tail -f /dev/null into the REPL’s stdin — an infinite stream of nothing that keeps the process running.\nThe lifecycle script manages three files in the project root:\n\n\n\nFile\nPurpose\n\n\n\n\n.jank-pid\nPID of the running Jank process\n\n\n.jank-nrepl-port\nThe nREPL port Jank is listening on\n\n\n.jank-repl.log\nJank’s stdout/stderr output\n\n\n\nA background monitor watches the Jank process and cleans up these files if it crashes.\nThe stop command verifies the PID still belongs to a Jank process before sending a kill signal — this prevents accidentally killing an unrelated process that reused the PID.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#code-evaluation",
+    "href": "how-it-works.html#code-evaluation",
+    "title": "3  How It Works",
+    "section": "3.4 Code evaluation",
+    "text": "3.4 Code evaluation\nEach {.jank} code block goes through these steps:\n\n3.4.1 1. Kindly wrapping\nThe user’s code is wrapped in a function call that captures the result and its metadata:\n;; User writes:\n^:kind/hiccup [:div \"hello\"]\n\n;; Filter sends to Jank:\n((fn [v]\n   ((fn [m]\n      ((fn [kind]\n         {:janqua/kind kind\n          :janqua/value (pr-str v)})\n       (when m (or (:kindly/kind m) ...))))\n    (meta v)))\n (do ^:kind/hiccup [:div \"hello\"]))\nThe wrapper uses nested fn calls rather than let bindings — this works around a Jank bug where reader-attached metadata (like ^:kind/hiccup) is lost through let bindings.\n\n\n3.4.2 2. nREPL communication\nThe wrapped code is sent to Jank via clj-nrepl-eval, a Babashka-based nREPL client. The filter parses the response to extract:\n\nstdout — anything printed during evaluation\nvalue — the return value (serialized via pr-str)\n\nSession state persists between evaluations — defs and requires carry forward, so earlier code blocks can define functions used by later ones.\n\n\n3.4.3 3. Kind detection\nThe filter examines the :janqua/kind field from the wrapper response:\n\n\n\n\n\n\n\nKind\nOutput\n\n\n\n\n:kind/hiccup\nHiccup data is converted to HTML via a helper function defined in the Jank session\n\n\n:kind/html\nString is inserted as raw HTML\n\n\n:kind/md or :kind/markdown\nString is parsed as Markdown and inserted\n\n\n:kind/hidden\nOutput is suppressed (code still evaluates)\n\n\n(none)\nValue is shown as a code block\n\n\n\nFor kind/html and kind/md, strings can’t hold metadata directly (they’re primitives in Jank). The convention is to wrap them in a vector: ^:kind/html [\"&lt;b&gt;bold&lt;/b&gt;\"] — the filter auto-unwraps the first element.\n\n\n3.4.4 4. Hiccup rendering\nWhen a value has :kind/hiccup metadata, the filter calls janqua-hiccup-&gt;html — a function bootstrapped in the Jank session on first use. This converts Clojure-style hiccup data structures into HTML strings:\n[:div {:class \"box\"} [:span \"hi\"]]\n;; becomes:\n\"&lt;div class=\\\"box\\\"&gt;&lt;span&gt;hi&lt;/span&gt;&lt;/div&gt;\"\nThis runs inside Jank (not in Lua), so it has access to the full Clojure data model.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#code-block-attributes",
+    "href": "how-it-works.html#code-block-attributes",
+    "title": "3  How It Works",
+    "section": "3.5 Code block attributes",
+    "text": "3.5 Code block attributes\nThe filter respects several attributes on {.jank} blocks:\n\n\n\nAttribute\nEffect\n\n\n\n\noutput=html\nForce HTML output (override Kindly)\n\n\noutput=markdown\nForce Markdown output\n\n\noutput=hidden\nSuppress both code and output\n\n\necho=false\nHide the source code, show only results\n\n\neval=false\nShow code without evaluating\n\n\n\nKindly metadata on the result takes precedence over output= when both are present.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
+    "objectID": "how-it-works.html#bootstrap-sequence",
+    "href": "how-it-works.html#bootstrap-sequence",
+    "title": "3  How It Works",
+    "section": "3.6 Bootstrap sequence",
+    "text": "3.6 Bootstrap sequence\nOn the first evaluation in a document, the filter:\n\nResolves the nREPL port (auto-starting Jank if needed)\nSends the janqua-hiccup-&gt;html function definition to the Jank session\nBegins processing code blocks in document order\n\nSubsequent renders reuse the same Jank process, so startup cost is only paid once.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>How It Works</span>"
+    ]
+  },
+  {
     "objectID": "example.html",
     "href": "example.html",
-    "title": "3  Live Demo",
+    "title": "4  Live Demo",
     "section": "",
-    "text": "3.1 Basics\nThis page contains live Jank code — each block is evaluated during rendering, and the results appear below.",
+    "text": "4.1 Basics\nThis page contains live Jank code — each block is evaluated during rendering, and the results appear below.",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#basics",
     "href": "example.html#basics",
-    "title": "3  Live Demo",
+    "title": "4  Live Demo",
     "section": "",
     "text": "(+ 1 2 3)\n\n6\n\n(str \"Hello from \" \"Jank!\")\n\n\"Hello from Jank!\"\n\n(defn square [x] (* x x))\n\n#'user/square\n\n(map square [1 2 3 4 5])\n\n(1 4 9 16 25)",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#stdout",
     "href": "example.html#stdout",
-    "title": "3  Live Demo",
-    "section": "3.2 Stdout",
-    "text": "3.2 Stdout\nPrinted output appears alongside the return value:\n(do (println \"computing...\") (* 6 7))\n\ncomputing...\n42",
+    "title": "4  Live Demo",
+    "section": "4.2 Stdout",
+    "text": "4.2 Stdout\nPrinted output appears alongside the return value:\n(do (println \"computing...\") (* 6 7))\n\ncomputing...\n42",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#setup-helpers",
     "href": "example.html#setup-helpers",
-    "title": "3  Live Demo",
-    "section": "3.3 Setup helpers",
-    "text": "3.3 Setup helpers\n^:kind/hidden\n[(defn to-json [v]\n   (cond\n     (nil? v) \"null\"\n     (true? v) \"true\"\n     (false? v) \"false\"\n     (string? v) (str \"\\\"\" v \"\\\"\")\n     (keyword? v) (str \"\\\"\" (name v) \"\\\"\")\n     (number? v) (str v)\n     (vector? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (seq? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (map? v) (str \"{\"\n                (clojure.string/join \", \"\n                  (map (fn [[k val]]\n                         (str (to-json k) \": \" (to-json val)))\n                       v))\n                \"}\")\n     :else (str v)))]",
+    "title": "4  Live Demo",
+    "section": "4.3 Setup helpers",
+    "text": "4.3 Setup helpers\n^:kind/hidden\n[(defn to-json [v]\n   (cond\n     (nil? v) \"null\"\n     (true? v) \"true\"\n     (false? v) \"false\"\n     (string? v) (str \"\\\"\" v \"\\\"\")\n     (keyword? v) (str \"\\\"\" (name v) \"\\\"\")\n     (number? v) (str v)\n     (vector? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (seq? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (map? v) (str \"{\"\n                (clojure.string/join \", \"\n                  (map (fn [[k val]]\n                         (str (to-json k) \": \" (to-json val)))\n                       v))\n                \"}\")\n     :else (str v)))]",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#hiccup",
     "href": "example.html#hiccup",
-    "title": "3  Live Demo",
-    "section": "3.4 Hiccup",
-    "text": "3.4 Hiccup\nAnnotate a vector with ^:kind/hiccup to render it as HTML:\n^:kind/hiccup\n[:svg {:width \"300\" :height \"200\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:rect {:width \"300\" :height \"200\" :fill \"#f0f0f0\" :rx \"10\"}]\n  [:circle {:cx \"80\" :cy \"100\" :r \"50\" :fill \"steelblue\"}]\n  [:circle {:cx \"160\" :cy \"100\" :r \"40\" :fill \"coral\"}]\n  [:circle {:cx \"230\" :cy \"100\" :r \"30\" :fill \"mediumseagreen\"}]\n  [:text {:x \"150\" :y \"180\" :text-anchor \"middle\" :font-size \"14\" :fill \"#333\"}\n    \"Generated by Jank\"]]\nGenerated by Jank\nThe long form ^{:kindly/kind :kind/hiccup} works too:\n^{:kindly/kind :kind/hiccup}\n[:div {:style \"padding:12px; background:#f0f0f0; border-radius:8px;\"}\n  [:b \"Hello\"] \" from \" [:em \"Kindly\"] \"!\"]\nHello from Kindly!",
+    "title": "4  Live Demo",
+    "section": "4.4 Hiccup",
+    "text": "4.4 Hiccup\nAnnotate a vector with ^:kind/hiccup to render it as HTML:\n^:kind/hiccup\n[:svg {:width \"300\" :height \"200\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:rect {:width \"300\" :height \"200\" :fill \"#f0f0f0\" :rx \"10\"}]\n  [:circle {:cx \"80\" :cy \"100\" :r \"50\" :fill \"steelblue\"}]\n  [:circle {:cx \"160\" :cy \"100\" :r \"40\" :fill \"coral\"}]\n  [:circle {:cx \"230\" :cy \"100\" :r \"30\" :fill \"mediumseagreen\"}]\n  [:text {:x \"150\" :y \"180\" :text-anchor \"middle\" :font-size \"14\" :fill \"#333\"}\n    \"Generated by Jank\"]]\nGenerated by Jank\nThe long form ^{:kindly/kind :kind/hiccup} works too:\n^{:kindly/kind :kind/hiccup}\n[:div {:style \"padding:12px; background:#f0f0f0; border-radius:8px;\"}\n  [:b \"Hello\"] \" from \" [:em \"Kindly\"] \"!\"]\nHello from Kindly!",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#html",
     "href": "example.html#html",
-    "title": "3  Live Demo",
-    "section": "3.5 HTML",
-    "text": "3.5 HTML\nUse ^:kind/html to render a computed string as raw HTML. Since strings can’t hold metadata, wrap the expression in a vector:\n^:kind/html\n[(str \"&lt;div style='padding:8px; border:2px solid #4a90d9; border-radius:8px;'&gt;\"\n      \"&lt;b&gt;Computed HTML&lt;/b&gt; via &lt;code&gt;kind/html&lt;/code&gt;\"\n      \"&lt;/div&gt;\")]\nComputed HTML via kind/html",
+    "title": "4  Live Demo",
+    "section": "4.5 HTML",
+    "text": "4.5 HTML\nUse ^:kind/html to render a computed string as raw HTML. Since strings can’t hold metadata, wrap the expression in a vector:\n^:kind/html\n[(str \"&lt;div style='padding:8px; border:2px solid #4a90d9; border-radius:8px;'&gt;\"\n      \"&lt;b&gt;Computed HTML&lt;/b&gt; via &lt;code&gt;kind/html&lt;/code&gt;\"\n      \"&lt;/div&gt;\")]\nComputed HTML via kind/html",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#plotly-chart",
     "href": "example.html#plotly-chart",
-    "title": "3  Live Demo",
-    "section": "3.6 Plotly chart",
-    "text": "3.6 Plotly chart\n^:kind/html\n[(let [xs (vec (map #(* 0.5 %) (range 20)))\n       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]\n   (str \"&lt;div id=\\\"plot1\\\"&gt;&lt;/div&gt;\"\n        \"&lt;script src=\\\"https://cdn.plot.ly/plotly-2.35.0.min.js\\\"&gt;&lt;/script&gt;\"\n        \"&lt;script&gt;Plotly.newPlot('plot1', \"\n        (to-json {:data [{:x xs :y ys\n                          :type \"scatter\" :mode \"lines+markers\"\n                          :name \"y = x² - 0.5x\"}]\n                  :layout {:title \"Quadratic from Jank\"\n                           :xaxis {:title \"x\"}\n                           :yaxis {:title \"y\"}}})\n        \");&lt;/script&gt;\"))]",
+    "title": "4  Live Demo",
+    "section": "4.6 Plotly chart",
+    "text": "4.6 Plotly chart\n^:kind/html\n[(let [xs (vec (map #(* 0.5 %) (range 20)))\n       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]\n   (str \"&lt;div id=\\\"plot1\\\"&gt;&lt;/div&gt;\"\n        \"&lt;script src=\\\"https://cdn.plot.ly/plotly-2.35.0.min.js\\\"&gt;&lt;/script&gt;\"\n        \"&lt;script&gt;Plotly.newPlot('plot1', \"\n        (to-json {:data [{:x xs :y ys\n                          :type \"scatter\" :mode \"lines+markers\"\n                          :name \"y = x² - 0.5x\"}]\n                  :layout {:title \"Quadratic from Jank\"\n                           :xaxis {:title \"x\"}\n                           :yaxis {:title \"y\"}}})\n        \");&lt;/script&gt;\"))]",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#markdown-table",
     "href": "example.html#markdown-table",
-    "title": "3  Live Demo",
-    "section": "3.7 Markdown table",
-    "text": "3.7 Markdown table\nUse ^:kind/md to render a string as markdown:\n^:kind/md\n[(let [headers [\"x\" \"x²\" \"x³\"]\n       rows (map (fn [x] [(str x) (str (* x x)) (str (* x x x))]) (range 1 8))\n       header-line (str \"| \" (clojure.string/join \" | \" headers) \" |\")\n       sep-line (str \"| \" (clojure.string/join \" | \" (map (fn [_] \"---\") headers)) \" |\")\n       row-lines (map (fn [row] (str \"| \" (clojure.string/join \" | \" row) \" |\")) rows)]\n   (clojure.string/join \"\\n\" (concat [header-line sep-line] row-lines)))]\n\n\n\nx\nx²\nx³\n\n\n\n\n1\n1\n1\n\n\n2\n4\n8\n\n\n3\n9\n27\n\n\n4\n16\n64\n\n\n5\n25\n125\n\n\n6\n36\n216\n\n\n7\n49\n343",
+    "title": "4  Live Demo",
+    "section": "4.7 Markdown table",
+    "text": "4.7 Markdown table\nUse ^:kind/md to render a string as markdown:\n^:kind/md\n[(let [headers [\"x\" \"x²\" \"x³\"]\n       rows (map (fn [x] [(str x) (str (* x x)) (str (* x x x))]) (range 1 8))\n       header-line (str \"| \" (clojure.string/join \" | \" headers) \" |\")\n       sep-line (str \"| \" (clojure.string/join \" | \" (map (fn [_] \"---\") headers)) \" |\")\n       row-lines (map (fn [row] (str \"| \" (clojure.string/join \" | \" row) \" |\")) rows)]\n   (clojure.string/join \"\\n\" (concat [header-line sep-line] row-lines)))]\n\n\n\nx\nx²\nx³\n\n\n\n\n1\n1\n1\n\n\n2\n4\n8\n\n\n3\n9\n27\n\n\n4\n16\n64\n\n\n5\n25\n125\n\n\n6\n36\n216\n\n\n7\n49\n343",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#latex-math",
     "href": "example.html#latex-math",
-    "title": "3  Live Demo",
-    "section": "3.8 LaTeX math",
-    "text": "3.8 LaTeX math\nSince kind/md output is processed as markdown, LaTeX math works via $$...$$ syntax. Quarto renders it with MathJax:\n^:kind/md\n[(str \"$$\\\\sum_{k=1}^{n} k = \\\\frac{n(n+1)}{2}$$\")]\n\\[\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}\\]\nYou can also build formulas from computed values:\n^:kind/md\n[(let [n 10\n       result (/ (* n (+ n 1)) 2)]\n   (str \"For $n = \" n \"$:\\n\\n\"\n        \"$$\\\\sum_{k=1}^{\" n \"} k = \\\\frac{\" n \" \\\\cdot \" (+ n 1) \"}{2} = \" result \"$$\"))]\nFor \\(n = 10\\):\n\\[\\sum_{k=1}^{10} k = \\frac{10 \\cdot 11}{2} = 55\\]",
+    "title": "4  Live Demo",
+    "section": "4.8 LaTeX math",
+    "text": "4.8 LaTeX math\nSince kind/md output is processed as markdown, LaTeX math works via $$...$$ syntax. Quarto renders it with MathJax:\n^:kind/md\n[(str \"$$\\\\sum_{k=1}^{n} k = \\\\frac{n(n+1)}{2}$$\")]\n\\[\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}\\]\nYou can also build formulas from computed values:\n^:kind/md\n[(let [n 10\n       result (/ (* n (+ n 1)) 2)]\n   (str \"For $n = \" n \"$:\\n\\n\"\n        \"$$\\\\sum_{k=1}^{\" n \"} k = \\\\frac{\" n \" \\\\cdot \" (+ n 1) \"}{2} = \" result \"$$\"))]\nFor \\(n = 10\\):\n\\[\\sum_{k=1}^{10} k = \\frac{10 \\cdot 11}{2} = 55\\]",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   },
   {
     "objectID": "example.html#annotating-in-library-functions",
     "href": "example.html#annotating-in-library-functions",
-    "title": "3  Live Demo",
-    "section": "3.9 Annotating in library functions",
-    "text": "3.9 Annotating in library functions\nMetadata doesn’t have to be in the code block — functions can attach it to their return values with with-meta. Define a bar-chart function that produces a Plotly chart and tags it as :kind/html:\n^:kind/hidden\n[(defn bar-chart [labels values]\n   (with-meta\n     [(str \"&lt;div id='bar1'&gt;&lt;/div&gt;\"\n           \"&lt;script&gt;Plotly.newPlot('bar1', \"\n           (to-json {:data [{:x labels :y values :type \"bar\"}]\n                     :layout {:title \"Bar Chart\"}})\n           \");&lt;/script&gt;\")]\n     {:kindly/kind :kind/html}))]\nNow just call the function — no annotation needed at the call site:\n(bar-chart [\"apples\" \"bananas\" \"cherries\"] [12 19 7])",
+    "title": "4  Live Demo",
+    "section": "4.9 Annotating in library functions",
+    "text": "4.9 Annotating in library functions\nMetadata doesn’t have to be in the code block — functions can attach it to their return values with with-meta. Define a bar-chart function that produces a Plotly chart and tags it as :kind/html:\n^:kind/hidden\n[(defn bar-chart [labels values]\n   (with-meta\n     [(str \"&lt;div id='bar1'&gt;&lt;/div&gt;\"\n           \"&lt;script&gt;Plotly.newPlot('bar1', \"\n           (to-json {:data [{:x labels :y values :type \"bar\"}]\n                     :layout {:title \"Bar Chart\"}})\n           \");&lt;/script&gt;\")]\n     {:kindly/kind :kind/html}))]\nNow just call the function — no annotation needed at the call site:\n(bar-chart [\"apples\" \"bananas\" \"cherries\"] [12 19 7])",
     "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Live Demo</span>"
     ]
   }
 ]

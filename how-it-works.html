@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Janqua</title>
+<title>3&nbsp; How It Works – Janqua</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -65,7 +65,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./getting-started.html" rel="next">
+<link href="./example.html" rel="next">
+<link href="./kindly.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
@@ -117,7 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">Overview</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./how-it-works.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -146,7 +147,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Overview</span></a>
   </div>
 </li>
@@ -164,7 +165,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./how-it-works.html" class="sidebar-item-text sidebar-link">
+  <a href="./how-it-works.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></span></a>
   </div>
 </li>
@@ -184,14 +185,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
+  <li><a href="#architecture-overview" id="toc-architecture-overview" class="nav-link active" data-scroll-target="#architecture-overview"><span class="header-section-number">3.1</span> Architecture overview</a></li>
+  <li><a href="#port-discovery" id="toc-port-discovery" class="nav-link" data-scroll-target="#port-discovery"><span class="header-section-number">3.2</span> Port discovery</a></li>
+  <li><a href="#process-management" id="toc-process-management" class="nav-link" data-scroll-target="#process-management"><span class="header-section-number">3.3</span> Process management</a></li>
+  <li><a href="#code-evaluation" id="toc-code-evaluation" class="nav-link" data-scroll-target="#code-evaluation"><span class="header-section-number">3.4</span> Code evaluation</a>
   <ul class="collapse">
-  <li><a href="#what-is-quarto" id="toc-what-is-quarto" class="nav-link" data-scroll-target="#what-is-quarto">What is Quarto?</a></li>
-  <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
-  <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
-  <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How it works</a></li>
-  <li><a href="#future-goals" id="toc-future-goals" class="nav-link" data-scroll-target="#future-goals">Future goals</a></li>
+  <li><a href="#kindly-wrapping" id="toc-kindly-wrapping" class="nav-link" data-scroll-target="#kindly-wrapping"><span class="header-section-number">3.4.1</span> 1. Kindly wrapping</a></li>
+  <li><a href="#nrepl-communication" id="toc-nrepl-communication" class="nav-link" data-scroll-target="#nrepl-communication"><span class="header-section-number">3.4.2</span> 2. nREPL communication</a></li>
+  <li><a href="#kind-detection" id="toc-kind-detection" class="nav-link" data-scroll-target="#kind-detection"><span class="header-section-number">3.4.3</span> 3. Kind detection</a></li>
+  <li><a href="#hiccup-rendering" id="toc-hiccup-rendering" class="nav-link" data-scroll-target="#hiccup-rendering"><span class="header-section-number">3.4.4</span> 4. Hiccup rendering</a></li>
   </ul></li>
+  <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">3.5</span> Code block attributes</a></li>
+  <li><a href="#bootstrap-sequence" id="toc-bootstrap-sequence" class="nav-link" data-scroll-target="#bootstrap-sequence"><span class="header-section-number">3.6</span> Bootstrap sequence</a></li>
   </ul>
 </nav>
     </div>
@@ -200,8 +205,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Janqua</h1>
-<p class="subtitle lead">Jank code in Quarto documents</p>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></h1>
 </div>
 
 
@@ -218,66 +222,190 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="overview" class="level1 unnumbered">
-<h1 class="unnumbered">Overview</h1>
-<p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
-<p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the Clojure ecosystem.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Janqua is at an <strong>experimental stage</strong>. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on <a href="https://github.com/scicloj/janqua/issues">GitHub</a> or reach out on the <a href="https://scicloj.github.io/docs/community/chat/">Clojurians Zulip chat</a>.</p>
-</div>
-</div>
-<section id="what-is-quarto" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
-<p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
-<p>Quarto supports several project types:</p>
-<ul>
-<li><strong>Single documents</strong> — a standalone <code>.qmd</code> file rendered to HTML</li>
-<li><strong><a href="https://quarto.org/docs/websites/">Websites</a></strong> — multiple pages with navigation, like a documentation site</li>
-<li><strong><a href="https://quarto.org/docs/books/">Books</a></strong> — chapters rendered as a navigable book (like this one)</li>
-</ul>
-</section>
-<section id="what-is-jank" class="level2">
-<h2 class="anchored" data-anchor-id="what-is-jank">What is Jank?</h2>
-<p><a href="https://jank-lang.org">Jank</a> is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which Janqua uses to evaluate code interactively during document rendering.</p>
-</section>
-<section id="clojure-ecosystem-connection" class="level2">
-<h2 class="anchored" data-anchor-id="clojure-ecosystem-connection">Clojure ecosystem connection</h2>
-<p><a href="https://scicloj.github.io/clay">Clay</a> is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. <a href="https://clojurecivitas.org/">Clojure Civitas</a>, the community blog, is built this way.</p>
-<p>Janqua brings a similar experience to Jank: you write Jank code directly in <code>.qmd</code> files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations, so code patterns are transferable between the two ecosystems.</p>
-</section>
-<section id="how-it-works" class="level2">
-<h2 class="anchored" data-anchor-id="how-it-works">How it works</h2>
+<p>This chapter explains the internals of Janqua — how your <code>{.jank}</code> code blocks turn into rendered output.</p>
+<section id="architecture-overview" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="architecture-overview"><span class="header-section-number">3.1</span> Architecture overview</h2>
+<p>Janqua is a <a href="https://pandoc.org/lua-filters.html">Pandoc Lua filter</a>. When Quarto renders a <code>.qmd</code> file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the <code>.jank</code> class, evaluates them via a Jank nREPL server, and replaces them with the appropriate output.</p>
+<pre><code>┌─────────┐     ┌────────┐     ┌─────────────┐     ┌──────────┐
+│ .qmd    │────▶│ Pandoc  │────▶│ Lua filter  │────▶│ HTML/PDF │
+│ file    │     │ (parse) │     │ (eval Jank) │     │ output   │
+└─────────┘     └────────┘     └──────┬──────┘     └──────────┘
+                                      │
+                                      ▼
+                               ┌──────────────┐
+                               │ Jank nREPL   │
+                               │ server       │
+                               └──────────────┘</code></pre>
+<p>The filter has two phases, executed in order:</p>
 <ol type="1">
-<li>You write a <code>.qmd</code> file with <code>{.jank}</code> code blocks</li>
-<li>When Quarto renders the document, the Janqua filter intercepts these blocks</li>
-<li>Each block is sent to a Jank nREPL server for evaluation</li>
-<li>Results are inserted into the document — as code output, HTML, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
+<li><strong><code>Meta</code></strong> — reads document metadata and resolves the Jank nREPL port</li>
+<li><strong><code>CodeBlock</code></strong> — processes each <code>{.jank}</code> code block</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>} <span class="st">"Hello from Jank!"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The Jank process starts automatically on first render and stays running for fast re-evaluation. See <a href="./getting-started.html">Getting Started</a> to try it out, or jump to the <a href="./example.html">Live Demo</a> to see evaluated examples.</p>
 </section>
-<section id="future-goals" class="level2">
-<h2 class="anchored" data-anchor-id="future-goals">Future goals</h2>
+<section id="port-discovery" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="port-discovery"><span class="header-section-number">3.2</span> Port discovery</h2>
+<p>The filter needs to find a running Jank nREPL server. It tries several sources in order, validating that each candidate port is actually reachable before using it:</p>
+<ol type="1">
+<li><strong>Frontmatter</strong> — an explicit <code>jank.port</code> value in the document metadata</li>
+<li><strong>PID + port files</strong> — <code>.jank-pid</code> and <code>.jank-nrepl-port</code> written by the lifecycle script</li>
+<li><strong>Environment variable</strong> — <code>JANK_PORT</code></li>
+<li><strong>Process scan</strong> — searches for a <code>jank</code> process listening on a TCP port (via <code>lsof</code> or <code>ss</code>)</li>
+<li><strong>Auto-start</strong> — if nothing is found, the filter launches <code>jank repl</code> via the lifecycle script and waits for it to be ready</li>
+</ol>
+<p>This chain means zero configuration for the common case: just run <code>quarto render</code> and the filter handles the rest.</p>
+</section>
+<section id="process-management" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="process-management"><span class="header-section-number">3.3</span> Process management</h2>
+<p>Jank’s REPL exits when its standard input closes. To keep it alive across renders, the lifecycle script (<code>jank-lifecycle.sh</code>) pipes <code>tail -f /dev/null</code> into the REPL’s stdin — an infinite stream of nothing that keeps the process running.</p>
+<p>The lifecycle script manages three files in the project root:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">File</th>
+<th style="text-align: left;">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>.jank-pid</code></td>
+<td style="text-align: left;">PID of the running Jank process</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>.jank-nrepl-port</code></td>
+<td style="text-align: left;">The nREPL port Jank is listening on</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>.jank-repl.log</code></td>
+<td style="text-align: left;">Jank’s stdout/stderr output</td>
+</tr>
+</tbody>
+</table>
+<p>A background monitor watches the Jank process and cleans up these files if it crashes.</p>
+<p>The stop command verifies the PID still belongs to a Jank process before sending a kill signal — this prevents accidentally killing an unrelated process that reused the PID.</p>
+</section>
+<section id="code-evaluation" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="code-evaluation"><span class="header-section-number">3.4</span> Code evaluation</h2>
+<p>Each <code>{.jank}</code> code block goes through these steps:</p>
+<section id="kindly-wrapping" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1" class="anchored" data-anchor-id="kindly-wrapping"><span class="header-section-number">3.4.1</span> 1. Kindly wrapping</h3>
+<p>The user’s code is wrapped in a function call that captures the result and its metadata:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">;; User writes:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">;; Filter sends to Jank:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>((<span class="kw">fn</span> [v]</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>   ((<span class="kw">fn</span> [m]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      ((<span class="kw">fn</span> [kind]</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>         {<span class="at">:janqua/kind</span> kind</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>          <span class="at">:janqua/value</span> (<span class="kw">pr-str</span> v)})</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>       (<span class="kw">when</span> m (<span class="kw">or</span> (<span class="at">:kindly/kind</span> m) ...))))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    (<span class="kw">meta</span> v)))</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a> (<span class="kw">do</span> ^<span class="at">:kind/hiccup</span> [<span class="at">:div</span> <span class="st">"hello"</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The wrapper uses nested <code>fn</code> calls rather than <code>let</code> bindings — this works around a Jank bug where reader-attached metadata (like <code>^:kind/hiccup</code>) is lost through <code>let</code> bindings.</p>
+</section>
+<section id="nrepl-communication" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2" class="anchored" data-anchor-id="nrepl-communication"><span class="header-section-number">3.4.2</span> 2. nREPL communication</h3>
+<p>The wrapped code is sent to Jank via <a href="https://github.com/bhauman/clojure-mcp-light"><code>clj-nrepl-eval</code></a>, a Babashka-based nREPL client. The filter parses the response to extract:</p>
 <ul>
-<li><strong><a href="https://clojurecivitas.org/">Clojure Civitas</a> integration</strong> — enabling community members to publish Jank posts on the blog</li>
-<li><strong>Broader Kindly support</strong> — more visualization kinds (tables, Vega-Lite, images, etc.)</li>
-<li><strong>Easier setup</strong> — reducing the number of prerequisites and simplifying installation</li>
-<li><strong><a href="https://scicloj.github.io/clay">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
-<li><strong>Jupyter support</strong> — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments</li>
+<li><strong>stdout</strong> — anything printed during evaluation</li>
+<li><strong>value</strong> — the return value (serialized via <code>pr-str</code>)</li>
 </ul>
-
-
+<p>Session state persists between evaluations — <code>def</code>s and <code>require</code>s carry forward, so earlier code blocks can define functions used by later ones.</p>
 </section>
+<section id="kind-detection" class="level3" data-number="3.4.3">
+<h3 data-number="3.4.3" class="anchored" data-anchor-id="kind-detection"><span class="header-section-number">3.4.3</span> 3. Kind detection</h3>
+<p>The filter examines the <code>:janqua/kind</code> field from the wrapper response:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 57%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Kind</th>
+<th style="text-align: left;">Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/hiccup</code></td>
+<td style="text-align: left;">Hiccup data is converted to HTML via a helper function defined in the Jank session</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/html</code></td>
+<td style="text-align: left;">String is inserted as raw HTML</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>:kind/md</code> or <code>:kind/markdown</code></td>
+<td style="text-align: left;">String is parsed as Markdown and inserted</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>:kind/hidden</code></td>
+<td style="text-align: left;">Output is suppressed (code still evaluates)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><em>(none)</em></td>
+<td style="text-align: left;">Value is shown as a code block</td>
+</tr>
+</tbody>
+</table>
+<p>For <code>kind/html</code> and <code>kind/md</code>, strings can’t hold metadata directly (they’re primitives in Jank). The convention is to wrap them in a vector: <code>^:kind/html ["&lt;b&gt;bold&lt;/b&gt;"]</code> — the filter auto-unwraps the first element.</p>
+</section>
+<section id="hiccup-rendering" class="level3" data-number="3.4.4">
+<h3 data-number="3.4.4" class="anchored" data-anchor-id="hiccup-rendering"><span class="header-section-number">3.4.4</span> 4. Hiccup rendering</h3>
+<p>When a value has <code>:kind/hiccup</code> metadata, the filter calls <code>janqua-hiccup-&gt;html</code> — a function bootstrapped in the Jank session on first use. This converts Clojure-style hiccup data structures into HTML strings:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:class</span> <span class="st">"box"</span>} [<span class="at">:span</span> <span class="st">"hi"</span>]]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">;; becomes:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="st">"&lt;div class=</span><span class="sc">\"</span><span class="st">box</span><span class="sc">\"</span><span class="st">&gt;&lt;span&gt;hi&lt;/span&gt;&lt;/div&gt;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This runs inside Jank (not in Lua), so it has access to the full Clojure data model.</p>
+</section>
+</section>
+<section id="code-block-attributes" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">3.5</span> Code block attributes</h2>
+<p>The filter respects several attributes on <code>{.jank}</code> blocks:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>output=html</code></td>
+<td style="text-align: left;">Force HTML output (override Kindly)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>output=markdown</code></td>
+<td style="text-align: left;">Force Markdown output</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>output=hidden</code></td>
+<td style="text-align: left;">Suppress both code and output</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>echo=false</code></td>
+<td style="text-align: left;">Hide the source code, show only results</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>eval=false</code></td>
+<td style="text-align: left;">Show code without evaluating</td>
+</tr>
+</tbody>
+</table>
+<p>Kindly metadata on the result takes precedence over <code>output=</code> when both are present.</p>
+</section>
+<section id="bootstrap-sequence" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="bootstrap-sequence"><span class="header-section-number">3.6</span> Bootstrap sequence</h2>
+<p>On the first evaluation in a document, the filter:</p>
+<ol type="1">
+<li>Resolves the nREPL port (auto-starting Jank if needed)</li>
+<li>Sends the <code>janqua-hiccup-&gt;html</code> function definition to the Jank session</li>
+<li>Begins processing code blocks in document order</li>
+</ol>
+<p>Subsequent renders reuse the same Jank process, so startup cost is only paid once.</p>
+
+
 </section>
 
 </main> <!-- /main -->
@@ -683,10 +811,13 @@ Note
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
+      <a href="./kindly.html" class="pagination-link" aria-label="Kindly Annotations">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Kindly Annotations</span></span>
+      </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./getting-started.html" class="pagination-link" aria-label="Getting Started">
-        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Getting Started</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./example.html" class="pagination-link" aria-label="Live Demo">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Live Demo</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
