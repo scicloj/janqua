@@ -210,11 +210,21 @@
     ]
   },
   {
+    "objectID": "kindly.html#annotating-in-library-functions",
+    "href": "kindly.html#annotating-in-library-functions",
+    "title": "2  Kindly Annotations",
+    "section": "2.6 Annotating in library functions",
+    "text": "2.6 Annotating in library functions\nThe ^:kind/... reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with with-meta or vary-meta, which means library functions can annotate their return values. The caller doesn’t need to know about the rendering — the function handles it.\nFor example, a bar-chart function could generate a Plotly plot and tag it as HTML:\n(defn bar-chart [labels values]\n  (let [html (str \"&lt;div id='chart'&gt;&lt;/div&gt;\"\n                  \"&lt;script&gt;Plotly.newPlot('chart', [{x: \"\n                  (pr-str labels) \", y: \" (pr-str values)\n                  \", type: 'bar'}])&lt;/script&gt;\")]\n    (with-meta [html] {:kindly/kind :kind/html})))\nThen in a code block, simply calling the function renders the chart — no annotation needed:\n```{.jank}\n(bar-chart [\"a\" \"b\" \"c\"] [10 20 15])\n```\nThis is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
     "objectID": "kindly.html#why-wrap-strings-in-vectors",
     "href": "kindly.html#why-wrap-strings-in-vectors",
     "title": "2  Kindly Annotations",
-    "section": "2.6 Why wrap strings in vectors?",
-    "text": "2.6 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
+    "section": "2.7 Why wrap strings in vectors?",
+    "text": "2.7 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -223,8 +233,8 @@
     "objectID": "kindly.html#code-block-attributes",
     "href": "kindly.html#code-block-attributes",
     "title": "2  Kindly Annotations",
-    "section": "2.7 Code block attributes",
-    "text": "2.7 Code block attributes\nThese attributes go on the code fence and control display independently of Kindly:\n\n\n\nAttribute\nEffect\n\n\n\n\necho=false\nHide the source code, show only the result\n\n\neval=false\nShow code without evaluating it\n\n\n\n```{.jank echo=false}\n^:kind/hiccup\n[:div \"Only the rendered HTML appears — no source code shown\"]\n```",
+    "section": "2.8 Code block attributes",
+    "text": "2.8 Code block attributes\nThese attributes go on the code fence and control display independently of Kindly:\n\n\n\nAttribute\nEffect\n\n\n\n\necho=false\nHide the source code, show only the result\n\n\neval=false\nShow code without evaluating it\n\n\n\n```{.jank echo=false}\n^:kind/hiccup\n[:div \"Only the rendered HTML appears — no source code shown\"]\n```",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -233,8 +243,8 @@
     "objectID": "kindly.html#summary",
     "href": "kindly.html#summary",
     "title": "2  Kindly Annotations",
-    "section": "2.8 Summary",
-    "text": "2.8 Summary\n\n\n\nKind\nValue type\nRenders as\n\n\n\n\n^:kind/hiccup\nvector (hiccup)\nHTML\n\n\n^:kind/html\n[string]\nraw HTML\n\n\n^:kind/md\n[string]\nmarkdown\n\n\n^:kind/hidden\nany\nnothing (evaluates silently)\n\n\n(none)\nany\ncode output",
+    "section": "2.9 Summary",
+    "text": "2.9 Summary\n\n\n\nKind\nValue type\nRenders as\n\n\n\n\n^:kind/hiccup\nvector (hiccup)\nHTML\n\n\n^:kind/html\n[string]\nraw HTML\n\n\n^:kind/md\n[string]\nmarkdown\n\n\n^:kind/hidden\nany\nnothing (evaluates silently)\n\n\n(none)\nany\ncode output",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -315,6 +325,26 @@
     "title": "3  Live Demo",
     "section": "3.7 Markdown table",
     "text": "3.7 Markdown table\nUse ^:kind/md to render a string as markdown:\n^:kind/md\n[(let [headers [\"x\" \"x²\" \"x³\"]\n       rows (map (fn [x] [(str x) (str (* x x)) (str (* x x x))]) (range 1 8))\n       header-line (str \"| \" (clojure.string/join \" | \" headers) \" |\")\n       sep-line (str \"| \" (clojure.string/join \" | \" (map (fn [_] \"---\") headers)) \" |\")\n       row-lines (map (fn [row] (str \"| \" (clojure.string/join \" | \" row) \" |\")) rows)]\n   (clojure.string/join \"\\n\" (concat [header-line sep-line] row-lines)))]\n\n\n\nx\nx²\nx³\n\n\n\n\n1\n1\n1\n\n\n2\n4\n8\n\n\n3\n9\n27\n\n\n4\n16\n64\n\n\n5\n25\n125\n\n\n6\n36\n216\n\n\n7\n49\n343",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#latex-math",
+    "href": "example.html#latex-math",
+    "title": "3  Live Demo",
+    "section": "3.8 LaTeX math",
+    "text": "3.8 LaTeX math\nSince kind/md output is processed as markdown, LaTeX math works via $$...$$ syntax. Quarto renders it with MathJax:\n^:kind/md\n[(str \"$$\\\\sum_{k=1}^{n} k = \\\\frac{n(n+1)}{2}$$\")]\n\\[\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}\\]\nYou can also build formulas from computed values:\n^:kind/md\n[(let [n 10\n       result (/ (* n (+ n 1)) 2)]\n   (str \"For $n = \" n \"$:\\n\\n\"\n        \"$$\\\\sum_{k=1}^{\" n \"} k = \\\\frac{\" n \" \\\\cdot \" (+ n 1) \"}{2} = \" result \"$$\"))]\nFor \\(n = 10\\):\n\\[\\sum_{k=1}^{10} k = \\frac{10 \\cdot 11}{2} = 55\\]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#annotating-in-library-functions",
+    "href": "example.html#annotating-in-library-functions",
+    "title": "3  Live Demo",
+    "section": "3.9 Annotating in library functions",
+    "text": "3.9 Annotating in library functions\nMetadata doesn’t have to be in the code block — functions can attach it to their return values with with-meta. Define a bar-chart function that produces a Plotly chart and tags it as :kind/html:\n^:kind/hidden\n[(defn bar-chart [labels values]\n   (with-meta\n     [(str \"&lt;div id='bar1'&gt;&lt;/div&gt;\"\n           \"&lt;script&gt;Plotly.newPlot('bar1', \"\n           (to-json {:data [{:x labels :y values :type \"bar\"}]\n                     :layout {:title \"Bar Chart\"}})\n           \");&lt;/script&gt;\")]\n     {:kindly/kind :kind/html}))]\nNow just call the function — no annotation needed at the call site:\n(bar-chart [\"apples\" \"bananas\" \"cherries\"] [12 19 7])",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
     ]

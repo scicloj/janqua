@@ -105,6 +105,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -185,6 +214,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#html" id="toc-html" class="nav-link" data-scroll-target="#html"><span class="header-section-number">3.5</span> HTML</a></li>
   <li><a href="#plotly-chart" id="toc-plotly-chart" class="nav-link" data-scroll-target="#plotly-chart"><span class="header-section-number">3.6</span> Plotly chart</a></li>
   <li><a href="#markdown-table" id="toc-markdown-table" class="nav-link" data-scroll-target="#markdown-table"><span class="header-section-number">3.7</span> Markdown table</a></li>
+  <li><a href="#latex-math" id="toc-latex-math" class="nav-link" data-scroll-target="#latex-math"><span class="header-section-number">3.8</span> LaTeX math</a></li>
+  <li><a href="#annotating-in-library-functions" id="toc-annotating-in-library-functions" class="nav-link" data-scroll-target="#annotating-in-library-functions"><span class="header-section-number">3.9</span> Annotating in library functions</a></li>
   </ul>
 </nav>
     </div>
@@ -360,6 +391,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
+</section>
+<section id="latex-math" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="latex-math"><span class="header-section-number">3.8</span> LaTeX math</h2>
+<p>Since <code>kind/md</code> output is processed as markdown, LaTeX math works via <code>$$...$$</code> syntax. Quarto renders it with MathJax:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/md</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>[(<span class="kw">str</span> <span class="st">"$$</span><span class="sc">\\</span><span class="st">sum_{k=1}^{n} k = </span><span class="sc">\\</span><span class="st">frac{n(n+1)}{2}$$"</span>)]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span class="math display">\[\sum_{k=1}^{n} k = \frac{n(n+1)}{2}\]</span></p>
+<p>You can also build formulas from computed values:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/md</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>[(<span class="kw">let</span> [n <span class="dv">10</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>       result (<span class="kw">/</span> (<span class="kw">*</span> n (<span class="kw">+</span> n <span class="dv">1</span>)) <span class="dv">2</span>)]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>   (<span class="kw">str</span> <span class="st">"For $n = "</span> n <span class="st">"$:</span><span class="sc">\n\n</span><span class="st">"</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"$$</span><span class="sc">\\</span><span class="st">sum_{k=1}^{"</span> n <span class="st">"} k = </span><span class="sc">\\</span><span class="st">frac{"</span> n <span class="st">" </span><span class="sc">\\</span><span class="st">cdot "</span> (<span class="kw">+</span> n <span class="dv">1</span>) <span class="st">"}{2} = "</span> result <span class="st">"$$"</span>))]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For <span class="math inline">\(n = 10\)</span>:</p>
+<p><span class="math display">\[\sum_{k=1}^{10} k = \frac{10 \cdot 11}{2} = 55\]</span></p>
+</section>
+<section id="annotating-in-library-functions" class="level2" data-number="3.9">
+<h2 data-number="3.9" class="anchored" data-anchor-id="annotating-in-library-functions"><span class="header-section-number">3.9</span> Annotating in library functions</h2>
+<p>Metadata doesn’t have to be in the code block — functions can attach it to their return values with <code>with-meta</code>. Define a <code>bar-chart</code> function that produces a Plotly chart and tags it as <code>:kind/html</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hidden</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>[(<span class="bu">defn</span><span class="fu"> bar-chart </span>[labels values]</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>   (<span class="kw">with-meta</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>     [(<span class="kw">str</span> <span class="st">"&lt;div id='bar1'&gt;&lt;/div&gt;"</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>           <span class="st">"&lt;script&gt;Plotly.newPlot('bar1', "</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>           (to-json {<span class="at">:data</span> [{<span class="at">:x</span> labels <span class="at">:y</span> values <span class="at">:type</span> <span class="st">"bar"</span>}]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>                     <span class="at">:layout</span> {<span class="at">:title</span> <span class="st">"Bar Chart"</span>}})</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">");&lt;/script&gt;"</span>)]</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>     {<span class="at">:kindly/kind</span> <span class="at">:kind/html</span>}))]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Now just call the function — no annotation needed at the call site:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>(bar-chart [<span class="st">"apples"</span> <span class="st">"bananas"</span> <span class="st">"cherries"</span>] [<span class="dv">12</span> <span class="dv">19</span> <span class="dv">7</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="bar1"></div><script>Plotly.newPlot('bar1', {"data": [{"x": ["apples", "bananas", "cherries"], "y": [12, 19, 7], "type": "bar"}], "layout": {"title": "Bar Chart"}});</script>
 
 
 </section>
