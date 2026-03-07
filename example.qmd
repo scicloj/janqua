@@ -181,9 +181,9 @@ Use `^:kind/md` for inline markdown (tables, headers, etc.):
 
 ### Hidden via Kindly
 
-Use `^:kind/hidden` to suppress output.
+Use `^:kind/hidden` to suppress the result (code is still shown).
 Note: Kindly metadata only works on values that can hold metadata (vectors, maps),
-not on expression results like strings or vars. For arbitrary code, use `output=hidden`.
+not on expression results like strings or vars.
 
 ```{.jank}
 ^:kind/hidden

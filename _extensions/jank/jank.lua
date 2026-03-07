@@ -17,7 +17,7 @@
 -- Kindly convention:
 --   ^:kind/hiccup [:div ...]  — auto-converts hiccup to HTML
 --   ^:kind/html "..."         — renders string as raw HTML (on metadata-capable values)
---   ^:kind/hidden [...]       — suppresses both code and output
+--   ^:kind/hidden [...]       — suppresses output (code still shown)
 
 local jank_port = nil
 
@@ -335,7 +335,6 @@ function CodeBlock(el)
         output_mode = "markdown"
       elseif kind == ":kind/hidden" then
         output_mode = "hidden"
-        echo = false
       end
     end
   end
