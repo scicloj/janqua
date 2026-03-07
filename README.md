@@ -4,66 +4,117 @@ A [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang
 
 Write Jank code in `.qmd` files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the Clojure ecosystem.
 
+## What is Quarto?
+
+[Quarto](https://quarto.org) is an open-source publishing system for technical documents. You write `.qmd` (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.
+
+Quarto supports several project types:
+
+- **Single documents** — a standalone `.qmd` file rendered to HTML
+- **[Websites](https://quarto.org/docs/websites/)** — multiple pages with navigation, like a documentation site
+- **[Books](https://quarto.org/docs/books/)** — chapters rendered as a navigable book
+
+### Quarto in the Clojure community
+
+[Clay](https://scicloj.github.io/clay) is a Clojure tool for data visualization and literate programming. Clay can generate Quarto markdown from Clojure namespaces, then use Quarto as a rendering engine to produce HTML pages, books, and slideshows. [Clojure Civitas](https://clojurecivitas.org/), the community blog, is built this way.
+
+janqua brings a similar experience to [Jank](https://jank-lang.org): you write Jank code directly in `.qmd` files, and the Quarto filter evaluates it during rendering.
+
 ## Prerequisites
 
-1. **Jank** — install from [jank-lang.org](https://jank-lang.org)
-2. **Babashka** — install from [babashka.org](https://github.com/babashka/babashka#installation)
-3. **bbin** — install from [github.com/babashka/bbin](https://github.com/babashka/bbin#installation)
-4. **clj-nrepl-eval** — install via bbin:
+1. **[Quarto](https://quarto.org/docs/get-started/)** — the publishing system
+2. **[Jank](https://jank-lang.org)** — the Jank compiler and REPL
+3. **[Babashka](https://github.com/babashka/babashka#installation)** — fast Clojure scripting runtime
+4. **[bbin](https://github.com/babashka/bbin#installation)** — tool installer for Babashka
+5. **clj-nrepl-eval** — nREPL client (install via bbin):
    ```bash
    bbin install io.github.bhauman/clojure-mcp-light
    ```
 
 Verify everything is available:
 ```bash
+quarto --version
 jank --version
 bb --version
 clj-nrepl-eval --help
 ```
 
-## Install
+## Getting started
+
+### 1. Create a project directory
+
+```bash
+mkdir my-jank-doc
+cd my-jank-doc
+```
+
+### 2. Install the extension
+
+Run this **inside your project directory** — it creates an `_extensions/` folder there:
 
 ```bash
 quarto add scicloj/janqua
 ```
 
-This installs the extension into `_extensions/jank/` in your project.
+### 3. Write a document
 
-## Usage
+Create a file called `hello.qmd`:
 
-Add the filter to your `.qmd` frontmatter:
-
-```yaml
+````markdown
 ---
-title: "My Document"
+title: "Hello Jank"
 filters:
   - jank
 ---
-```
 
-Then write Jank code blocks:
-
-````markdown
 ```{.jank}
 (+ 1 2 3)
 ```
+
+```{.jank}
+^:kind/hiccup
+[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
+```
 ````
 
-The filter automatically starts a Jank nREPL server if one isn't running.
+### 4. Render it
 
-### Rendering with Kindly
+```bash
+quarto render hello.qmd
+```
 
-Annotate values with Kindly metadata to control how they render:
+This starts a Jank nREPL server (if one isn't already running), evaluates the code blocks, and produces `hello.html`.
 
-| Kind | Usage | Effect |
-|:-----|:------|:-------|
-| `:kind/hiccup` | `^:kind/hiccup [:div "hello"]` | Converts hiccup to HTML |
-| `:kind/html` | `^:kind/html ["<b>bold</b>"]` | Renders string as raw HTML |
-| `:kind/md` | `^:kind/md ["# Title"]` | Renders string as markdown |
-| `:kind/hidden` | `^:kind/hidden [expr]` | Evaluates but hides the result |
+## Rendering workflow
 
-For `:kind/html` and `:kind/md`, wrap string expressions in a vector
-(strings can't hold metadata):
+**`quarto render`** — renders the document once and exits. Use this for final output.
+
+```bash
+quarto render hello.qmd            # produces hello.html
+quarto render hello.qmd --to pdf   # produces hello.pdf
+```
+
+**`quarto preview`** — starts a local web server and re-renders automatically when you save the `.qmd` file. Use this while writing:
+
+```bash
+quarto preview hello.qmd
+```
+
+This opens a browser with live preview. Edit your `.qmd`, save, and the page refreshes with updated results. Press Ctrl-C to stop.
+
+The Jank nREPL server starts on the first render and stays running for fast re-evaluation. Stop it when you're done:
+
+```bash
+_extensions/jank/jank-lifecycle.sh stop
+```
+
+## Kindly annotations
+
+Annotate values with [Kindly](https://scicloj.github.io/kindly-noted/) metadata to control rendering. Without an annotation, results display as code output.
+
+### `^:kind/hiccup` — HTML from data
+
+Converts a [hiccup](https://github.com/weavejester/hiccup) vector to HTML:
 
 ````markdown
 ```{.jank}
@@ -71,21 +122,53 @@ For `:kind/html` and `:kind/md`, wrap string expressions in a vector
 [:svg {:width "100" :height "100" :xmlns "http://www.w3.org/2000/svg"}
   [:circle {:cx "50" :cy "50" :r "40" :fill "coral"}]]
 ```
+````
 
+### `^:kind/html` — raw HTML
+
+Renders a string as raw HTML. Wrap the expression in a vector (strings can't hold metadata):
+
+````markdown
 ```{.jank}
 ^:kind/html
-[(str "<b>" "computed" "</b>")]
+[(str "<b>bold</b> and <em>italic</em>")]
 ```
+````
 
+### `^:kind/md` — markdown
+
+Renders a string as markdown:
+
+````markdown
 ```{.jank}
 ^:kind/md
 [(str "| a | b |\n| --- | --- |\n| 1 | 2 |")]
 ```
 ````
 
-The long form `^{:kindly/kind :kind/hiccup}` also works.
+### `^:kind/hidden` — suppress output
 
-### Additional attributes
+Evaluates the code but hides the result (code is still shown). Useful for setup:
+
+````markdown
+```{.jank}
+^:kind/hidden
+[(def my-data [1 2 3])]
+```
+````
+
+### Long form
+
+The shorthand `^:kind/hiccup` is equivalent to `^{:kindly/kind :kind/hiccup}`:
+
+````markdown
+```{.jank}
+^{:kindly/kind :kind/hiccup}
+[:div "hello"]
+```
+````
+
+## Code block attributes
 
 | Attribute | Effect |
 |:----------|:-------|
@@ -94,33 +177,10 @@ The long form `^{:kindly/kind :kind/hiccup}` also works.
 
 ## Managing the Jank process
 
-The extension includes a lifecycle script for managing the Jank nREPL server:
-
 ```bash
-# Check if jank is running
-_extensions/jank/jank-lifecycle.sh status
-
-# Start jank manually (the filter also does this automatically)
-_extensions/jank/jank-lifecycle.sh start
-
-# Stop jank when you're done
-_extensions/jank/jank-lifecycle.sh stop
-```
-
-Jank starts automatically on the first render and persists across re-renders for fast iteration. Stop it explicitly when you're done working.
-
-## Trying the example
-
-After installing the extension, render the included example:
-
-```bash
-quarto render example.qmd --to html
-```
-
-Or use preview mode for live editing:
-
-```bash
-quarto preview example.qmd
+_extensions/jank/jank-lifecycle.sh status   # check if running
+_extensions/jank/jank-lifecycle.sh start    # start manually
+_extensions/jank/jank-lifecycle.sh stop     # stop when done
 ```
 
 ## License
