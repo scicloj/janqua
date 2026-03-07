@@ -83,7 +83,11 @@ filters:
 quarto render hello.qmd
 ```
 
-This starts a Jank nREPL server (if one isn't already running), evaluates the code blocks, and produces `hello.html`.
+This starts a Jank nREPL server (if one isn't already running), evaluates the code blocks, and produces `hello.html`. Or use `quarto preview` for a live-reloading workflow — it re-renders automatically each time you save:
+
+```bash
+quarto preview hello.qmd
+```
 
 ## Rendering workflow
 
