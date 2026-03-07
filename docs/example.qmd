@@ -121,3 +121,44 @@ Use `^:kind/md` to render a string as markdown:
        row-lines (map (fn [row] (str "| " (clojure.string/join " | " row) " |")) rows)]
    (clojure.string/join "\n" (concat [header-line sep-line] row-lines)))]
 ```
+
+## LaTeX math
+
+Since `kind/md` output is processed as markdown, LaTeX math works via `$$...$$` syntax. Quarto renders it with MathJax:
+
+```{.jank}
+^:kind/md
+[(str "$$\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}$$")]
+```
+
+You can also build formulas from computed values:
+
+```{.jank}
+^:kind/md
+[(let [n 10
+       result (/ (* n (+ n 1)) 2)]
+   (str "For $n = " n "$:\n\n"
+        "$$\\sum_{k=1}^{" n "} k = \\frac{" n " \\cdot " (+ n 1) "}{2} = " result "$$"))]
+```
+
+## Annotating in library functions
+
+Metadata doesn't have to be in the code block — functions can attach it to their return values with `with-meta`. Define a `bar-chart` function that produces a Plotly chart and tags it as `:kind/html`:
+
+```{.jank}
+^:kind/hidden
+[(defn bar-chart [labels values]
+   (with-meta
+     [(str "<div id='bar1'></div>"
+           "<script>Plotly.newPlot('bar1', "
+           (to-json {:data [{:x labels :y values :type "bar"}]
+                     :layout {:title "Bar Chart"}})
+           ");</script>")]
+     {:kindly/kind :kind/html}))]
+```
+
+Now just call the function — no annotation needed at the call site:
+
+```{.jank}
+(bar-chart ["apples" "bananas" "cherries"] [12 19 7])
+```

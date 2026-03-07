@@ -66,6 +66,31 @@ The shorthand `^:kind/hiccup` is equivalent to the explicit `^{:kindly/kind :kin
 
 Use whichever you prefer. The shorthand is more concise; the long form is explicit.
 
+## Annotating in library functions
+
+The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with `with-meta` or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
+
+For example, a `bar-chart` function could generate a Plotly plot and tag it as HTML:
+
+```clojure
+(defn bar-chart [labels values]
+  (let [html (str "<div id='chart'></div>"
+                  "<script>Plotly.newPlot('chart', [{x: "
+                  (pr-str labels) ", y: " (pr-str values)
+                  ", type: 'bar'}])</script>")]
+    (with-meta [html] {:kindly/kind :kind/html})))
+```
+
+Then in a code block, simply calling the function renders the chart — no annotation needed:
+
+````markdown
+```{.jank}
+(bar-chart ["a" "b" "c"] [10 20 15])
+```
+````
+
+This is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that "just work" in any Kindly-aware tool — Janqua, Clay, or others.
+
 ## Why wrap strings in vectors?
 
 In Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So `^:kind/html "hello"` won't work.
