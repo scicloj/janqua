@@ -1,20 +1,35 @@
+---
+filters:
+  - jank
+---
+
 # Kindly Annotations
 
 [Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly [metadata](https://clojure.org/reference/metadata), so the same code patterns work in both Jank+Quarto and Clojure+Clay.
 
-Without an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.
+Without an annotation, results display as code output:
+
+```{.jank}
+(let [people [{:name "Alice" :scores [85 92 78]}
+              {:name "Bob" :scores [91 88 95]}
+              {:name "Carol" :scores [76 80 89]}]]
+  (map (fn [p]
+         {:name (:name p)
+          :avg (/ (apply + (:scores p)) (count (:scores p)))})
+       people))
+```
+
+Add Kindly metadata to control how a value is rendered.
 
 ## `^:kind/hiccup` — HTML from data
 
 Converts a [hiccup](https://github.com/weavejester/hiccup) vector to HTML. Hiccup represents HTML as nested Clojure vectors:
 
-````markdown
 ```{.jank}
 ^:kind/hiccup
 [:svg {:width "100" :height "100" :xmlns "http://www.w3.org/2000/svg"}
   [:circle {:cx "50" :cy "50" :r "40" :fill "coral"}]]
 ```
-````
 
 The vector `[:tag {:attr "value"} content]` becomes `<tag attr="value">content</tag>`.
 
@@ -22,12 +37,10 @@ The vector `[:tag {:attr "value"} content]` becomes `<tag attr="value">content</
 
 Renders a string as raw HTML. Since strings can't hold metadata in Clojure, wrap the expression in a vector:
 
-````markdown
 ```{.jank}
 ^:kind/html
-[(str "<b>bold</b> and <em>italic</em>")]
+["<b>bold</b> and <em>italic</em>"]
 ```
-````
 
 The vector is automatically unwrapped — Janqua extracts the first element for rendering.
 
@@ -35,59 +48,56 @@ The vector is automatically unwrapped — Janqua extracts the first element for 
 
 Renders a string as markdown. Same wrapping rule as `kind/html`:
 
-````markdown
 ```{.jank}
 ^:kind/md
-[(str "| a | b |\n| --- | --- |\n| 1 | 2 |")]
+["| a | b |\n| --- | --- |\n| 1 | 2 |"]
 ```
-````
 
 ## `^:kind/hidden` — suppress output
 
 Evaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:
 
-````markdown
 ```{.jank}
 ^:kind/hidden
 [(def my-data [1 2 3])]
 ```
-````
-
-## Long form
-
-The shorthand `^:kind/hiccup` is equivalent to the explicit `^{:kindly/kind :kind/hiccup}`:
-
-````markdown
-```{.jank}
-^{:kindly/kind :kind/hiccup}
-[:div "hello"]
-```
-````
-
-Use whichever you prefer. The shorthand is more concise; the long form is explicit.
 
 ## Annotating in library functions
 
 The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with [`with-meta`](https://clojuredocs.org/clojure.core/with-meta) or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
 
-For example, a `bar-chart` function could generate a [Plotly.js](https://plotly.com/javascript/) plot and tag it as HTML:
+For example, a function that builds an SVG bar chart and tags it as hiccup:
 
-```clojure
+```{.jank}
 (defn bar-chart [labels values]
-  (let [html (str "<div id='chart'></div>"
-                  "<script>Plotly.newPlot('chart', [{x: "
-                  (pr-str labels) ", y: " (pr-str values)
-                  ", type: 'bar'}])</script>")]
-    (with-meta [html] {:kindly/kind :kind/html})))
+  (let [bar-width 40
+        gap 10
+        max-val (apply max values)
+        height 120
+        bars (map-indexed
+               (fn [i [label val]]
+                 (let [x (+ 10 (* i (+ bar-width gap)))
+                       bar-height (* (/ val max-val) height)]
+                   [:g
+                     [:rect {:x x :y (- height bar-height)
+                             :width bar-width :height bar-height
+                             :fill "steelblue"}]
+                     [:text {:x (+ x (/ bar-width 2)) :y (+ height 15)
+                             :text-anchor "middle" :font-size "12"}
+                       label]]))
+               (map vector labels values))
+        total-width (+ 20 (* (count labels) (+ bar-width gap)))]
+    (with-meta
+      (into [:svg {:width total-width :height (+ height 25)
+                   :xmlns "http://www.w3.org/2000/svg"}] bars)
+      {:kindly/kind :kind/hiccup})))
 ```
 
-Then in a code block, simply calling the function renders the chart — no annotation needed:
+Now simply calling the function renders the chart — no annotation needed at the call site:
 
-````markdown
 ```{.jank}
 (bar-chart ["a" "b" "c"] [10 20 15])
 ```
-````
 
 This is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that "just work" in any Kindly-aware tool — Janqua, Clay, or others.
 
@@ -97,7 +107,7 @@ In Clojure (and Jank), metadata can only be attached to collections — vectors,
 
 The convention is to wrap the value in a vector:
 
-```clojure
+```{.jank}
 ^:kind/html ["<b>hello</b>"]
 ```
 
@@ -105,19 +115,17 @@ Janqua automatically unwraps the vector for `kind/html` and `kind/md`, extractin
 
 ## Code block attributes
 
-These attributes go on the code fence and control display independently of Kindly:
+These attributes go on the code fence and control display independently of Kindly. See the [Quarto documentation on code cells](https://quarto.org/docs/reference/cells/) for more options.
 
 | Attribute | Effect |
 |:----------|:-------|
 | `echo=false` | Hide the source code, show only the result |
 | `eval=false` | Show code without evaluating it |
 
-````markdown
 ```{.jank echo=false}
 ^:kind/hiccup
 [:div "Only the rendered HTML appears — no source code shown"]
 ```
-````
 
 ## Summary
 

@@ -1,3 +1,8 @@
+---
+filters:
+  - jank
+---
+
 # Overview {.unnumbered}
 
 **Janqua** is a [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
@@ -38,9 +43,10 @@ Janqua brings a similar experience to Jank: you write Jank code directly in `.qm
 3. Each block is sent to a Jank nREPL server for evaluation
 4. Results are inserted into the document — as code output, HTML, or markdown — based on [Kindly annotations](kindly.qmd)
 
-```clojure
+```{.jank}
 ^:kind/hiccup
-[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
+[:div {:style "color: coral; font-size: 24px;"}
+  jjjjj"Hello from Jank!"]
 ```
 
 The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Live Demo](example.qmd) to see evaluated examples.
