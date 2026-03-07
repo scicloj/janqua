@@ -1,4 +1,4 @@
-# janqua
+# Janqua
 
 A [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
 
