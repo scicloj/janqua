@@ -9,7 +9,7 @@ filters:
 
 Without an annotation, results display as code output:
 
-```{clojure .jank}
+```{.clojure .jank}
 (let [people [{:name "Alice" :scores [85 92 78]}
               {:name "Bob" :scores [91 88 95]}
               {:name "Carol" :scores [76 80 89]}]]
@@ -25,7 +25,7 @@ Add Kindly metadata to control how a value is rendered.
 
 Converts a [hiccup](https://github.com/weavejester/hiccup) vector to HTML. Hiccup represents HTML as nested Clojure vectors:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/hiccup
 [:svg {:width "100" :height "100" :xmlns "http://www.w3.org/2000/svg"}
   [:circle {:cx "50" :cy "50" :r "40" :fill "coral"}]]
@@ -37,7 +37,7 @@ The vector `[:tag {:attr "value"} content]` becomes `<tag attr="value">content</
 
 Renders a string as raw HTML. Since strings can't hold metadata in Clojure, wrap the expression in a vector:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/html
 ["<b>bold</b> and <em>italic</em>"]
 ```
@@ -48,7 +48,7 @@ The vector is automatically unwrapped — Janqua extracts the first element for 
 
 Renders a string as markdown. Same wrapping rule as `kind/html`:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/md
 ["| a | b |\n| --- | --- |\n| 1 | 2 |"]
 ```
@@ -57,7 +57,7 @@ Renders a string as markdown. Same wrapping rule as `kind/html`:
 
 Evaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/hidden
 [(def my-data [1 2 3])]
 ```
@@ -66,7 +66,7 @@ Evaluates the code but hides the result. The code itself is still shown. Useful 
 
 Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. Quarto has native Mermaid support, so no external dependencies are needed:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/mermaid
 ["graph LR\n  A[Start] --> B{Decision}\n  B -->|Yes| C[OK]\n  B -->|No| D[Cancel]"]
 ```
@@ -75,7 +75,7 @@ Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. Quarto has nat
 
 Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. Requires Graphviz to be installed:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/graphviz
 ["digraph { rankdir=LR; A -> B -> C; A -> C; }"]
 ```
@@ -84,7 +84,7 @@ Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. Requires Gr
 
 Renders a string as a LaTeX formula via MathJax:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/tex
 ["\\int_0^\\infty e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}"]
 ```
@@ -93,7 +93,7 @@ Renders a string as a LaTeX formula via MathJax:
 
 Renders a string as syntax-highlighted Clojure code (for display, not evaluation):
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/code
 ["(defn hello [name]\n  (str \"Hello, \" name \"!\"))"]
 ```
@@ -102,7 +102,7 @@ Renders a string as syntax-highlighted Clojure code (for display, not evaluation
 
 Renders a map as a [Vega-Lite](https://vega.github.io/vega-lite/) chart. The JS library is loaded automatically from CDN:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/vega-lite
 {:data {:values [{:x "A" :y 28} {:x "B" :y 55} {:x "C" :y 43}]}
  :mark :bar
@@ -114,7 +114,7 @@ Renders a map as a [Vega-Lite](https://vega.github.io/vega-lite/) chart. The JS 
 
 Renders a map as a [Plotly.js](https://plotly.com/javascript/) chart. The spec should have `:data` and `:layout` keys:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/plotly
 {:data [{:x [1 2 3 4] :y [10 15 13 17] :type "scatter" :mode "lines+markers"}]
  :layout {:title "Simple Plotly Chart"}}
@@ -126,7 +126,7 @@ The `^:kind/...` reader syntax attaches metadata at the call site. But metadata 
 
 For example, a function that builds an SVG bar chart and tags it as hiccup:
 
-```{clojure .jank}
+```{.clojure .jank}
 (defn bar-chart [labels values]
   (let [bar-width 40
         gap 10
@@ -153,7 +153,7 @@ For example, a function that builds an SVG bar chart and tags it as hiccup:
 
 Now simply calling the function renders the chart — no annotation needed at the call site:
 
-```{clojure .jank}
+```{.clojure .jank}
 (bar-chart ["a" "b" "c"] [10 20 15])
 ```
 
@@ -165,7 +165,7 @@ In Clojure (and Jank), metadata can only be attached to collections — vectors,
 
 The convention is to wrap the value in a vector:
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/html ["<b>hello</b>"]
 ```
 
@@ -180,7 +180,7 @@ These attributes go on the code fence and control display independently of Kindl
 | `echo=false` | Hide the source code, show only the result |
 | `eval=false` | Show code without evaluating it |
 
-```{clojure .jank echo=false}
+```{.clojure .jank echo=false}
 ^:kind/hiccup
 [:div "Only the rendered HTML appears — no source code shown"]
 ```

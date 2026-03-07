@@ -1,10 +1,10 @@
 # How It Works
 
-This chapter explains the internals of Janqua — how your `{clojure .jank}` code blocks turn into rendered output.
+This chapter explains the internals of Janqua — how your `{.clojure .jank}` code blocks turn into rendered output.
 
 ## Architecture overview
 
-Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class (typically written as `{clojure .jank}` for editor syntax highlighting), evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
+Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class (typically written as `{.clojure .jank}` for editor syntax highlighting), evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
 
 ```{mermaid}
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
 The filter has two phases, executed in order:
 
 1. **`Meta`** — reads document metadata and resolves the Jank nREPL port
-2. **`CodeBlock`** — processes each `{clojure .jank}` code block
+2. **`CodeBlock`** — processes each `{.clojure .jank}` code block
 
 ## Port discovery
 
@@ -50,7 +50,7 @@ The stop command verifies the PID still belongs to a Jank process before sending
 
 ## Code evaluation
 
-Each `{clojure .jank}` code block goes through these steps:
+Each `{.clojure .jank}` code block goes through these steps:
 
 ### 1. Kindly wrapping
 
@@ -119,7 +119,7 @@ This runs inside Jank (not in Lua), so it has access to the full Clojure data mo
 
 ## Code block attributes
 
-The filter respects several attributes on `{clojure .jank}` blocks:
+The filter respects several attributes on `{.clojure .jank}` blocks:
 
 | Attribute | Effect |
 |:----------|:-------|

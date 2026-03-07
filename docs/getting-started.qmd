@@ -47,17 +47,17 @@ filters:
   - jank
 ---
 
-```{clojure .jank}
+```{.clojure .jank}
 (+ 1 2 3)
 ```
 
-```{clojure .jank}
+```{.clojure .jank}
 ^:kind/hiccup
 [:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]
 ```
 ````
 
-Note the `{clojure .jank}` syntax: `clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. The dot prefix on `.jank` is [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) tells Quarto to use the Janqua filter.
+Note the `{.clojure .jank}` syntax: `clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. The dot prefix on `.jank` is [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) tells Quarto to use the Janqua filter.
 
 ## Render it
 
