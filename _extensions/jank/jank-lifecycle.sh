@@ -8,15 +8,21 @@
 
 set -euo pipefail
 
-# Resolve project root: walk up from this script's directory to find _quarto.yml
+# Resolve project root: walk up from this script's directory to find _quarto.yml.
+# Falls back to the current working directory if not found.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-while [ "$PROJECT_ROOT" != "/" ]; do
-    if [ -f "$PROJECT_ROOT/_quarto.yml" ]; then
+PROJECT_ROOT=""
+_dir="$SCRIPT_DIR"
+while [ "$_dir" != "/" ]; do
+    if [ -f "$_dir/_quarto.yml" ]; then
+        PROJECT_ROOT="$_dir"
         break
     fi
-    PROJECT_ROOT="$(dirname "$PROJECT_ROOT")"
+    _dir="$(dirname "$_dir")"
 done
+if [ -z "$PROJECT_ROOT" ]; then
+    PROJECT_ROOT="$(pwd)"
+fi
 
 PID_FILE="$PROJECT_ROOT/.jank-pid"
 PORT_FILE="$PROJECT_ROOT/.jank-nrepl-port"

@@ -185,7 +185,7 @@ local function eval_jank_raw(code)
   end
 
   local escaped = code:gsub("'", "'\\''")
-  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 60000 '" .. escaped .. "' 2>&1"
+  local cmd = "clj-nrepl-eval -p " .. jank_port .. " --timeout 10000 '" .. escaped .. "' 2>&1"
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()
@@ -280,6 +280,13 @@ local function eval_jank(code)
   if err then return nil, nil, err, nil end
 
   local value, stdout = parse_nrepl_output(raw)
+
+  -- If the wrapper map wasn't returned, the code likely threw an error.
+  -- The raw value IS the error message in that case.
+  if value and not value:match(":janqua/kind") then
+    return nil, stdout, value, nil
+  end
+
   local kind, actual_value = parse_kindly_response(value)
 
   -- Unquote the pr-str serialization layer from the wrapper
