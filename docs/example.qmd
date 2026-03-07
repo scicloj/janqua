@@ -8,19 +8,19 @@ This page contains live Jank code — each block is evaluated during rendering, 
 
 ## Basics
 
-```{.jank}
+```{clojure .jank}
 (+ 1 2 3)
 ```
 
-```{.jank}
+```{clojure .jank}
 (str "Hello from " "Jank!")
 ```
 
-```{.jank}
+```{clojure .jank}
 (defn square [x] (* x x))
 ```
 
-```{.jank}
+```{clojure .jank}
 (map square [1 2 3 4 5])
 ```
 
@@ -28,13 +28,13 @@ This page contains live Jank code — each block is evaluated during rendering, 
 
 Printed output appears alongside the return value:
 
-```{.jank}
+```{clojure .jank}
 (do (println "computing...") (* 6 7))
 ```
 
 ## Setup helpers
 
-```{.jank}
+```{clojure .jank}
 ^:kind/hidden
 [(defn to-json [v]
    (cond
@@ -59,7 +59,7 @@ Printed output appears alongside the return value:
 
 Annotate a vector with `^:kind/hiccup` to render it as HTML:
 
-```{.jank}
+```{clojure .jank}
 ^:kind/hiccup
 [:svg {:width "300" :height "200" :xmlns "http://www.w3.org/2000/svg"}
   [:rect {:width "300" :height "200" :fill "#f0f0f0" :rx "10"}]
@@ -72,7 +72,7 @@ Annotate a vector with `^:kind/hiccup` to render it as HTML:
 
 The long form `^{:kindly/kind :kind/hiccup}` works too:
 
-```{.jank}
+```{clojure .jank}
 ^{:kindly/kind :kind/hiccup}
 [:div {:style "padding:12px; background:#f0f0f0; border-radius:8px;"}
   [:b "Hello"] " from " [:em "Kindly"] "!"]
@@ -83,7 +83,7 @@ The long form `^{:kindly/kind :kind/hiccup}` works too:
 Use `^:kind/html` to render a computed string as raw HTML.
 Since strings can't hold metadata, wrap the expression in a vector:
 
-```{.jank}
+```{clojure .jank}
 ^:kind/html
 [(str "<div style='padding:8px; border:2px solid #4a90d9; border-radius:8px;'>"
       "<b>Computed HTML</b> via <code>kind/html</code>"
@@ -92,7 +92,7 @@ Since strings can't hold metadata, wrap the expression in a vector:
 
 ## [Plotly.js](https://plotly.com/javascript/) chart
 
-```{.jank}
+```{clojure .jank}
 ^:kind/html
 [(let [xs (vec (map #(* 0.5 %) (range 20)))
        ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]
@@ -112,7 +112,7 @@ Since strings can't hold metadata, wrap the expression in a vector:
 
 Use `^:kind/md` to render a string as markdown:
 
-```{.jank}
+```{clojure .jank}
 ^:kind/md
 [(let [headers ["x" "x²" "x³"]
        rows (map (fn [x] [(str x) (str (* x x)) (str (* x x x))]) (range 1 8))
@@ -126,14 +126,14 @@ Use `^:kind/md` to render a string as markdown:
 
 Since `kind/md` output is processed as markdown, LaTeX math works via `$$...$$` syntax. Quarto renders it with [MathJax](https://www.mathjax.org/):
 
-```{.jank}
+```{clojure .jank}
 ^:kind/md
 [(str "$$\\sum_{k=1}^{n} k = \\frac{n(n+1)}{2}$$")]
 ```
 
 You can also build formulas from computed values:
 
-```{.jank}
+```{clojure .jank}
 ^:kind/md
 [(let [n 10
        result (/ (* n (+ n 1)) 2)]
@@ -145,7 +145,7 @@ You can also build formulas from computed values:
 
 Metadata doesn't have to be in the code block — functions can attach it to their return values with `with-meta`. Define a `bar-chart` function that produces a Plotly chart and tags it as `:kind/html`:
 
-```{.jank}
+```{clojure .jank}
 ^:kind/hidden
 [(defn bar-chart [labels values]
    (with-meta
@@ -159,6 +159,6 @@ Metadata doesn't have to be in the code block — functions can attach it to the
 
 Now just call the function — no annotation needed at the call site:
 
-```{.jank}
+```{clojure .jank}
 (bar-chart ["apples" "bananas" "cherries"] [12 19 7])
 ```

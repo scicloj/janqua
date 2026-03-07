@@ -6,13 +6,13 @@
 --
 -- Port is resolved automatically (no config needed).
 --
--- Code block options:
---   ```{.jank}                — evaluate, show code + result as code block
---   ```{.jank output=html}    — evaluate, render result as raw HTML (SVG, Plotly, etc.)
---   ```{.jank output=markdown} — evaluate, render result as markdown (tables, etc.)
---   ```{.jank output=hidden}  — evaluate silently (no code, no output)
---   ```{.jank eval=false}     — show code only, don't evaluate
---   ```{.jank echo=false}     — evaluate but hide the code
+-- Code block options (use {clojure .jank} for editor syntax highlighting):
+--   ```{clojure .jank}                — evaluate, show code + result as code block
+--   ```{clojure .jank output=html}    — evaluate, render result as raw HTML (SVG, Plotly, etc.)
+--   ```{clojure .jank output=markdown} — evaluate, render result as markdown (tables, etc.)
+--   ```{clojure .jank output=hidden}  — evaluate silently (no code, no output)
+--   ```{clojure .jank eval=false}     — show code only, don't evaluate
+--   ```{clojure .jank echo=false}     — evaluate but hide the code
 --
 -- Kindly convention:
 --   ^:kind/hiccup [:div ...]  — auto-converts hiccup to HTML
