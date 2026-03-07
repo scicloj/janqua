@@ -224,6 +224,16 @@ local function next_div_id()
   return "janqua-plot-" .. janqua_div_counter
 end
 
+-- Encode a Lua string as a JSON/JS string literal (with quotes).
+local function js_string_encode(s)
+  s = s:gsub('\\', '\\\\')
+  s = s:gsub('"', '\\"')
+  s = s:gsub('\n', '\\n')
+  s = s:gsub('\r', '\\r')
+  s = s:gsub('\t', '\\t')
+  return '"' .. s .. '"'
+end
+
 -- Send raw code to Jank via clj-nrepl-eval.
 -- Returns: raw output string, error string (may be nil)
 local function eval_jank_raw(code)
@@ -468,16 +478,35 @@ function CodeBlock(el)
         end
       end
     elseif output_mode == "mermaid" then
-      -- Mermaid diagram — Quarto renders natively
+      -- Mermaid diagram — render via mermaid JS from CDN
       if value then
         local diagram = unquote_clj_string(value)
-        table.insert(blocks, pandoc.CodeBlock(diagram, pandoc.Attr("", {"mermaid"})))
+        local div_id = next_div_id()
+        local html = '<div id="' .. div_id .. '"></div>'
+          .. '<script type="module">'
+          .. 'import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";'
+          .. 'const el = document.getElementById("' .. div_id .. '");'
+          .. 'const {svg} = await mermaid.render("' .. div_id .. '-svg", '
+          .. js_string_encode(diagram) .. ');'
+          .. 'el.innerHTML = svg;'
+          .. '</script>'
+        table.insert(blocks, pandoc.RawBlock("html", html))
       end
+
     elseif output_mode == "graphviz" then
-      -- Graphviz DOT diagram — Quarto renders natively
+      -- Graphviz DOT diagram — render to SVG via dot command
       if value then
-        local dot = unquote_clj_string(value)
-        table.insert(blocks, pandoc.CodeBlock(dot, pandoc.Attr("", {"dot"})))
+        local dot_src = unquote_clj_string(value)
+        local cmd = 'echo ' .. shell_quote(dot_src) .. ' | dot -Tsvg'
+        local handle = io.popen(cmd)
+        local svg = handle:read('*a')
+        handle:close()
+        if svg and #svg > 0 then
+          table.insert(blocks, pandoc.RawBlock('html', svg))
+        else
+          io.stderr:write("[jank filter] WARNING: Graphviz dot command failed\n")
+          table.insert(blocks, pandoc.CodeBlock(dot_src, pandoc.Attr('', {'dot'})))
+        end
       end
     elseif output_mode == "tex" then
       -- TeX formula — wrap in $$...$$ and render as markdown
