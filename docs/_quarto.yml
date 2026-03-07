@@ -5,6 +5,8 @@ project:
 book:
   title: "Janqua"
   subtitle: "Jank code in Quarto documents"
+  repo-url: https://github.com/scicloj/janqua
+  repo-actions: [issue]
   chapters:
     - index.qmd
     - getting-started.qmd
