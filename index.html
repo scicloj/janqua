@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>janqua</title>
+<title>Janqua</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -134,7 +134,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="./index.html" class="sidebar-logo-link">
       </a>
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">janqua</a> 
+      <a href="./">Janqua</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -193,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">janqua</h1>
+<h1 class="title">Janqua</h1>
 <p class="subtitle lead">Jank code in Quarto documents</p>
 </div>
 
@@ -227,18 +227,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="what-is-jank" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-jank">What is Jank?</h2>
-<p><a href="https://jank-lang.org">Jank</a> is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which janqua uses to evaluate code interactively during document rendering.</p>
+<p><a href="https://jank-lang.org">Jank</a> is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which Janqua uses to evaluate code interactively during document rendering.</p>
 </section>
 <section id="clojure-ecosystem-connection" class="level2">
 <h2 class="anchored" data-anchor-id="clojure-ecosystem-connection">Clojure ecosystem connection</h2>
 <p><a href="https://scicloj.github.io/clay">Clay</a> is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. <a href="https://clojurecivitas.org/">Clojure Civitas</a>, the community blog, is built this way.</p>
-<p>janqua brings a similar experience to Jank: you write Jank code directly in <code>.qmd</code> files, and the Quarto filter evaluates it during rendering. Both janqua and Clay use the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations, so code patterns are transferable between the two ecosystems.</p>
+<p>Janqua brings a similar experience to Jank: you write Jank code directly in <code>.qmd</code> files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations, so code patterns are transferable between the two ecosystems.</p>
 </section>
 <section id="how-it-works" class="level2">
 <h2 class="anchored" data-anchor-id="how-it-works">How it works</h2>
 <ol type="1">
 <li>You write a <code>.qmd</code> file with <code>{.jank}</code> code blocks</li>
-<li>When Quarto renders the document, the janqua filter intercepts these blocks</li>
+<li>When Quarto renders the document, the Janqua filter intercepts these blocks</li>
 <li>Each block is sent to a Jank nREPL server for evaluation</li>
 <li>Results are inserted into the document — as code output, HTML, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
 </ol>

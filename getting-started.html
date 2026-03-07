@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Getting Started – janqua</title>
+<title>1&nbsp; Getting Started – Janqua</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -135,7 +135,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="./index.html" class="sidebar-logo-link">
       </a>
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">janqua</a> 
+      <a href="./">Janqua</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -185,7 +185,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#write-a-document" id="toc-write-a-document" class="nav-link" data-scroll-target="#write-a-document"><span class="header-section-number">1.4</span> Write a document</a></li>
   <li><a href="#render-it" id="toc-render-it" class="nav-link" data-scroll-target="#render-it"><span class="header-section-number">1.5</span> Render it</a></li>
   <li><a href="#managing-the-jank-process" id="toc-managing-the-jank-process" class="nav-link" data-scroll-target="#managing-the-jank-process"><span class="header-section-number">1.6</span> Managing the Jank process</a></li>
-  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">1.7</span> Next steps</a></li>
+  <li><a href="#publishing-to-github-pages" id="toc-publishing-to-github-pages" class="nav-link" data-scroll-target="#publishing-to-github-pages"><span class="header-section-number">1.7</span> Publishing to GitHub Pages</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">1.8</span> Next steps</a></li>
   </ul>
 </nav>
     </div>
@@ -254,7 +255,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="in">^:kind/hiccup</span></span>
 <span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="in">[:div {:style "color: coral; font-size: 24px;"} "Hello from Jank!"]</span></span>
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Note the <code>{.jank}</code> syntax — the dot prefix is required (it’s Pandoc class syntax). The <code>filters: [jank]</code> in the frontmatter tells Quarto to use the janqua filter.</p>
+<p>Note the <code>{.jank}</code> syntax — the dot prefix is required (it’s Pandoc class syntax). The <code>filters: [jank]</code> in the frontmatter tells Quarto to use the Janqua filter.</p>
 </section>
 <section id="render-it" class="level2" data-number="1.5">
 <h2 data-number="1.5" class="anchored" data-anchor-id="render-it"><span class="header-section-number">1.5</span> Render it</h2>
@@ -272,8 +273,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="ex">_extensions/jank/jank-lifecycle.sh</span> stop     <span class="co"># stop when done</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Stop the server when you’re done working to free resources.</p>
 </section>
-<section id="next-steps" class="level2" data-number="1.7">
-<h2 data-number="1.7" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">1.7</span> Next steps</h2>
+<section id="publishing-to-github-pages" class="level2" data-number="1.7">
+<h2 data-number="1.7" class="anchored" data-anchor-id="publishing-to-github-pages"><span class="header-section-number">1.7</span> Publishing to GitHub Pages</h2>
+<p>If your project is a Quarto book or website, you can publish it to <a href="https://pages.github.com/">GitHub Pages</a> directly from your project directory:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> publish gh-pages</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>This renders the project and pushes the output to the <code>gh-pages</code> branch. GitHub Pages then serves it as a website. On first use, Quarto will create the branch and configure it for you.</p>
+<p>See the <a href="https://quarto.org/docs/publishing/github-pages.html">Quarto publishing guide</a> for more options, including custom domains and GitHub Actions automation.</p>
+</section>
+<section id="next-steps" class="level2" data-number="1.8">
+<h2 data-number="1.8" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">1.8</span> Next steps</h2>
 <ul>
 <li>Learn about <a href="./kindly.html">Kindly annotations</a> to render HTML, SVG, charts, and tables</li>
 <li>See the <a href="./example.html">Live Demo</a> for evaluated examples</li>

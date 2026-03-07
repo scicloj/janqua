@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Kindly Annotations – janqua</title>
+<title>2&nbsp; Kindly Annotations – Janqua</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -135,7 +135,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <a href="./index.html" class="sidebar-logo-link">
       </a>
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">janqua</a> 
+      <a href="./">Janqua</a> 
     </div>
       </div>
         <div class="mt-2 flex-shrink-0 align-items-center">
@@ -212,7 +212,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p><a href="https://scicloj.github.io/kindly-noted/">Kindly</a> is a convention from the Clojure ecosystem for annotating values with rendering intent. janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.</p>
+<p><a href="https://scicloj.github.io/kindly-noted/">Kindly</a> is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.</p>
 <p>Without an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.</p>
 <section id="kindhiccup-html-from-data" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="kindhiccup-html-from-data"><span class="header-section-number">2.1</span> <code>^:kind/hiccup</code> — HTML from data</h2>
@@ -231,7 +231,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="in">^:kind/html</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="in">[(str "&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;")]</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The vector is automatically unwrapped — janqua extracts the first element for rendering.</p>
+<p>The vector is automatically unwrapped — Janqua extracts the first element for rendering.</p>
 </section>
 <section id="kindmd-markdown" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="kindmd-markdown"><span class="header-section-number">2.3</span> <code>^:kind/md</code> — markdown</h2>
@@ -263,7 +263,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>In Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So <code>^:kind/html "hello"</code> won’t work.</p>
 <p>The convention is to wrap the value in a vector:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/html</span> [<span class="st">"&lt;b&gt;hello&lt;/b&gt;"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>janqua automatically unwraps the vector for <code>kind/html</code> and <code>kind/md</code>, extracting the first element for rendering.</p>
+<p>Janqua automatically unwraps the vector for <code>kind/html</code> and <code>kind/md</code>, extracting the first element for rendering.</p>
 </section>
 <section id="code-block-attributes" class="level2" data-number="2.7">
 <h2 data-number="2.7" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">2.7</span> Code block attributes</h2>

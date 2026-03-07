@@ -2,7 +2,7 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "janqua",
+    "title": "Janqua",
     "section": "",
     "text": "Overview\nJanqua is a Quarto extension for evaluating Jank code blocks in documents.\nWrite Jank code in .qmd files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the Kindly convention for rendering, compatible with the Clojure ecosystem.",
     "crumbs": [
@@ -12,7 +12,7 @@
   {
     "objectID": "index.html#what-is-quarto",
     "href": "index.html#what-is-quarto",
-    "title": "janqua",
+    "title": "Janqua",
     "section": "What is Quarto?",
     "text": "What is Quarto?\nQuarto is an open-source publishing system for technical documents. You write .qmd (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.\nQuarto supports several project types:\n\nSingle documents — a standalone .qmd file rendered to HTML\nWebsites — multiple pages with navigation, like a documentation site\nBooks — chapters rendered as a navigable book (like this one)",
     "crumbs": [
@@ -22,9 +22,9 @@
   {
     "objectID": "index.html#what-is-jank",
     "href": "index.html#what-is-jank",
-    "title": "janqua",
+    "title": "Janqua",
     "section": "What is Jank?",
-    "text": "What is Jank?\nJank is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which janqua uses to evaluate code interactively during document rendering.",
+    "text": "What is Jank?\nJank is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which Janqua uses to evaluate code interactively during document rendering.",
     "crumbs": [
       "Overview"
     ]
@@ -32,9 +32,9 @@
   {
     "objectID": "index.html#clojure-ecosystem-connection",
     "href": "index.html#clojure-ecosystem-connection",
-    "title": "janqua",
+    "title": "Janqua",
     "section": "Clojure ecosystem connection",
-    "text": "Clojure ecosystem connection\nClay is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. Clojure Civitas, the community blog, is built this way.\njanqua brings a similar experience to Jank: you write Jank code directly in .qmd files, and the Quarto filter evaluates it during rendering. Both janqua and Clay use the Kindly convention for rendering annotations, so code patterns are transferable between the two ecosystems.",
+    "text": "Clojure ecosystem connection\nClay is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. Clojure Civitas, the community blog, is built this way.\nJanqua brings a similar experience to Jank: you write Jank code directly in .qmd files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the Kindly convention for rendering annotations, so code patterns are transferable between the two ecosystems.",
     "crumbs": [
       "Overview"
     ]
@@ -42,9 +42,9 @@
   {
     "objectID": "index.html#how-it-works",
     "href": "index.html#how-it-works",
-    "title": "janqua",
+    "title": "Janqua",
     "section": "How it works",
-    "text": "How it works\n\nYou write a .qmd file with {.jank} code blocks\nWhen Quarto renders the document, the janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
+    "text": "How it works\n\nYou write a .qmd file with {.jank} code blocks\nWhen Quarto renders the document, the Janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
     "crumbs": [
       "Overview"
     ]
@@ -94,7 +94,7 @@
     "href": "getting-started.html#write-a-document",
     "title": "1  Getting Started",
     "section": "1.4 Write a document",
-    "text": "1.4 Write a document\nCreate a file called hello.qmd:\n---\ntitle: \"Hello Jank\"\nfilters:\n  - jank\n---\n\n```{.jank}\n(+ 1 2 3)\n```\n\n```{.jank}\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\n```\nNote the {.jank} syntax — the dot prefix is required (it’s Pandoc class syntax). The filters: [jank] in the frontmatter tells Quarto to use the janqua filter.",
+    "text": "1.4 Write a document\nCreate a file called hello.qmd:\n---\ntitle: \"Hello Jank\"\nfilters:\n  - jank\n---\n\n```{.jank}\n(+ 1 2 3)\n```\n\n```{.jank}\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\n```\nNote the {.jank} syntax — the dot prefix is required (it’s Pandoc class syntax). The filters: [jank] in the frontmatter tells Quarto to use the Janqua filter.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -120,11 +120,21 @@
     ]
   },
   {
+    "objectID": "getting-started.html#publishing-to-github-pages",
+    "href": "getting-started.html#publishing-to-github-pages",
+    "title": "1  Getting Started",
+    "section": "1.7 Publishing to GitHub Pages",
+    "text": "1.7 Publishing to GitHub Pages\nIf your project is a Quarto book or website, you can publish it to GitHub Pages directly from your project directory:\nquarto publish gh-pages\nThis renders the project and pushes the output to the gh-pages branch. GitHub Pages then serves it as a website. On first use, Quarto will create the branch and configure it for you.\nSee the Quarto publishing guide for more options, including custom domains and GitHub Actions automation.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
     "objectID": "getting-started.html#next-steps",
     "href": "getting-started.html#next-steps",
     "title": "1  Getting Started",
-    "section": "1.7 Next steps",
-    "text": "1.7 Next steps\n\nLearn about Kindly annotations to render HTML, SVG, charts, and tables\nSee the Live Demo for evaluated examples",
+    "section": "1.8 Next steps",
+    "text": "1.8 Next steps\n\nLearn about Kindly annotations to render HTML, SVG, charts, and tables\nSee the Live Demo for evaluated examples",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -134,7 +144,7 @@
     "href": "kindly.html",
     "title": "2  Kindly Annotations",
     "section": "",
-    "text": "2.1 ^:kind/hiccup — HTML from data\nKindly is a convention from the Clojure ecosystem for annotating values with rendering intent. janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.\nWithout an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.\nConverts a hiccup vector to HTML. Hiccup represents HTML as nested Clojure vectors:\nThe vector [:tag {:attr \"value\"} content] becomes &lt;tag attr=\"value\"&gt;content&lt;/tag&gt;.",
+    "text": "2.1 ^:kind/hiccup — HTML from data\nKindly is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.\nWithout an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.\nConverts a hiccup vector to HTML. Hiccup represents HTML as nested Clojure vectors:\nThe vector [:tag {:attr \"value\"} content] becomes &lt;tag attr=\"value\"&gt;content&lt;/tag&gt;.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -154,7 +164,7 @@
     "href": "kindly.html#kindhtml-raw-html",
     "title": "2  Kindly Annotations",
     "section": "2.2 ^:kind/html — raw HTML",
-    "text": "2.2 ^:kind/html — raw HTML\nRenders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:\n```{.jank}\n^:kind/html\n[(str \"&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;\")]\n```\nThe vector is automatically unwrapped — janqua extracts the first element for rendering.",
+    "text": "2.2 ^:kind/html — raw HTML\nRenders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:\n```{.jank}\n^:kind/html\n[(str \"&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;\")]\n```\nThe vector is automatically unwrapped — Janqua extracts the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
@@ -194,7 +204,7 @@
     "href": "kindly.html#why-wrap-strings-in-vectors",
     "title": "2  Kindly Annotations",
     "section": "2.6 Why wrap strings in vectors?",
-    "text": "2.6 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\njanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
+    "text": "2.6 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\nJanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
     ]
