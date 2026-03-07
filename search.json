@@ -1,0 +1,302 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "janqua",
+    "section": "",
+    "text": "Overview\nJanqua is a Quarto extension for evaluating Jank code blocks in documents.\nWrite Jank code in .qmd files and get live results — code output, inline SVG, Plotly charts, markdown tables, and more. Uses the Kindly convention for rendering, compatible with the Clojure ecosystem.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#what-is-quarto",
+    "href": "index.html#what-is-quarto",
+    "title": "janqua",
+    "section": "What is Quarto?",
+    "text": "What is Quarto?\nQuarto is an open-source publishing system for technical documents. You write .qmd (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.\nQuarto supports several project types:\n\nSingle documents — a standalone .qmd file rendered to HTML\nWebsites — multiple pages with navigation, like a documentation site\nBooks — chapters rendered as a navigable book (like this one)",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#what-is-jank",
+    "href": "index.html#what-is-jank",
+    "title": "janqua",
+    "section": "What is Jank?",
+    "text": "What is Jank?\nJank is a Clojure dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an nREPL server, which janqua uses to evaluate code interactively during document rendering.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#clojure-ecosystem-connection",
+    "href": "index.html#clojure-ecosystem-connection",
+    "title": "janqua",
+    "section": "Clojure ecosystem connection",
+    "text": "Clojure ecosystem connection\nClay is a Clojure tool for data visualization and literate programming. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. Clojure Civitas, the community blog, is built this way.\njanqua brings a similar experience to Jank: you write Jank code directly in .qmd files, and the Quarto filter evaluates it during rendering. Both janqua and Clay use the Kindly convention for rendering annotations, so code patterns are transferable between the two ecosystems.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "index.html#how-it-works",
+    "href": "index.html#how-it-works",
+    "title": "janqua",
+    "section": "How it works",
+    "text": "How it works\n\nYou write a .qmd file with {.jank} code blocks\nWhen Quarto renders the document, the janqua filter intercepts these blocks\nEach block is sent to a Jank nREPL server for evaluation\nResults are inserted into the document — as code output, HTML, or markdown — based on Kindly annotations\n\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\nThe Jank process starts automatically on first render and stays running for fast re-evaluation. See Getting Started to try it out, or jump to the Live Demo to see evaluated examples.",
+    "crumbs": [
+      "Overview"
+    ]
+  },
+  {
+    "objectID": "getting-started.html",
+    "href": "getting-started.html",
+    "title": "1  Getting Started",
+    "section": "",
+    "text": "1.1 Prerequisites\nVerify everything is available:",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#prerequisites",
+    "href": "getting-started.html#prerequisites",
+    "title": "1  Getting Started",
+    "section": "",
+    "text": "Quarto — the publishing system\nJank — the Jank compiler and REPL\nBabashka — fast Clojure scripting runtime\nbbin — tool installer for Babashka\nclj-nrepl-eval — nREPL client (install via bbin):\n\nbbin install io.github.bhauman/clojure-mcp-light\n\nquarto --version\njank --version\nbb --version\nclj-nrepl-eval --help",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#create-a-project",
+    "href": "getting-started.html#create-a-project",
+    "title": "1  Getting Started",
+    "section": "1.2 Create a project",
+    "text": "1.2 Create a project\nmkdir my-jank-doc\ncd my-jank-doc",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#install-the-extension",
+    "href": "getting-started.html#install-the-extension",
+    "title": "1  Getting Started",
+    "section": "1.3 Install the extension",
+    "text": "1.3 Install the extension\nRun this inside your project directory — it creates an _extensions/ folder there:\nquarto add scicloj/janqua",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#write-a-document",
+    "href": "getting-started.html#write-a-document",
+    "title": "1  Getting Started",
+    "section": "1.4 Write a document",
+    "text": "1.4 Write a document\nCreate a file called hello.qmd:\n---\ntitle: \"Hello Jank\"\nfilters:\n  - jank\n---\n\n```{.jank}\n(+ 1 2 3)\n```\n\n```{.jank}\n^:kind/hiccup\n[:div {:style \"color: coral; font-size: 24px;\"} \"Hello from Jank!\"]\n```\nNote the {.jank} syntax — the dot prefix is required (it’s Pandoc class syntax). The filters: [jank] in the frontmatter tells Quarto to use the janqua filter.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#render-it",
+    "href": "getting-started.html#render-it",
+    "title": "1  Getting Started",
+    "section": "1.5 Render it",
+    "text": "1.5 Render it\nquarto render hello.qmd\nThis starts a Jank nREPL server (if one isn’t already running), evaluates the code blocks, and produces hello.html.\nFor a live-reloading workflow, use quarto preview instead — it re-renders automatically each time you save:\nquarto preview hello.qmd\nThis opens a browser with live preview. Edit your .qmd, save, and the page refreshes with updated results. Press Ctrl-C to stop.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#managing-the-jank-process",
+    "href": "getting-started.html#managing-the-jank-process",
+    "title": "1  Getting Started",
+    "section": "1.6 Managing the Jank process",
+    "text": "1.6 Managing the Jank process\nThe Jank nREPL server starts on the first render and stays running for fast re-evaluation. You can manage it with the lifecycle script:\n_extensions/jank/jank-lifecycle.sh status   # check if running\n_extensions/jank/jank-lifecycle.sh start    # start manually\n_extensions/jank/jank-lifecycle.sh stop     # stop when done\nStop the server when you’re done working to free resources.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "getting-started.html#next-steps",
+    "href": "getting-started.html#next-steps",
+    "title": "1  Getting Started",
+    "section": "1.7 Next steps",
+    "text": "1.7 Next steps\n\nLearn about Kindly annotations to render HTML, SVG, charts, and tables\nSee the Live Demo for evaluated examples",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html",
+    "href": "kindly.html",
+    "title": "2  Kindly Annotations",
+    "section": "",
+    "text": "2.1 ^:kind/hiccup — HTML from data\nKindly is a convention from the Clojure ecosystem for annotating values with rendering intent. janqua supports Kindly metadata, so the same code patterns work in both Jank+Quarto and Clojure+Clay.\nWithout an annotation, results display as code output. Add Kindly metadata to control how a value is rendered.\nConverts a hiccup vector to HTML. Hiccup represents HTML as nested Clojure vectors:\nThe vector [:tag {:attr \"value\"} content] becomes &lt;tag attr=\"value\"&gt;content&lt;/tag&gt;.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#kindhiccup-html-from-data",
+    "href": "kindly.html#kindhiccup-html-from-data",
+    "title": "2  Kindly Annotations",
+    "section": "",
+    "text": "```{.jank}\n^:kind/hiccup\n[:svg {:width \"100\" :height \"100\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:circle {:cx \"50\" :cy \"50\" :r \"40\" :fill \"coral\"}]]\n```",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#kindhtml-raw-html",
+    "href": "kindly.html#kindhtml-raw-html",
+    "title": "2  Kindly Annotations",
+    "section": "2.2 ^:kind/html — raw HTML",
+    "text": "2.2 ^:kind/html — raw HTML\nRenders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:\n```{.jank}\n^:kind/html\n[(str \"&lt;b&gt;bold&lt;/b&gt; and &lt;em&gt;italic&lt;/em&gt;\")]\n```\nThe vector is automatically unwrapped — janqua extracts the first element for rendering.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#kindmd-markdown",
+    "href": "kindly.html#kindmd-markdown",
+    "title": "2  Kindly Annotations",
+    "section": "2.3 ^:kind/md — markdown",
+    "text": "2.3 ^:kind/md — markdown\nRenders a string as markdown. Same wrapping rule as kind/html:\n```{.jank}\n^:kind/md\n[(str \"| a | b |\\n| --- | --- |\\n| 1 | 2 |\")]\n```",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#kindhidden-suppress-output",
+    "href": "kindly.html#kindhidden-suppress-output",
+    "title": "2  Kindly Annotations",
+    "section": "2.4 ^:kind/hidden — suppress output",
+    "text": "2.4 ^:kind/hidden — suppress output\nEvaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:\n```{.jank}\n^:kind/hidden\n[(def my-data [1 2 3])]\n```",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#long-form",
+    "href": "kindly.html#long-form",
+    "title": "2  Kindly Annotations",
+    "section": "2.5 Long form",
+    "text": "2.5 Long form\nThe shorthand ^:kind/hiccup is equivalent to the explicit ^{:kindly/kind :kind/hiccup}:\n```{.jank}\n^{:kindly/kind :kind/hiccup}\n[:div \"hello\"]\n```\nUse whichever you prefer. The shorthand is more concise; the long form is explicit.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#why-wrap-strings-in-vectors",
+    "href": "kindly.html#why-wrap-strings-in-vectors",
+    "title": "2  Kindly Annotations",
+    "section": "2.6 Why wrap strings in vectors?",
+    "text": "2.6 Why wrap strings in vectors?\nIn Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So ^:kind/html \"hello\" won’t work.\nThe convention is to wrap the value in a vector:\n^:kind/html [\"&lt;b&gt;hello&lt;/b&gt;\"]\njanqua automatically unwraps the vector for kind/html and kind/md, extracting the first element for rendering.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#code-block-attributes",
+    "href": "kindly.html#code-block-attributes",
+    "title": "2  Kindly Annotations",
+    "section": "2.7 Code block attributes",
+    "text": "2.7 Code block attributes\nThese attributes go on the code fence and control display independently of Kindly:\n\n\n\nAttribute\nEffect\n\n\n\n\necho=false\nHide the source code, show only the result\n\n\neval=false\nShow code without evaluating it\n\n\n\n```{.jank echo=false}\n^:kind/hiccup\n[:div \"Only the rendered HTML appears — no source code shown\"]\n```",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "kindly.html#summary",
+    "href": "kindly.html#summary",
+    "title": "2  Kindly Annotations",
+    "section": "2.8 Summary",
+    "text": "2.8 Summary\n\n\n\nKind\nValue type\nRenders as\n\n\n\n\n^:kind/hiccup\nvector (hiccup)\nHTML\n\n\n^:kind/html\n[string]\nraw HTML\n\n\n^:kind/md\n[string]\nmarkdown\n\n\n^:kind/hidden\nany\nnothing (evaluates silently)\n\n\n(none)\nany\ncode output",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Kindly Annotations</span>"
+    ]
+  },
+  {
+    "objectID": "example.html",
+    "href": "example.html",
+    "title": "3  Live Demo",
+    "section": "",
+    "text": "3.1 Basics\nThis page contains live Jank code — each block is evaluated during rendering, and the results appear below.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#basics",
+    "href": "example.html#basics",
+    "title": "3  Live Demo",
+    "section": "",
+    "text": "(+ 1 2 3)\n\n6\n\n(str \"Hello from \" \"Jank!\")\n\n\"Hello from Jank!\"\n\n(defn square [x] (* x x))\n\n#'user/square\n\n(map square [1 2 3 4 5])\n\n(1 4 9 16 25)",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#stdout",
+    "href": "example.html#stdout",
+    "title": "3  Live Demo",
+    "section": "3.2 Stdout",
+    "text": "3.2 Stdout\nPrinted output appears alongside the return value:\n(do (println \"computing...\") (* 6 7))\n\ncomputing...\n42",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#setup-helpers",
+    "href": "example.html#setup-helpers",
+    "title": "3  Live Demo",
+    "section": "3.3 Setup helpers",
+    "text": "3.3 Setup helpers\n^:kind/hidden\n[(defn to-json [v]\n   (cond\n     (nil? v) \"null\"\n     (true? v) \"true\"\n     (false? v) \"false\"\n     (string? v) (str \"\\\"\" v \"\\\"\")\n     (keyword? v) (str \"\\\"\" (name v) \"\\\"\")\n     (number? v) (str v)\n     (vector? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (seq? v) (str \"[\" (clojure.string/join \", \" (map to-json v)) \"]\")\n     (map? v) (str \"{\"\n                (clojure.string/join \", \"\n                  (map (fn [[k val]]\n                         (str (to-json k) \": \" (to-json val)))\n                       v))\n                \"}\")\n     :else (str v)))]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#hiccup",
+    "href": "example.html#hiccup",
+    "title": "3  Live Demo",
+    "section": "3.4 Hiccup",
+    "text": "3.4 Hiccup\nAnnotate a vector with ^:kind/hiccup to render it as HTML:\n^:kind/hiccup\n[:svg {:width \"300\" :height \"200\" :xmlns \"http://www.w3.org/2000/svg\"}\n  [:rect {:width \"300\" :height \"200\" :fill \"#f0f0f0\" :rx \"10\"}]\n  [:circle {:cx \"80\" :cy \"100\" :r \"50\" :fill \"steelblue\"}]\n  [:circle {:cx \"160\" :cy \"100\" :r \"40\" :fill \"coral\"}]\n  [:circle {:cx \"230\" :cy \"100\" :r \"30\" :fill \"mediumseagreen\"}]\n  [:text {:x \"150\" :y \"180\" :text-anchor \"middle\" :font-size \"14\" :fill \"#333\"}\n    \"Generated by Jank\"]]\nGenerated by Jank\nThe long form ^{:kindly/kind :kind/hiccup} works too:\n^{:kindly/kind :kind/hiccup}\n[:div {:style \"padding:12px; background:#f0f0f0; border-radius:8px;\"}\n  [:b \"Hello\"] \" from \" [:em \"Kindly\"] \"!\"]\nHello from Kindly!",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#html",
+    "href": "example.html#html",
+    "title": "3  Live Demo",
+    "section": "3.5 HTML",
+    "text": "3.5 HTML\nUse ^:kind/html to render a computed string as raw HTML. Since strings can’t hold metadata, wrap the expression in a vector:\n^:kind/html\n[(str \"&lt;div style='padding:8px; border:2px solid #4a90d9; border-radius:8px;'&gt;\"\n      \"&lt;b&gt;Computed HTML&lt;/b&gt; via &lt;code&gt;kind/html&lt;/code&gt;\"\n      \"&lt;/div&gt;\")]\nComputed HTML via kind/html",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#plotly-chart",
+    "href": "example.html#plotly-chart",
+    "title": "3  Live Demo",
+    "section": "3.6 Plotly chart",
+    "text": "3.6 Plotly chart\n^:kind/html\n[(let [xs (vec (map #(* 0.5 %) (range 20)))\n       ys (vec (map #(+ (* % %) (* -0.5 %)) xs))]\n   (str \"&lt;div id=\\\"plot1\\\"&gt;&lt;/div&gt;\"\n        \"&lt;script src=\\\"https://cdn.plot.ly/plotly-2.35.0.min.js\\\"&gt;&lt;/script&gt;\"\n        \"&lt;script&gt;Plotly.newPlot('plot1', \"\n        (to-json {:data [{:x xs :y ys\n                          :type \"scatter\" :mode \"lines+markers\"\n                          :name \"y = x² - 0.5x\"}]\n                  :layout {:title \"Quadratic from Jank\"\n                           :xaxis {:title \"x\"}\n                           :yaxis {:title \"y\"}}})\n        \");&lt;/script&gt;\"))]",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  },
+  {
+    "objectID": "example.html#markdown-table",
+    "href": "example.html#markdown-table",
+    "title": "3  Live Demo",
+    "section": "3.7 Markdown table",
+    "text": "3.7 Markdown table\nUse ^:kind/md to render a string as markdown:\n^:kind/md\n[(let [headers [\"x\" \"x²\" \"x³\"]\n       rows (map (fn [x] [(str x) (str (* x x)) (str (* x x x))]) (range 1 8))\n       header-line (str \"| \" (clojure.string/join \" | \" headers) \" |\")\n       sep-line (str \"| \" (clojure.string/join \" | \" (map (fn [_] \"---\") headers)) \" |\")\n       row-lines (map (fn [row] (str \"| \" (clojure.string/join \" | \" row) \" |\")) rows)]\n   (clojure.string/join \"\\n\" (concat [header-line sep-line] row-lines)))]\n\n\n\nx\nx²\nx³\n\n\n\n\n1\n1\n1\n\n\n2\n4\n8\n\n\n3\n9\n27\n\n\n4\n16\n64\n\n\n5\n25\n125\n\n\n6\n36\n216\n\n\n7\n49\n343",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Live Demo</span>"
+    ]
+  }
+]
