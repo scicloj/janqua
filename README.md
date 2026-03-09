@@ -52,7 +52,7 @@ quarto preview hello.qmd
 - [Quarto](https://quarto.org/docs/get-started/)
 - [Jank](https://jank-lang.org)
 - [Babashka](https://github.com/babashka/babashka#installation) + [bbin](https://github.com/babashka/bbin#installation)
-- clj-nrepl-eval: `bbin install io.github.bhauman/clojure-mcp-light`
+- clj-nrepl-eval: `bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '["-m" "clojure-mcp-light.nrepl-eval"]'`
 
 ## License
 
