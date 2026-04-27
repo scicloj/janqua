@@ -30,6 +30,32 @@
 --   ^:kind/highcharts {...}   — Highcharts chart (via CDN)
 
 local jank_port = nil
+local project_root = nil
+
+-- Walk up from the current working directory looking for _quarto.yml.
+-- Returns the absolute path of the project root, or nil if none found.
+-- The lifecycle script applies the same rule, so PID/port files always
+-- resolve to the same location regardless of entry point.
+local function find_project_root()
+  local handle = io.popen("pwd")
+  if not handle then return nil end
+  local cwd = handle:read("*l")
+  handle:close()
+  if not cwd or cwd == "" then return nil end
+
+  local dir = cwd
+  while dir and dir ~= "" and dir ~= "/" do
+    local f = io.open(dir .. "/_quarto.yml", "r")
+    if f then
+      f:close()
+      return dir
+    end
+    local parent = dir:match("(.*)/[^/]+$")
+    if not parent or parent == dir then break end
+    dir = parent
+  end
+  return nil
+end
 
 -- Shell-escape a string for use inside single quotes.
 -- Replaces ' with '\'' (end quote, escaped quote, reopen quote).
@@ -101,22 +127,109 @@ local function pid_alive(pid)
   return ok == true or ok == 0
 end
 
--- Start jank repl via lifecycle script and return the port.
-local function auto_start_jank()
-  io.stderr:write("[jank filter] No running Jank found. Starting via lifecycle script...\n")
+-- Print a multi-line block to stderr, framed by separators, so the user
+-- cannot miss that something with persistent side effects just happened.
+local function print_loud(lines)
+  local sep = string.rep("=", 64)
+  io.stderr:write(sep .. "\n")
+  for _, line in ipairs(lines) do
+    io.stderr:write("[janqua] " .. line .. "\n")
+  end
+  io.stderr:write(sep .. "\n")
+end
 
-  local cmd = shell_quote(lifecycle_script()) .. " start 2>/dev/null"
+-- Build a visible error block for the rendered document, mirroring the
+-- existing cell-output-error pattern used for user-code exceptions.
+-- Also writes a stderr line so build logs flag the failure even when
+-- nobody opens the rendered HTML.
+local function error_block(title, detail)
+  io.stderr:write("[janqua] ERROR: " .. title .. "\n")
+  local content = "[janqua] ERROR: " .. title
+  if detail and detail ~= "" then
+    content = content .. "\n\n" .. detail
+  end
+  return pandoc.Div(
+    pandoc.CodeBlock(content, pandoc.Attr("", {"error"})),
+    pandoc.Attr("", {"cell-output", "cell-output-error"})
+  )
+end
+
+-- Check whether the user has explicitly disabled auto-start.
+-- Default is enabled; this returns true only when an explicit "off" signal
+-- is present in frontmatter or the JANK_AUTO_START env var.
+local function auto_start_disabled(meta)
+  if meta and meta.jank then
+    local opt = meta.jank["auto-start"]
+    if opt ~= nil then
+      local s = pandoc.utils.stringify(opt):lower()
+      if s == "false" or s == "no" or s == "0" then
+        return true
+      end
+    end
+  end
+  local env = os.getenv("JANK_AUTO_START")
+  if env then
+    local s = env:lower()
+    if s == "false" or s == "0" or s == "no" or s == "off" then
+      return true
+    end
+  end
+  return false
+end
+
+-- Start jank repl via lifecycle script and return the port.
+-- On success, prints a loud block so the user knows a long-lived process
+-- was spawned and how to stop it.
+local function auto_start_jank()
+  io.stderr:write("[janqua] No running Jank nREPL found. Starting one...\n")
+
+  local script_path = lifecycle_script()
+  local cmd = shell_quote(script_path) .. " start 2>/dev/null"
   local handle = io.popen(cmd)
   local port = handle:read("*l")
   handle:close()
 
   if port and port:match("^%d+$") then
-    io.stderr:write("[jank filter] Jank started on port " .. port .. "\n")
+    local pid = read_number_file(project_root .. "/.jank-pid") or "(see .jank-pid)"
+    print_loud({
+      "Started a long-lived Jank nREPL session.",
+      "  PID:  " .. pid,
+      "  Port: " .. port,
+      "  Log:  " .. project_root .. "/.jank-repl.log",
+      "",
+      "This session KEEPS RUNNING after `quarto render` exits.",
+      "To stop it:",
+      "  " .. script_path .. " stop",
+      "",
+      "To disable auto-start, add to your document's frontmatter:",
+      "  jank:",
+      "    auto-start: false",
+      "(or set env var JANK_AUTO_START=0)",
+    })
     return port
   end
 
-  io.stderr:write("[jank filter] ERROR: Failed to start jank. Run: " .. lifecycle_script() .. " start\n")
+  print_loud({
+    "ERROR: Failed to start Jank.",
+    "Try starting manually:",
+    "  " .. script_path .. " start",
+    "Then check: .jank-repl.log",
+  })
   return nil
+end
+
+-- Print instructions for starting Jank manually when auto-start is disabled.
+local function print_manual_start_instructions()
+  local script_path = lifecycle_script()
+  print_loud({
+    "No running Jank nREPL was found, and auto-start is disabled.",
+    "",
+    "Start Jank manually:",
+    "  " .. script_path .. " start",
+    "",
+    "Or re-enable auto-start by removing `auto-start: false` from",
+    "frontmatter (and unsetting JANK_AUTO_START).",
+  })
 end
 
 -- Resolve the Jank nREPL port using the discovery chain.
@@ -132,10 +245,12 @@ local function resolve_port(meta)
     end
   end
 
-  -- 2. PID file + port file (managed by lifecycle script)
-  local pid = read_number_file(".jank-pid")
+  -- 2. PID file + port file (managed by lifecycle script).
+  -- Always read via the absolute project_root path so the filter and
+  -- the lifecycle script never disagree about file location.
+  local pid = read_number_file(project_root .. "/.jank-pid")
   if pid and pid_alive(pid) then
-    local port = read_number_file(".jank-nrepl-port")
+    local port = read_number_file(project_root .. "/.jank-nrepl-port")
     if port and port_reachable(port) then return port end
   end
 
@@ -153,7 +268,11 @@ local function resolve_port(meta)
   local port = discover_port_from_process()
   if port then return port end
 
-  -- 5. Auto-start via lifecycle script
+  -- 5. Auto-start via lifecycle script (unless explicitly disabled)
+  if auto_start_disabled(meta) then
+    print_manual_start_instructions()
+    return nil
+  end
   return auto_start_jank()
 end
 
@@ -174,45 +293,62 @@ end
 
 
 -- Jank code to bootstrap janqua helpers (sent on first connection).
--- NOTE: janqua-hiccup->html does not escape HTML special characters in
--- attribute values or text content. This is acceptable for a document
--- authoring tool where the user controls the code, but means hiccup
--- with untrusted data could produce malformed HTML.
+-- Defines both helpers in a dedicated `janqua.runtime` namespace so they
+-- never collide with the user's code.
+--
+-- We use `create-ns` + `intern` rather than `(ns janqua.runtime) (defn ...)`
+-- inside a do-block: the `defn` macro resolves the target namespace at
+-- compile time, and the compiler walks the entire do-form before any of it
+-- runs, so a runtime `in-ns` mid-form doesn't redirect subsequent defns.
+-- `intern` interns into the named ns regardless of the current *ns*.
+--
+-- Self-references inside the functions use the local fn name set by
+-- `(fn hiccup->html ...)`, so the body doesn't need the fully-qualified var.
+--
+-- NOTE: hiccup->html does not escape HTML special characters in attribute
+-- values or text content. This is acceptable for a document authoring tool
+-- where the user controls the code, but means hiccup with untrusted data
+-- could produce malformed HTML.
 local janqua_bootstrap = [=[
-(defn janqua-hiccup->html [form]
-  (cond
-    (string? form) form
-    (number? form) (str form)
-    (vector? form)
-    (let [tag (name (first form))
-          has-attrs (map? (second form))
-          attrs (if has-attrs (second form) {})
-          children (if has-attrs (drop 2 form) (rest form))
-          attr-str (apply str
-                     (map (fn [[k v]]
-                            (str " " (name k) "=\"" v "\""))
-                          attrs))]
-      (str "<" tag attr-str ">"
-           (apply str (map janqua-hiccup->html children))
-           "</" tag ">"))
-    :else (str form)))
-(defn janqua-to-json [v]
-  (cond
-    (nil? v) "null"
-    (true? v) "true"
-    (false? v) "false"
-    (string? v) (str "\"" v "\"")
-    (keyword? v) (str "\"" (name v) "\"")
-    (number? v) (str v)
-    (vector? v) (str "[" (clojure.string/join ", " (map janqua-to-json v)) "]")
-    (seq? v) (str "[" (clojure.string/join ", " (map janqua-to-json v)) "]")
-    (map? v) (str "{"
-               (clojure.string/join ", "
-                 (map (fn [[k val]]
-                        (str (janqua-to-json k) ": " (janqua-to-json val)))
-                      v))
-               "}")
-    :else (str v)))
+(do
+  (create-ns 'janqua.runtime)
+  (intern 'janqua.runtime 'hiccup->html
+    (fn hiccup->html [form]
+      (cond
+        (string? form) form
+        (number? form) (str form)
+        (vector? form)
+        (let [tag (name (first form))
+              has-attrs (map? (second form))
+              attrs (if has-attrs (second form) {})
+              children (if has-attrs (drop 2 form) (rest form))
+              attr-str (apply str
+                         (map (fn [[k v]]
+                                (str " " (name k) "=\"" v "\""))
+                              attrs))]
+          (str "<" tag attr-str ">"
+               (apply str (map hiccup->html children))
+               "</" tag ">"))
+        :else (str form))))
+  (intern 'janqua.runtime 'to-json
+    (fn to-json [v]
+      (cond
+        (nil? v) "null"
+        (true? v) "true"
+        (false? v) "false"
+        (string? v) (str "\"" v "\"")
+        (keyword? v) (str "\"" (name v) "\"")
+        (number? v) (str v)
+        (vector? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
+        (seq? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
+        (map? v) (str "{"
+                   (clojure.string/join ", "
+                     (map (fn [[k val]]
+                            (str (to-json k) ": " (to-json val)))
+                          v))
+                   "}")
+        :else (str v))))
+  :janqua.runtime/bootstrapped)
 ]=]
 
 local janqua_bootstrapped = false
@@ -280,26 +416,45 @@ local function parse_nrepl_output(raw)
 
   return value, stdout
 end
--- Convert a Clojure value to JSON via janqua-to-json in the Jank session.
--- Returns JSON string or nil on error.
+-- Convert a Clojure value to JSON via janqua.runtime/to-json in the Jank session.
+-- Returns (json_string, nil) on success, (nil, err_message) on failure.
+--
+-- to-json always returns a string, which the nREPL pretty-prints as a
+-- quoted Clojure literal (e.g. `"{\"a\": 1}"`). When eval errors instead,
+-- the error text comes back unquoted (e.g. `Unable to resolve symbol ...`).
+-- We use the leading `"` to distinguish; otherwise an error message would
+-- silently get spliced into the rendered chart's JavaScript.
 local function clj_to_json(clj_value)
-  local raw, err = eval_jank_raw("(janqua-to-json " .. clj_value .. ")")
-  if err then return nil end
+  local raw, err = eval_jank_raw("(janqua.runtime/to-json " .. clj_value .. ")")
+  if err then return nil, err end
   local json_value = parse_nrepl_output(raw)
-  if json_value then
-    return unquote_clj_string(json_value)
+  if not json_value then
+    return nil, "to-json returned no value"
   end
-  return nil
+  if not json_value:match('^"') then
+    return nil, "to-json eval failed: " .. json_value
+  end
+  return unquote_clj_string(json_value), nil
 end
 
 
 -- Bootstrap janqua helpers in the Jank session (once).
+-- If no port is available, skip silently — the loud block from resolve_port
+-- already informed the user; per-block warnings would just be noise.
+-- On bootstrap failure, print a loud block: plain code blocks may still
+-- evaluate, but Kindly chart kinds and hiccup conversion will not work.
 local function ensure_bootstrap()
   if janqua_bootstrapped then return end
+  if not jank_port then return end
   local raw, err = eval_jank_raw(janqua_bootstrap)
   if err then
-    io.stderr:write("[jank filter] WARNING: Failed to bootstrap janqua helpers: " .. err .. "\n")
-    return
+    print_loud({
+      "ERROR: Failed to bootstrap janqua.runtime helpers.",
+      "Detail: " .. err,
+      "",
+      "Plain code blocks may still evaluate, but Kindly chart kinds",
+      "(vega-lite, plotly, ...) and hiccup conversion will fail.",
+    })
   end
   janqua_bootstrapped = true
 end
@@ -357,6 +512,15 @@ local function eval_jank(code)
 
   local kind, actual_value = parse_kindly_response(value)
 
+  -- Kind matched but value regex missed: surface as an error so we don't
+  -- silently render an empty block.
+  if kind and not actual_value then
+    return nil, stdout,
+      "Could not parse Kindly wrapper response (kind " .. kind ..
+      "). Raw response: " .. value,
+      kind
+  end
+
   -- Unquote the pr-str serialization layer from the wrapper
   actual_value = unquote_clj_string(actual_value)
 
@@ -364,11 +528,18 @@ local function eval_jank(code)
 end
 
 -- Extract the Jank port from document metadata.
+-- resolve_port already prints a loud block when it fails, so don't add
+-- another redundant warning here.
 function Meta(meta)
-  jank_port = resolve_port(meta)
-  if not jank_port then
-    io.stderr:write("[jank filter] WARNING: No Jank nREPL port available.\n")
+  project_root = find_project_root()
+  if not project_root then
+    print_loud({
+      "ERROR: No _quarto.yml found in current directory or any ancestor.",
+      "Run `quarto render` from inside a Quarto project.",
+    })
+    return
   end
+  jank_port = resolve_port(meta)
 end
 
 -- Process Jank code blocks.
@@ -395,11 +566,30 @@ function CodeBlock(el)
     -- Kindly metadata overrides the output= attribute
     if kind then
       if kind == ":kind/hiccup" then
-        -- Convert hiccup to HTML via a second eval
-        local html_raw, html_err = eval_jank_raw("(janqua-hiccup->html " .. unquote_clj_string(value) .. ")")
-        if not html_err then
+        -- Convert hiccup to HTML via a second eval.
+        -- hiccup->html returns a string, which the nREPL prints quoted.
+        -- An unquoted result means the eval errored — surface as an error
+        -- block instead of leaking the error text as raw HTML.
+        local hiccup_src = unquote_clj_string(value)
+        local html_raw, html_err = eval_jank_raw("(janqua.runtime/hiccup->html " .. hiccup_src .. ")")
+        if html_err then
+          table.insert(blocks, error_block(
+            "hiccup->HTML conversion failed: " .. html_err,
+            hiccup_src))
+          value = nil
+        else
           local html_value = parse_nrepl_output(html_raw)
-          if html_value then
+          if not html_value then
+            table.insert(blocks, error_block(
+              "hiccup->HTML returned no value",
+              hiccup_src))
+            value = nil
+          elseif not html_value:match('^"') then
+            table.insert(blocks, error_block(
+              "hiccup->HTML eval failed: " .. html_value,
+              hiccup_src))
+            value = nil
+          else
             value = html_value
           end
         end
@@ -527,7 +717,8 @@ function CodeBlock(el)
     elseif output_mode == "vega-lite" then
       -- Vega-Lite chart via vegaEmbed
       if value then
-        local json = clj_to_json(unquote_clj_string(value))
+        local clj_src = unquote_clj_string(value)
+        local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
@@ -536,12 +727,16 @@ function CodeBlock(el)
             .. '<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>'
             .. '<script>vegaEmbed("#' .. div_id .. '", ' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
+        else
+          table.insert(blocks, error_block(
+            ":kind/vega-lite — " .. (json_err or "unknown error"), clj_src))
         end
       end
     elseif output_mode == "plotly" then
       -- Plotly chart
       if value then
-        local json = clj_to_json(unquote_clj_string(value))
+        local clj_src = unquote_clj_string(value)
+        local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
@@ -549,24 +744,32 @@ function CodeBlock(el)
             .. '<script>var spec=' .. json .. ';'
             .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
+        else
+          table.insert(blocks, error_block(
+            ":kind/plotly — " .. (json_err or "unknown error"), clj_src))
         end
       end
     elseif output_mode == "echarts" then
       -- ECharts chart
       if value then
-        local json = clj_to_json(unquote_clj_string(value))
+        local clj_src = unquote_clj_string(value)
+        local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
             .. '<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>'
             .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
+        else
+          table.insert(blocks, error_block(
+            ":kind/echarts — " .. (json_err or "unknown error"), clj_src))
         end
       end
     elseif output_mode == "cytoscape" then
       -- Cytoscape graph
       if value then
-        local json = clj_to_json(unquote_clj_string(value))
+        local clj_src = unquote_clj_string(value)
+        local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
@@ -574,18 +777,25 @@ function CodeBlock(el)
             .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
             .. 'cytoscape(spec);</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
+        else
+          table.insert(blocks, error_block(
+            ":kind/cytoscape — " .. (json_err or "unknown error"), clj_src))
         end
       end
     elseif output_mode == "highcharts" then
       -- Highcharts chart
       if value then
-        local json = clj_to_json(unquote_clj_string(value))
+        local clj_src = unquote_clj_string(value)
+        local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
             .. '<script src="https://code.highcharts.com/highcharts.js"></script>'
             .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
+        else
+          table.insert(blocks, error_block(
+            ":kind/highcharts — " .. (json_err or "unknown error"), clj_src))
         end
       end
     else

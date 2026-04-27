@@ -8,12 +8,17 @@
 
 set -euo pipefail
 
-# Resolve project root: walk up from this script's directory to find _quarto.yml.
-# Falls back to the current working directory if not found.
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve project root: walk up from the CALLER'S CWD to find _quarto.yml.
+# We deliberately do NOT walk up from this script's own directory, because
+# that produces a different root depending on whether the script is invoked
+# through its canonical path or through a Quarto extension symlink — and the
+# resulting PID/port file mismatch means stop/status can fail silently.
+#
+# Refusing (rather than falling back to $(pwd)) prevents accidentally writing
+# state files into an unrelated directory.
 PROJECT_ROOT=""
-_dir="$SCRIPT_DIR"
-while [ "$_dir" != "/" ]; do
+_dir="$(pwd)"
+while [ -n "$_dir" ] && [ "$_dir" != "/" ]; do
     if [ -f "$_dir/_quarto.yml" ]; then
         PROJECT_ROOT="$_dir"
         break
@@ -21,7 +26,14 @@ while [ "$_dir" != "/" ]; do
     _dir="$(dirname "$_dir")"
 done
 if [ -z "$PROJECT_ROOT" ]; then
-    PROJECT_ROOT="$(pwd)"
+    echo "[jank-lifecycle] ERROR: No _quarto.yml found in '$(pwd)' or any ancestor." >&2
+    echo "[jank-lifecycle] Run this command from inside a Quarto project." >&2
+    exit 1
+fi
+# Defensive sanity checks before any rm -f operations downstream.
+if [ "$PROJECT_ROOT" = "/" ] || [ -z "$PROJECT_ROOT" ]; then
+    echo "[jank-lifecycle] ERROR: refusing to operate with PROJECT_ROOT='$PROJECT_ROOT'" >&2
+    exit 1
 fi
 
 PID_FILE="$PROJECT_ROOT/.jank-pid"
@@ -217,8 +229,9 @@ safe_kill_jank() {
 
 cmd_stop() {
     if [ ! -f "$PID_FILE" ]; then
-        echo "[jank-lifecycle] No PID file found — cannot determine which jank process belongs to this project." >&2
-        echo "[jank-lifecycle] If a jank process is running, stop it manually with: kill <PID>" >&2
+        echo "[jank-lifecycle] No PID file at $PID_FILE — no Jank session for this project." >&2
+        echo "[jank-lifecycle] If you started Jank from a different project directory" >&2
+        echo "[jank-lifecycle] (e.g. a nested book with its own _quarto.yml), run stop from there." >&2
         rm -f "$PORT_FILE"
         return 0
     fi
