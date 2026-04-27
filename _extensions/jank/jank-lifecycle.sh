@@ -57,6 +57,17 @@ is_number() {
     [[ "$1" =~ ^[0-9]+$ ]]
 }
 
+# Atomic write: write to a tmp file in the same directory, then mv.
+# `> file` is non-atomic (truncate-then-write), so a concurrent reader
+# can see an empty file mid-update and silently fall through.
+atomic_write() {
+    local file="$1"
+    local content="$2"
+    local tmp="${file}.tmp.$$"
+    printf '%s\n' "$content" > "$tmp"
+    mv -f "$tmp" "$file"
+}
+
 # Read and validate a PID from the PID file.
 # Returns the PID via stdout, or returns 1 if invalid/missing.
 read_pid() {
@@ -75,6 +86,11 @@ read_pid() {
 
 # Check if a given PID belongs to a jank-related process.
 # Prevents accidentally killing an unrelated process that reused the PID.
+#
+# The bash-wrapper match is pinned to the exact wrapper string in
+# cmd_start: `bash -c 'jank repl < <(tail -f /dev/null)'`. The
+# `< <(tail` substring is unique enough that PID recycling onto an
+# arbitrary user bash with "jank repl" in its args won't pass.
 is_jank_process() {
     local pid="$1"
     local comm
@@ -82,11 +98,10 @@ is_jank_process() {
     if [[ "$comm" == "jank" ]]; then
         return 0
     fi
-    # The wrapper is a bash process — verify it's actually running jank
     if [[ "$comm" == "bash" ]]; then
         local args
         args=$(ps -o args= -p "$pid" 2>/dev/null) || return 1
-        [[ "$args" == *"jank repl"* ]]
+        [[ "$args" == *"jank repl < <(tail"* ]]
         return $?
     fi
     return 1
@@ -106,35 +121,30 @@ is_running() {
 
 # Discover jank's nREPL port from a running process.
 # Uses lsof (cross-platform) with ss as fallback (Linux).
+# PID is required: every caller knows the jank PID, and the no-PID
+# variants would have to scan every user's listeners (cross-user data
+# leak in shared environments).
 discover_port() {
-    local pid="${1:-}"
+    local pid="$1"
+    if [ -z "$pid" ] || ! is_number "$pid"; then
+        echo "[jank-lifecycle] BUG: discover_port called without a valid PID" >&2
+        return 1
+    fi
 
-    # Try lsof first (works on Linux and macOS)
     if command -v lsof >/dev/null 2>&1; then
-        local port=""
-        if [ -n "$pid" ]; then
-            port=$(lsof -a -iTCP -sTCP:LISTEN -nP -p "$pid" 2>/dev/null \
-                   | awk -F: '/LISTEN/ {print $NF}' | awk '{print $1}' | head -1)
-        else
-            port=$(lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null \
-                   | awk '/jank.*LISTEN/ {split($NF, a, ":"); print a[2]}' | head -1)
-        fi
+        local port
+        port=$(lsof -a -iTCP -sTCP:LISTEN -nP -p "$pid" 2>/dev/null \
+               | awk -F: '/LISTEN/ {print $NF}' | awk '{print $1}' | head -1)
         if [ -n "$port" ] && is_number "$port"; then
             echo "$port"
             return 0
         fi
     fi
 
-    # Fallback: ss (Linux only)
     if command -v ss >/dev/null 2>&1; then
-        local port=""
-        if [ -n "$pid" ]; then
-            port=$(ss -tlnp 2>/dev/null | grep "pid=$pid" \
-                   | awk '{print $4}' | awk -F: '{print $NF}' | head -1)
-        else
-            port=$(ss -tlnp 2>/dev/null | grep '"jank"' \
-                   | awk '{print $4}' | awk -F: '{print $NF}' | head -1)
-        fi
+        local port
+        port=$(ss -tlnp 2>/dev/null | grep "pid=$pid" \
+               | awk '{print $4}' | awk -F: '{print $NF}' | head -1)
         if [ -n "$port" ] && is_number "$port"; then
             echo "$port"
             return 0
@@ -157,7 +167,7 @@ cmd_start() {
         local port
         port=$(discover_port "$pid") || true
         if [ -n "$port" ]; then
-            echo "$port" > "$PORT_FILE"
+            atomic_write "$PORT_FILE" "$port"
             echo "$port"
             exit 0
         fi
@@ -199,7 +209,7 @@ cmd_start() {
         exit 1
     fi
 
-    echo "$jank_pid" > "$PID_FILE"
+    atomic_write "$PID_FILE" "$jank_pid"
 
     # Start background monitor: cleans up files when jank dies.
     # Only removes files if the PID inside still matches — prevents deleting
@@ -220,7 +230,7 @@ cmd_start() {
         sleep 1
         port=$(discover_port "$jank_pid") || true
         if [ -n "$port" ]; then
-            echo "$port" > "$PORT_FILE"
+            atomic_write "$PORT_FILE" "$port"
             echo "[jank-lifecycle] Jank started on port $port (PID $jank_pid)" >&2
             echo "$port"
             exit 0

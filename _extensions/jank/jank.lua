@@ -93,25 +93,41 @@ end
 
 -- Discover jank nREPL port from a running jank process.
 -- Uses lsof (cross-platform) with ss as fallback (Linux).
+-- Scoped to the current user via `pgrep -u $UID`: a global scan would
+-- find another user's jank session on a shared host, and an unrelated
+-- render could end up evaluating code in their REPL. The lifecycle
+-- script's discover_port() takes the same pid-first shape.
 local function discover_port_from_process()
-  -- Try lsof first (works on Linux and macOS)
-  local handle = io.popen(
-    [[lsof -iTCP -sTCP:LISTEN -nP 2>/dev/null | awk '/jank.*LISTEN/ {split($NF, a, ":"); print a[2]}' | head -1]]
-  )
-  local port = handle:read("*l")
-  handle:close()
-  if port and port:match("^%d+$") then
-    return port
+  local lsof_cmd = [[
+    for pid in $(pgrep -u "$(id -u)" -x jank 2>/dev/null); do
+      port=$(lsof -a -iTCP -sTCP:LISTEN -nP -p "$pid" 2>/dev/null \
+             | awk -F: '/LISTEN/ {print $NF}' | awk '{print $1}' | head -1)
+      if [ -n "$port" ]; then echo "$port"; exit 0; fi
+    done
+  ]]
+  local handle = io.popen(lsof_cmd)
+  if handle then
+    local port = handle:read("*l")
+    handle:close()
+    if port and port:match("^%d+$") then
+      return port
+    end
   end
 
-  -- Fallback: ss (Linux only)
-  handle = io.popen(
-    [[ss -tlnp 2>/dev/null | grep '"jank"' | awk '{print $4}' | awk -F: '{print $NF}' | head -1]]
-  )
-  port = handle:read("*l")
-  handle:close()
-  if port and port:match("^%d+$") then
-    return port
+  local ss_cmd = [[
+    for pid in $(pgrep -u "$(id -u)" -x jank 2>/dev/null); do
+      port=$(ss -tlnp 2>/dev/null | grep "pid=$pid" \
+             | awk '{print $4}' | awk -F: '{print $NF}' | head -1)
+      if [ -n "$port" ]; then echo "$port"; exit 0; fi
+    done
+  ]]
+  handle = io.popen(ss_cmd)
+  if handle then
+    local port = handle:read("*l")
+    handle:close()
+    if port and port:match("^%d+$") then
+      return port
+    end
   end
 
   return nil
