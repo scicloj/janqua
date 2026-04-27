@@ -1,12 +1,14 @@
 # Getting Started
 
+Janqua is currently tested only on Linux. macOS may work — the lifecycle script's port discovery uses `lsof` (cross-platform) before falling back to `ss` (Linux-only) — but it hasn't been verified. If you try it on macOS, please [open an issue](https://github.com/scicloj/janqua/issues) with what you find.
+
 ## Prerequisites
 
 1. **[Quarto](https://quarto.org/docs/get-started/)** — the publishing system
 2. **[Jank](https://jank-lang.org)** — the Jank compiler and REPL
 3. **[Babashka](https://github.com/babashka/babashka#installation)** — fast Clojure scripting runtime
 4. **[bbin](https://github.com/babashka/bbin#installation)** — tool installer for Babashka
-5. **clj-nrepl-eval** — [nREPL](https://nrepl.org/) client (install via bbin, which provides the `clj-nrepl-eval` command):
+5. **clj-nrepl-eval** — an [nREPL](https://nrepl.org/) client. It's provided by [clojure-mcp-light](https://github.com/bhauman/clojure-mcp-light) (the bbin wrapper exposes it as the `clj-nrepl-eval` command):
 
 ```bash
 bbin install io.github.bhauman/clojure-mcp-light
@@ -37,6 +39,14 @@ Run this **inside your project directory** — it creates an `_extensions/` fold
 ```bash
 quarto add scicloj/janqua
 ```
+
+Sanity check that the filter files landed:
+
+```bash
+ls _extensions/jank/
+```
+
+You should see `jank.lua`, `jank-lifecycle.sh`, `jank.css`, and `_extension.yml`.
 
 ## Write a document
 
@@ -80,6 +90,8 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 ## Managing the Jank process
 
 The Jank nREPL server starts on the first render and stays running for fast re-evaluation. When auto-start fires, the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact `stop` command — so you always know what got launched and how to clean it up.
+
+Three small dotfiles appear in your project once a session is running: `.jank-pid`, `.jank-nrepl-port`, and `.jank-repl.log`. They're private to your machine — add them to your `.gitignore`. The log accumulates over a long `quarto preview` session; it's safe to delete, and the lifecycle script will recreate it on the next start.
 
 Run lifecycle commands from the same directory where the session was started (the auto-start announcement shows the exact path):
 

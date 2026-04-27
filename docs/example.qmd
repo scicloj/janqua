@@ -6,6 +6,8 @@ filters:
 
 This page contains live Jank code — each block is evaluated during rendering, and the results appear below.
 
+For examples of every supported `^:kind/...` annotation (Mermaid, Graphviz, Vega-Lite, ECharts, Cytoscape, Highcharts, and more), see the [Kindly annotations reference](kindly.qmd) — that page is also live.
+
 ## Basics
 
 ```{.clojure .jank}

@@ -213,9 +213,10 @@ local function auto_start_jank()
       "  PID:  " .. pid,
       "  Port: " .. port,
       "  Log:  " .. project_root .. "/.jank-repl.log",
+      "  Dir:  " .. project_root,
       "",
       "This session KEEPS RUNNING after `quarto render` exits.",
-      "To stop it:",
+      "To stop it (run from the dir above, or any subdirectory):",
       "  " .. script_path .. " stop",
       "",
       "To disable auto-start, add to your document's frontmatter:",
@@ -249,9 +250,30 @@ local function print_manual_start_instructions()
   })
 end
 
+-- Check whether `clj-nrepl-eval` is on PATH. Every discovery step and
+-- every evaluation depends on it, so missing this binary turns into
+-- silent probe failures and misleading downstream errors.
+local function clj_nrepl_eval_available()
+  local ok = os.execute("command -v clj-nrepl-eval >/dev/null 2>&1")
+  return ok == true or ok == 0
+end
+
 -- Resolve the Jank nREPL port using the discovery chain.
 -- Each candidate port is validated before use; stale ports are skipped.
 local function resolve_port(meta)
+  if not clj_nrepl_eval_available() then
+    print_loud({
+      "ERROR: `clj-nrepl-eval` is not on PATH.",
+      "Janqua uses it to talk to the Jank nREPL.",
+      "",
+      "Install it with:",
+      "  bbin install io.github.bhauman/clojure-mcp-light",
+      "",
+      "(See the Getting Started guide for full prerequisites.)",
+    })
+    return nil
+  end
+
   -- 1. Explicit port in frontmatter
   if meta and meta.jank then
     local port = meta.jank.port
@@ -475,6 +497,12 @@ local function eval_jank_raw(code)
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()
+
+  if raw:match("clj%-nrepl%-eval: command not found")
+     or raw:match("clj%-nrepl%-eval: not found")
+     or raw:match("No such file or directory.*clj%-nrepl%-eval") then
+    return nil, "`clj-nrepl-eval` is not on PATH. Install it with `bbin install io.github.bhauman/clojure-mcp-light` (see the Getting Started guide for full prerequisites)."
+  end
 
   if raw:match("ConnectException") or raw:match("Connection refused") then
     return nil, "Cannot connect to Jank nREPL on port " .. jank_port .. ". Is `jank repl` running?"
@@ -779,8 +807,10 @@ function CodeBlock(el)
         if svg and #svg > 0 then
           table.insert(blocks, pandoc.RawBlock('html', svg))
         else
-          io.stderr:write("[jank filter] WARNING: Graphviz dot command failed\n")
-          table.insert(blocks, pandoc.CodeBlock(dot_src, pandoc.Attr('', {'dot'})))
+          table.insert(blocks, error_block(
+            "Graphviz `dot` command failed or is not installed.",
+            "Install Graphviz (https://graphviz.org/) and ensure `dot` is on PATH.\n\nSource:\n" .. dot_src
+          ))
         end
       end
     elseif output_mode == "tex" then

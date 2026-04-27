@@ -171,7 +171,9 @@ cmd_start() {
     # tail -f /dev/null blocks forever (cross-platform, unlike sleep infinity).
     # The bash wrapper persists as parent of jank for the session's lifetime;
     # we never store the wrapper PID as the "jank PID".
-    bash -c 'jank repl < <(tail -f /dev/null)' > "$LOG_FILE" 2>&1 &
+    # setsid puts the wrapper in its own session with no controlling terminal,
+    # so SIGHUP from the user closing their terminal cannot reach it.
+    setsid bash -c 'jank repl < <(tail -f /dev/null)' > "$LOG_FILE" 2>&1 &
     local wrapper_pid=$!
 
     # Wait up to 5s for jank to be forked as a child of the bash wrapper.
