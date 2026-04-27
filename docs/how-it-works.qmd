@@ -38,7 +38,7 @@ Auto-start fires loud: the filter prints a framed stderr block listing the new p
 
 Jank's REPL exits when its standard input closes. To keep it alive across renders, the lifecycle script (`jank-lifecycle.sh`) pipes `tail -f /dev/null` into the REPL's stdin — an infinite stream of nothing that keeps the process running.
 
-The lifecycle script manages three files in the project root:
+The lifecycle script manages three files in the rendering directory (your project root if you have a `_quarto.yml`, otherwise the directory containing the document being rendered — the filter asks Quarto where to anchor):
 
 | File | Purpose |
 |:-----|:--------|
@@ -158,7 +158,7 @@ Kindly metadata on the result takes precedence over `output=` when both are pres
 On the first evaluation in a document, the filter:
 
 1. Resolves the nREPL port (auto-starting Jank if needed)
-2. Sends bootstrap definitions to a dedicated `janqua.runtime` namespace in the Jank session: `janqua.runtime/hiccup->html` (hiccup-to-HTML conversion) and `janqua.runtime/to-json` (Clojure data-to-JSON conversion for chart kinds). Defining them in their own namespace keeps them from colliding with the user's code, and the user's `*ns*` is restored after the bootstrap so subsequent code blocks see a clean session.
+2. Sends bootstrap definitions to a dedicated `janqua.runtime` namespace in the Jank session: `janqua.runtime/hiccup->html` (hiccup-to-HTML conversion) and `janqua.runtime/to-json` (Clojure data-to-JSON conversion for chart kinds). The bootstrap uses `create-ns` + `intern` rather than `(ns ...) (defn ...)`, so the user's current namespace is never switched — subsequent code blocks evaluate in a clean session.
 3. Begins processing code blocks in document order
 
 Subsequent renders reuse the same Jank process, so startup cost is only paid once.

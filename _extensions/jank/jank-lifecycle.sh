@@ -8,28 +8,40 @@
 
 set -euo pipefail
 
-# Resolve project root: walk up from the CALLER'S CWD to find _quarto.yml.
-# We deliberately do NOT walk up from this script's own directory, because
-# that produces a different root depending on whether the script is invoked
-# through its canonical path or through a Quarto extension symlink — and the
-# resulting PID/port file mismatch means stop/status can fail silently.
+# Resolve project root.
+#   1. JANQUA_PROJECT_ROOT env var — set by the Lua filter when it auto-starts
+#      this script, so the script doesn't have to re-derive what Quarto
+#      already told the filter (`quarto.project.directory`).
+#   2. Walk up from the caller's cwd looking for an existing `.jank-pid` —
+#      this is where a previous session anchored, so manual `stop`/`status`
+#      finds the right session even from a subdirectory.
+#   3. Fall back to cwd.
 #
-# Refusing (rather than falling back to $(pwd)) prevents accidentally writing
-# state files into an unrelated directory.
-PROJECT_ROOT=""
-_dir="$(pwd)"
-while [ -n "$_dir" ] && [ "$_dir" != "/" ]; do
-    if [ -f "$_dir/_quarto.yml" ]; then
-        PROJECT_ROOT="$_dir"
-        break
-    fi
-    _dir="$(dirname "$_dir")"
-done
+# We deliberately do NOT walk up from this script's own directory: under a
+# Quarto extension symlink the script's own ancestry differs from the user's
+# cwd, which used to cause PID/port mismatches.
+#
+# Filenames (.jank-pid, .jank-nrepl-port, .jank-repl.log) are private to
+# Janqua, so the anchor only governs where OUR files live — we never touch
+# user-authored files. The PROJECT_ROOT='/' check below is defensive against
+# bugs that resolve to a pathological value.
+PROJECT_ROOT="${JANQUA_PROJECT_ROOT:-}"
+
 if [ -z "$PROJECT_ROOT" ]; then
-    echo "[jank-lifecycle] ERROR: No _quarto.yml found in '$(pwd)' or any ancestor." >&2
-    echo "[jank-lifecycle] Run this command from inside a Quarto project." >&2
-    exit 1
+    _dir="$(pwd)"
+    while [ -n "$_dir" ] && [ "$_dir" != "/" ]; do
+        if [ -f "$_dir/.jank-pid" ]; then
+            PROJECT_ROOT="$_dir"
+            break
+        fi
+        _dir="$(dirname "$_dir")"
+    done
 fi
+
+if [ -z "$PROJECT_ROOT" ]; then
+    PROJECT_ROOT="$(pwd)"
+fi
+
 # Defensive sanity checks before any rm -f operations downstream.
 if [ "$PROJECT_ROOT" = "/" ] || [ -z "$PROJECT_ROOT" ]; then
     echo "[jank-lifecycle] ERROR: refusing to operate with PROJECT_ROOT='$PROJECT_ROOT'" >&2
@@ -260,9 +272,9 @@ safe_kill_jank() {
 
 cmd_stop() {
     if [ ! -f "$PID_FILE" ]; then
-        echo "[jank-lifecycle] No PID file at $PID_FILE — no Jank session for this project." >&2
-        echo "[jank-lifecycle] If you started Jank from a different project directory" >&2
-        echo "[jank-lifecycle] (e.g. a nested book with its own _quarto.yml), run stop from there." >&2
+        echo "[jank-lifecycle] No PID file at $PID_FILE — no Jank session anchored here." >&2
+        echo "[jank-lifecycle] If you started Jank from a different directory, run stop from there" >&2
+        echo "[jank-lifecycle] (the auto-start announcement printed the exact path)." >&2
         rm -f "$PORT_FILE"
         return 0
     fi

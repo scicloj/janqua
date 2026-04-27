@@ -32,29 +32,27 @@
 local jank_port = nil
 local project_root = nil
 
--- Walk up from the current working directory looking for _quarto.yml.
--- Returns the absolute path of the project root, or nil if none found.
--- The lifecycle script applies the same rule, so PID/port files always
--- resolve to the same location regardless of entry point.
-local function find_project_root()
+-- Resolve where to anchor PID/port/log files for this render.
+-- Quarto's `quarto.project.directory` returns the input file's directory in
+-- both project mode (with _quarto.yml) and standalone mode (without). We
+-- pass the resolved path to the lifecycle script via JANQUA_PROJECT_ROOT so
+-- the script doesn't have to re-derive it.
+-- Filename namespace (`.jank-pid`, `.jank-nrepl-port`, `.jank-repl.log`) is
+-- private to Janqua, so even an unexpected anchor only touches our own files.
+local function resolve_project_root()
+  if quarto and quarto.project and quarto.project.directory then
+    return quarto.project.directory
+  end
+  if quarto and quarto.doc and quarto.doc.input_file and pandoc.path then
+    return pandoc.path.directory(quarto.doc.input_file)
+  end
+  -- Last resort: cwd. Should rarely (never?) hit in a real Quarto render.
   local handle = io.popen("pwd")
   if not handle then return nil end
   local cwd = handle:read("*l")
   handle:close()
   if not cwd or cwd == "" then return nil end
-
-  local dir = cwd
-  while dir and dir ~= "" and dir ~= "/" do
-    local f = io.open(dir .. "/_quarto.yml", "r")
-    if f then
-      f:close()
-      return dir
-    end
-    local parent = dir:match("(.*)/[^/]+$")
-    if not parent or parent == dir then break end
-    dir = parent
-  end
-  return nil
+  return cwd
 end
 
 -- Shell-escape a string for use inside single quotes.
@@ -160,6 +158,18 @@ local function error_block(title, detail)
   )
 end
 
+-- Append a cell-output-stdout block for any captured stdout, no-op otherwise.
+-- Used by every kind-specific output branch so `(println ...)` is visible
+-- alongside charts, diagrams, and other rendered values.
+local function emit_stdout_block(blocks, stdout)
+  if stdout then
+    table.insert(blocks, pandoc.Div(
+      pandoc.CodeBlock(stdout),
+      pandoc.Attr("", {"cell-output", "cell-output-stdout"})
+    ))
+  end
+end
+
 -- Check whether the user has explicitly disabled auto-start.
 -- Default is enabled; this returns true only when an explicit "off" signal
 -- is present in frontmatter or the JANK_AUTO_START env var.
@@ -190,7 +200,8 @@ local function auto_start_jank()
   io.stderr:write("[janqua] No running Jank nREPL found. Starting one...\n")
 
   local script_path = lifecycle_script()
-  local cmd = shell_quote(script_path) .. " start 2>/dev/null"
+  local cmd = "JANQUA_PROJECT_ROOT=" .. shell_quote(project_root) .. " "
+    .. shell_quote(script_path) .. " start 2>/dev/null"
   local handle = io.popen(cmd)
   local port = handle:read("*l")
   handle:close()
@@ -336,24 +347,36 @@ local janqua_bootstrap = [=[
                (apply str (map hiccup->html children))
                "</" tag ">"))
         :else (str form))))
-  (intern 'janqua.runtime 'to-json
-    (fn to-json [v]
-      (cond
-        (nil? v) "null"
-        (true? v) "true"
-        (false? v) "false"
-        (string? v) (str "\"" v "\"")
-        (keyword? v) (str "\"" (name v) "\"")
-        (number? v) (str v)
-        (vector? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
-        (seq? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
-        (map? v) (str "{"
-                   (clojure.string/join ", "
-                     (map (fn [[k val]]
-                            (str (to-json k) ": " (to-json val)))
-                          v))
-                   "}")
-        :else (str v))))
+  (let [json-escape
+        (fn [s]
+          (clojure.string/escape s
+            {\\ "\\\\"
+             \" "\\\""
+             \newline "\\n"
+             \return "\\r"
+             \tab "\\t"}))]
+    (intern 'janqua.runtime 'to-json
+      (fn to-json [v]
+        (cond
+          (nil? v) "null"
+          (true? v) "true"
+          (false? v) "false"
+          (string? v) (str "\"" (json-escape v) "\"")
+          (keyword? v) (str "\"" (json-escape (name v)) "\"")
+          (number? v) (str v)
+          (vector? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
+          (seq? v) (str "[" (clojure.string/join ", " (map to-json v)) "]")
+          (map? v) (str "{"
+                     (clojure.string/join ", "
+                       (map (fn [[k val]]
+                              (let [k-str (cond
+                                            (string? k) k
+                                            (keyword? k) (name k)
+                                            :else (str k))]
+                                (str "\"" (json-escape k-str) "\": " (to-json val))))
+                            v))
+                     "}")
+          :else (str "\"" (json-escape (str v)) "\"")))))
   :janqua.runtime/bootstrapped)
 ]=]
 
@@ -419,8 +442,22 @@ local CDN = {
   },
 }
 
+-- Tracks which CDN libraries have already had a <script src> emitted in
+-- this render, so multiple charts of the same kind don't repeat the load
+-- tag. Browsers dedupe by URL anyway, but emitting once produces cleaner
+-- HTML and avoids redundant integrity-check work.
+local cdn_emitted = {}
+
 -- Build a <script> tag with SRI integrity for a CDN entry.
+-- First call for a given name emits the tag; subsequent calls return "".
+-- Inline init code (e.g. `Plotly.newPlot(...)`) keeps working because the
+-- library is already loaded as a global by the time the second block's
+-- inline script runs.
 local function script_tag(name)
+  if cdn_emitted[name] then
+    return ""
+  end
+  cdn_emitted[name] = true
   local s = CDN[name]
   return '<script src="' .. s.src
     .. '" integrity="' .. s.integrity
@@ -588,11 +625,11 @@ end
 -- resolve_port already prints a loud block when it fails, so don't add
 -- another redundant warning here.
 function Meta(meta)
-  project_root = find_project_root()
-  if not project_root then
+  project_root = resolve_project_root()
+  if not project_root or project_root == "" or project_root == "/" then
     print_loud({
-      "ERROR: No _quarto.yml found in current directory or any ancestor.",
-      "Run `quarto render` from inside a Quarto project.",
+      "ERROR: Could not resolve a safe directory for Janqua state files.",
+      "Refusing to operate (resolved root: '" .. tostring(project_root) .. "').",
     })
     return
   end
@@ -614,6 +651,8 @@ function CodeBlock(el)
   if output_mode == "hidden" then
     echo = false
   end
+
+  local blocks = {}
 
   -- Evaluate first so Kindly metadata can influence echo/output_mode
   local value, stdout, err, kind = nil, nil, nil, nil
@@ -679,8 +718,6 @@ function CodeBlock(el)
     end
   end
 
-  local blocks = {}
-
   -- Show code (as clojure for syntax highlighting)
   if echo then
     table.insert(blocks, pandoc.CodeBlock(code, pandoc.Attr("", {"clojure"})))
@@ -696,27 +733,13 @@ function CodeBlock(el)
     elseif output_mode == "hidden" then
       -- Evaluate but show nothing
     elseif output_mode == "html" then
-      -- Stdout as code block if present
-      if stdout then
-        table.insert(blocks, pandoc.Div(
-          pandoc.CodeBlock(stdout),
-          pandoc.Attr("", {"cell-output", "cell-output-stdout"})
-        ))
-      end
-      -- Value as raw HTML
+      emit_stdout_block(blocks, stdout)
       if value then
         local html = unquote_clj_string(value)
         table.insert(blocks, pandoc.RawBlock("html", html))
       end
     elseif output_mode == "markdown" then
-      -- Stdout as code block if present
-      if stdout then
-        table.insert(blocks, pandoc.Div(
-          pandoc.CodeBlock(stdout),
-          pandoc.Attr("", {"cell-output", "cell-output-stdout"})
-        ))
-      end
-      -- Value as markdown
+      emit_stdout_block(blocks, stdout)
       if value then
         local md = unquote_clj_string(value)
         local doc = pandoc.read(md, "markdown")
@@ -725,7 +748,7 @@ function CodeBlock(el)
         end
       end
     elseif output_mode == "mermaid" then
-      -- Mermaid diagram — render via mermaid JS from CDN
+      emit_stdout_block(blocks, stdout)
       if value then
         -- Use the UMD build (loaded via <script src>) instead of the ESM
         -- module import: SRI on a <script> tag is broadly supported, but
@@ -746,6 +769,7 @@ function CodeBlock(el)
 
     elseif output_mode == "graphviz" then
       -- Graphviz DOT diagram — render to SVG via dot command
+      emit_stdout_block(blocks, stdout)
       if value then
         local dot_src = unquote_clj_string(value)
         local cmd = 'echo ' .. shell_quote(dot_src) .. ' | dot -Tsvg'
@@ -761,6 +785,7 @@ function CodeBlock(el)
       end
     elseif output_mode == "tex" then
       -- TeX formula — wrap in $$...$$ and render as markdown
+      emit_stdout_block(blocks, stdout)
       if value then
         local tex = unquote_clj_string(value)
         local md = "$$" .. tex .. "$$"
@@ -771,12 +796,14 @@ function CodeBlock(el)
       end
     elseif output_mode == "code-display" then
       -- Syntax-highlighted code display (not evaluated)
+      emit_stdout_block(blocks, stdout)
       if value then
         local code_str = unquote_clj_string(value)
         table.insert(blocks, pandoc.CodeBlock(code_str, pandoc.Attr("", {"clojure"})))
       end
     elseif output_mode == "vega-lite" then
       -- Vega-Lite chart via vegaEmbed
+      emit_stdout_block(blocks, stdout)
       if value then
         local clj_src = unquote_clj_string(value)
         local json, json_err = clj_to_json(clj_src)
@@ -795,6 +822,7 @@ function CodeBlock(el)
       end
     elseif output_mode == "plotly" then
       -- Plotly chart
+      emit_stdout_block(blocks, stdout)
       if value then
         local clj_src = unquote_clj_string(value)
         local json, json_err = clj_to_json(clj_src)
@@ -812,6 +840,7 @@ function CodeBlock(el)
       end
     elseif output_mode == "echarts" then
       -- ECharts chart
+      emit_stdout_block(blocks, stdout)
       if value then
         local clj_src = unquote_clj_string(value)
         local json, json_err = clj_to_json(clj_src)
@@ -828,6 +857,7 @@ function CodeBlock(el)
       end
     elseif output_mode == "cytoscape" then
       -- Cytoscape graph
+      emit_stdout_block(blocks, stdout)
       if value then
         local clj_src = unquote_clj_string(value)
         local json, json_err = clj_to_json(clj_src)
@@ -845,6 +875,7 @@ function CodeBlock(el)
       end
     elseif output_mode == "highcharts" then
       -- Highcharts chart
+      emit_stdout_block(blocks, stdout)
       if value then
         local clj_src = unquote_clj_string(value)
         local json, json_err = clj_to_json(clj_src)
