@@ -376,6 +376,57 @@ local function js_string_encode(s)
   return '"' .. s .. '"'
 end
 
+-- Pinned CDN scripts with SRI integrity hashes. Loose version tags (e.g.
+-- `vega@5`) would silently follow upstream updates and provide no integrity
+-- check, so a CDN compromise or a malicious patch could be served to every
+-- viewer of every rendered doc. Pinning the exact version + SRI hash means
+-- the browser refuses to execute if the served bytes don't match.
+--
+-- To refresh a pin: pick a new version, then
+--   curl -sL <url> | openssl dgst -sha384 -binary | openssl base64 -A
+local CDN = {
+  mermaid = {
+    src = "https://cdn.jsdelivr.net/npm/mermaid@11.14.0/dist/mermaid.min.js",
+    integrity = "sha384-1CMXl090wj8Dd6YfnzSQUOgWbE6suWCaenYG7pox5AX7apTpY3PmJMeS2oPql4Gk",
+  },
+  vega = {
+    src = "https://cdn.jsdelivr.net/npm/vega@5.33.1",
+    integrity = "sha384-NMXhl2TbCXxcN7o4ROC56Funm78m4AylL8gMg/7Kn4YU+wrm23K9l7cY8lDRXQ9d",
+  },
+  ["vega-lite"] = {
+    src = "https://cdn.jsdelivr.net/npm/vega-lite@5.23.0",
+    integrity = "sha384-D9LYH0esGjcxQJsBuxOuXtCDJGXRWW1+KhluzWPqi0rLJmiR/ygPChefaD+rFFDQ",
+  },
+  ["vega-embed"] = {
+    src = "https://cdn.jsdelivr.net/npm/vega-embed@6.29.0",
+    integrity = "sha384-M+Ax7e/WFJpxSOF09HzI+Sj4wg9ottVd/uxmV2ItGGh02fLH28t2FAOJx3TJBap5",
+  },
+  plotly = {
+    src = "https://cdn.plot.ly/plotly-2.35.0.min.js",
+    integrity = "sha384-TAqBiqItCr14J//ULLD26bSQ8Z6uPnlisSwkvWaqP8SCSiDkgR8jNknuAv8uxSOT",
+  },
+  echarts = {
+    src = "https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js",
+    integrity = "sha384-pPi0zxBAoDu6+JXW/C68UZLvBUUtU+7zonhif43rqj7pxsGyqyqzcian2Rj37Rss",
+  },
+  cytoscape = {
+    src = "https://cdn.jsdelivr.net/npm/cytoscape@3.33.2/dist/cytoscape.min.js",
+    integrity = "sha384-UBHkMiqJzzg1WHS7U4a5IU9bewC9iEYdOsU7c7ar4TgobsyodECBexvEuovn7a0P",
+  },
+  highcharts = {
+    src = "https://code.highcharts.com/12.6.0/highcharts.js",
+    integrity = "sha384-oVN+UvYVEgXjYVI7ww5itQNNt/Tgr7TOADG2btfqV/eQkPwpOL44P81GtEp2L7wt",
+  },
+}
+
+-- Build a <script> tag with SRI integrity for a CDN entry.
+local function script_tag(name)
+  local s = CDN[name]
+  return '<script src="' .. s.src
+    .. '" integrity="' .. s.integrity
+    .. '" crossorigin="anonymous"></script>'
+end
+
 -- Send raw code to Jank via clj-nrepl-eval.
 -- Returns: raw output string, error string (may be nil)
 local function eval_jank_raw(code)
@@ -676,15 +727,19 @@ function CodeBlock(el)
     elseif output_mode == "mermaid" then
       -- Mermaid diagram — render via mermaid JS from CDN
       if value then
+        -- Use the UMD build (loaded via <script src>) instead of the ESM
+        -- module import: SRI on a <script> tag is broadly supported, but
+        -- import-map integrity for ESM imports is not.
         local diagram = unquote_clj_string(value)
         local div_id = next_div_id()
         local html = '<div id="' .. div_id .. '"></div>'
-          .. '<script type="module">'
-          .. 'import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";'
-          .. 'const el = document.getElementById("' .. div_id .. '");'
-          .. 'const {svg} = await mermaid.render("' .. div_id .. '-svg", '
-          .. js_string_encode(diagram) .. ');'
-          .. 'el.innerHTML = svg;'
+          .. script_tag("mermaid")
+          .. '<script>'
+          .. 'mermaid.initialize({ startOnLoad: false });'
+          .. 'mermaid.render("' .. div_id .. '-svg", '
+          .. js_string_encode(diagram) .. ').then(({svg}) => {'
+          .. 'document.getElementById("' .. div_id .. '").innerHTML = svg;'
+          .. '});'
           .. '</script>'
         table.insert(blocks, pandoc.RawBlock("html", html))
       end
@@ -728,9 +783,9 @@ function CodeBlock(el)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
-            .. '<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>'
-            .. '<script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>'
-            .. '<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>'
+            .. script_tag("vega")
+            .. script_tag("vega-lite")
+            .. script_tag("vega-embed")
             .. '<script>vegaEmbed("#' .. div_id .. '", ' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
         else
@@ -746,7 +801,7 @@ function CodeBlock(el)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
-            .. '<script src="https://cdn.plot.ly/plotly-2.35.0.min.js"></script>'
+            .. script_tag("plotly")
             .. '<script>var spec=' .. json .. ';'
             .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
@@ -763,7 +818,7 @@ function CodeBlock(el)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
-            .. '<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>'
+            .. script_tag("echarts")
             .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
         else
@@ -779,7 +834,7 @@ function CodeBlock(el)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
-            .. '<script src="https://cdn.jsdelivr.net/npm/cytoscape@3/dist/cytoscape.min.js"></script>'
+            .. script_tag("cytoscape")
             .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
             .. 'cytoscape(spec);</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
@@ -796,7 +851,7 @@ function CodeBlock(el)
         if json then
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"></div>'
-            .. '<script src="https://code.highcharts.com/highcharts.js"></script>'
+            .. script_tag("highcharts")
             .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
           table.insert(blocks, pandoc.RawBlock("html", html))
         else
