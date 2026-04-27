@@ -22,7 +22,7 @@ The filter has two phases, executed in order:
 
 ## Port discovery
 
-The filter needs to find a running Jank nREPL server. It tries several sources in order, validating that each candidate port is actually reachable before using it:
+The filter needs to find a running Jank nREPL server. It tries several sources in order, probing each candidate port with a real nREPL evaluation before using it — a plain TCP-connect check would falsely accept a stale port that the OS had recycled to an unrelated service:
 
 1. **Frontmatter** — an explicit `jank.port` value in the document metadata
 2. **PID + port files** — `.jank-pid` and `.jank-nrepl-port` written by the lifecycle script
@@ -31,6 +31,8 @@ The filter needs to find a running Jank nREPL server. It tries several sources i
 5. **Auto-start** — if nothing is found, the filter launches `jank repl` via the lifecycle script and waits for it to be ready
 
 This chain means zero configuration for the common case: just run `quarto render` and the filter handles the rest.
+
+Auto-start fires loud: the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact stop command, so the side effect is never silent. Authors who prefer manual control can disable auto-start by setting `JANK_AUTO_START=0` or by adding `jank: { auto-start: false }` to the document frontmatter; the filter then prints a "no nREPL found" notice and skips evaluation rather than spawning a process.
 
 ## Process management
 
@@ -107,7 +109,7 @@ For string-valued kinds (`kind/html`, `kind/md`, `kind/mermaid`, `kind/graphviz`
 
 ### 4. Hiccup rendering
 
-When a value has `:kind/hiccup` metadata, the filter calls `janqua-hiccup->html` — a function bootstrapped in the Jank session on first use. This converts Clojure-style hiccup data structures into HTML strings:
+When a value has `:kind/hiccup` metadata, the filter calls `janqua.runtime/hiccup->html` — a function bootstrapped in a dedicated `janqua.runtime` namespace on first use. This converts Clojure-style hiccup data structures into HTML strings:
 
 ```clojure
 [:div {:class "box"} [:span "hi"]]
@@ -121,10 +123,10 @@ This runs inside Jank (not in Lua), so it has access to the full Clojure data mo
 
 For chart kinds (`kind/plotly`, `kind/vega-lite`, `kind/echarts`, `kind/cytoscape`, `kind/highcharts`), the filter:
 
-1. Converts the Clojure value to JSON by calling `janqua-to-json` — a function bootstrapped in the Jank session alongside `janqua-hiccup->html`
+1. Converts the Clojure value to JSON by calling `janqua.runtime/to-json` — a function bootstrapped in the Jank session alongside `janqua.runtime/hiccup->html`
 2. Emits a `<div>` with a unique ID and a `<script>` tag that loads the chart library from CDN and renders the spec
 
-Each chart kind loads its own library (e.g., Plotly.js, Vega-Lite + Vega Embed, ECharts) from a CDN. Multiple charts on the same page get unique div IDs to avoid collisions.
+Each chart kind loads its own library (e.g., Plotly.js, Vega-Lite + Vega Embed, ECharts) from a CDN. Multiple charts on the same page get unique div IDs to avoid collisions. The CDN URLs are pinned to exact versions and tagged with [Subresource Integrity (SRI)](https://developer.mozilla.org/en-US/docs/Web/Security/Subresource_Integrity) hashes, so the browser refuses to execute a script if its bytes don't match — protecting viewers against a CDN compromise or a malicious patch pushed under a loose version tag.
 
 ### 6. Diagram rendering
 
@@ -132,6 +134,10 @@ Mermaid and Graphviz diagrams can't use Quarto's native `{mermaid}` / `{dot}` bl
 
 - **Mermaid**: The filter loads the Mermaid JS library from CDN and calls `mermaid.render()` client-side, similar to the JS chart pattern.
 - **Graphviz**: The filter pipes the DOT source through the `dot -Tsvg` command and embeds the resulting SVG directly. This requires Graphviz to be installed on the build machine.
+
+## Error handling
+
+When something goes wrong inside the filter — a chart's value can't be encoded to JSON, hiccup-to-HTML conversion fails, the Kindly wrapper response can't be parsed — Janqua surfaces the failure as a visible error block in the rendered document, mirroring how user-code exceptions are shown. Each block contains the failure reason and the original Clojure value so the cause is debuggable from the rendered page alone. The same message is also written to stderr so build logs flag the failure even when nobody opens the HTML.
 
 ## Code block attributes
 
@@ -152,7 +158,7 @@ Kindly metadata on the result takes precedence over `output=` when both are pres
 On the first evaluation in a document, the filter:
 
 1. Resolves the nREPL port (auto-starting Jank if needed)
-2. Sends bootstrap definitions to the Jank session: `janqua-hiccup->html` (hiccup-to-HTML conversion) and `janqua-to-json` (Clojure data-to-JSON conversion for chart kinds)
+2. Sends bootstrap definitions to a dedicated `janqua.runtime` namespace in the Jank session: `janqua.runtime/hiccup->html` (hiccup-to-HTML conversion) and `janqua.runtime/to-json` (Clojure data-to-JSON conversion for chart kinds). Defining them in their own namespace keeps them from colliding with the user's code, and the user's `*ns*` is restored after the bootstrap so subsequent code blocks see a clean session.
 3. Begins processing code blocks in document order
 
 Subsequent renders reuse the same Jank process, so startup cost is only paid once.

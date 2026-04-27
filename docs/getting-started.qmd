@@ -79,7 +79,9 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 
 ## Managing the Jank process
 
-The Jank nREPL server starts on the first render and stays running for fast re-evaluation. You can manage it with the lifecycle script:
+The Jank nREPL server starts on the first render and stays running for fast re-evaluation. When auto-start fires, the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact `stop` command — so you always know what got launched and how to clean it up.
+
+Run lifecycle commands from the project root (the directory containing `_quarto.yml`):
 
 ```bash
 _extensions/jank/jank-lifecycle.sh status   # check if running
@@ -87,7 +89,26 @@ _extensions/jank/jank-lifecycle.sh start    # start manually
 _extensions/jank/jank-lifecycle.sh stop     # stop when done
 ```
 
+Running from outside a Quarto project gives a clear refusal message rather than writing PID files into an unrelated directory. If your project has nested `_quarto.yml` files (for example, a `docs/` subproject), each project gets its own Jank session — always run lifecycle commands from the same root where the session was started.
+
 Stop the server when you're done working to free resources.
+
+### Disabling auto-start
+
+If you'd rather start Jank yourself (or never have a process spawned during rendering), disable auto-start either per document with frontmatter:
+
+```yaml
+jank:
+  auto-start: false
+```
+
+…or globally with an environment variable:
+
+```bash
+export JANK_AUTO_START=0
+```
+
+When auto-start is disabled and no Jank session is found, the filter prints a notice telling you how to start one manually and skips evaluation.
 
 ## Publishing to GitHub Pages
 
