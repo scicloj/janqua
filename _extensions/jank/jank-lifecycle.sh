@@ -212,19 +212,36 @@ cmd_start() {
 }
 
 # Kill a process and its children, with safety checks.
+#
+# We deliberately do NOT use blanket `pkill -P "$pid"` after killing the
+# parent: between killing the parent and pkill running, a recycled PID
+# could occupy the parent slot, and we'd kill an innocent process's
+# children. Instead, snapshot the children up front, then validate each
+# child's command name before killing it individually. Only known
+# wrapper children (jank, tail) are eligible; anything else is skipped.
 safe_kill_jank() {
     local pid="$1"
 
-    # Verify the PID still belongs to a jank-related process
     if ! is_jank_process "$pid"; then
-        echo "WARNING: PID $pid is no longer a jank process, skipping kill." >&2
+        echo "[jank-lifecycle] WARNING: PID $pid is no longer a jank process, skipping kill." >&2
         return 0
     fi
 
-    # Kill the specific process and its direct children (tail, jank subprocess)
-    # rather than the whole process group, to avoid collateral damage.
+    # Snapshot children BEFORE killing the parent so the list can't grow
+    # to include children of a recycled PID.
+    local children
+    children=$(pgrep -P "$pid" 2>/dev/null || true)
+
     kill "$pid" 2>/dev/null || true
-    pkill -P "$pid" 2>/dev/null || true
+
+    # Re-validate each child's command name immediately before killing.
+    local child cname
+    for child in $children; do
+        cname=$(ps -o comm= -p "$child" 2>/dev/null | tr -d ' ') || continue
+        if [[ "$cname" == "jank" || "$cname" == "tail" ]]; then
+            kill "$child" 2>/dev/null || true
+        fi
+    done
 }
 
 cmd_stop() {
