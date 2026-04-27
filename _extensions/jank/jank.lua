@@ -46,13 +46,7 @@ local function resolve_project_root()
   if quarto and quarto.doc and quarto.doc.input_file and pandoc.path then
     return pandoc.path.directory(quarto.doc.input_file)
   end
-  -- Last resort: cwd. Should rarely (never?) hit in a real Quarto render.
-  local handle = io.popen("pwd")
-  if not handle then return nil end
-  local cwd = handle:read("*l")
-  handle:close()
-  if not cwd or cwd == "" then return nil end
-  return cwd
+  return nil
 end
 
 -- Shell-escape a string for use inside single quotes.
@@ -184,6 +178,17 @@ local function emit_stdout_block(blocks, stdout)
       pandoc.Attr("", {"cell-output", "cell-output-stdout"})
     ))
   end
+end
+
+-- Wrap a rendered visual output (chart, diagram, HTML, formatted markdown)
+-- in `cell-output cell-output-display`, mirroring Quarto's native cell DOM
+-- so themes that target `.cell-output-display` (figure spacing, dark-mode
+-- panels) apply uniformly. Content can be a single Block or a list.
+local function emit_display_block(blocks, content)
+  table.insert(blocks, pandoc.Div(
+    content,
+    pandoc.Attr("", {"cell-output", "cell-output-display"})
+  ))
 end
 
 -- Check whether the user has explicitly disabled auto-start.
@@ -642,9 +647,18 @@ local function eval_jank(code)
 
   local value, stdout = parse_nrepl_output(raw)
 
+  -- nREPL returned no `=> value` line. Surface as an error rather than
+  -- silently emitting an empty block (which used to swallow the source
+  -- block entirely).
+  if not value then
+    return nil, stdout,
+      "Jank returned no value. Raw response: " .. (raw or "(empty)"),
+      nil
+  end
+
   -- If the wrapper map wasn't returned, the code likely threw an error.
   -- The raw value IS the error message in that case.
-  if value and not value:match(":janqua/kind") then
+  if not value:match(":janqua/kind") then
     return nil, stdout, value, nil
   end
 
@@ -665,10 +679,30 @@ local function eval_jank(code)
   return actual_value, stdout, nil, kind
 end
 
+-- Whether the current Pandoc target is HTML. Janqua's chart/diagram
+-- branches all emit `RawBlock("html", ...)` and Pandoc drops those in
+-- LaTeX/docx/gfm — so on non-HTML targets the right behavior is to
+-- skip evaluation entirely (no jank session spun up, no bare HTML in
+-- the AST) and pass `.jank` blocks through as regular code.
+-- Defaults to true when `quarto.doc.is_format` is unavailable so the
+-- filter still works under bare-pandoc invocation.
+local function html_target()
+  if quarto and quarto.doc and quarto.doc.is_format then
+    return quarto.doc.is_format("html") or false
+  end
+  return true
+end
+
+local skip_format = false
+
 -- Extract the Jank port from document metadata.
 -- resolve_port already prints a loud block when it fails, so don't add
 -- another redundant warning here.
 function Meta(meta)
+  if not html_target() then
+    skip_format = true
+    return
+  end
   project_root = resolve_project_root()
   if not project_root or project_root == "" or project_root == "/" then
     print_loud({
@@ -683,6 +717,12 @@ end
 -- Process Jank code blocks.
 function CodeBlock(el)
   if not el.classes:includes("jank") then
+    return nil
+  end
+  -- Non-HTML target: leave `.jank` blocks alone so Pandoc renders them
+  -- as plain syntax-highlighted code in PDF/docx/gfm. The user keeps the
+  -- source visible and we don't poison the AST with stray HTML.
+  if skip_format then
     return nil
   end
 
@@ -758,6 +798,12 @@ function CodeBlock(el)
         output_mode = "cytoscape"
       elseif kind == ":kind/highcharts" then
         output_mode = "highcharts"
+      else
+        -- Recognized as a Kindly kind but no dispatch branch handles it.
+        -- Without this, an unsupported kind looks identical to a typo:
+        -- both fall through to default code rendering. Surface as an
+        -- error so users can tell the two apart.
+        err = "Kindly kind " .. kind .. " is not supported by Janqua. Value: " .. (value or "nil")
       end
     end
   end
@@ -780,16 +826,14 @@ function CodeBlock(el)
       emit_stdout_block(blocks, stdout)
       if value then
         local html = unquote_clj_string(value)
-        table.insert(blocks, pandoc.RawBlock("html", html))
+        emit_display_block(blocks, pandoc.RawBlock("html", html))
       end
     elseif output_mode == "markdown" then
       emit_stdout_block(blocks, stdout)
       if value then
         local md = unquote_clj_string(value)
         local doc = pandoc.read(md, "markdown")
-        for _, block in ipairs(doc.blocks) do
-          table.insert(blocks, block)
-        end
+        emit_display_block(blocks, doc.blocks)
       end
     elseif output_mode == "mermaid" then
       emit_stdout_block(blocks, stdout)
@@ -808,7 +852,7 @@ function CodeBlock(el)
           .. 'document.getElementById("' .. div_id .. '").innerHTML = svg;'
           .. '});'
           .. '</script>'
-        table.insert(blocks, pandoc.RawBlock("html", html))
+        emit_display_block(blocks, pandoc.RawBlock("html", html))
       end
 
     elseif output_mode == "graphviz" then
@@ -821,7 +865,7 @@ function CodeBlock(el)
         local svg = handle:read('*a')
         handle:close()
         if svg and #svg > 0 then
-          table.insert(blocks, pandoc.RawBlock('html', svg))
+          emit_display_block(blocks, pandoc.RawBlock('html', svg))
         else
           table.insert(blocks, error_block(
             "Graphviz `dot` command failed or is not installed.",
@@ -836,16 +880,14 @@ function CodeBlock(el)
         local tex = unquote_clj_string(value)
         local md = "$$" .. tex .. "$$"
         local doc = pandoc.read(md, "markdown")
-        for _, block in ipairs(doc.blocks) do
-          table.insert(blocks, block)
-        end
+        emit_display_block(blocks, doc.blocks)
       end
     elseif output_mode == "code-display" then
       -- Syntax-highlighted code display (not evaluated)
       emit_stdout_block(blocks, stdout)
       if value then
         local code_str = unquote_clj_string(value)
-        table.insert(blocks, pandoc.CodeBlock(code_str, pandoc.Attr("", {"clojure"})))
+        emit_display_block(blocks, pandoc.CodeBlock(code_str, pandoc.Attr("", {"clojure"})))
       end
     elseif output_mode == "vega-lite" then
       -- Vega-Lite chart via vegaEmbed
@@ -860,7 +902,7 @@ function CodeBlock(el)
             .. script_tag("vega-lite")
             .. script_tag("vega-embed")
             .. '<script>vegaEmbed("#' .. div_id .. '", ' .. json .. ');</script>'
-          table.insert(blocks, pandoc.RawBlock("html", html))
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         else
           table.insert(blocks, error_block(
             ":kind/vega-lite — " .. (json_err or "unknown error"), clj_src))
@@ -878,7 +920,7 @@ function CodeBlock(el)
             .. script_tag("plotly")
             .. '<script>var spec=' .. json .. ';'
             .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
-          table.insert(blocks, pandoc.RawBlock("html", html))
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         else
           table.insert(blocks, error_block(
             ":kind/plotly — " .. (json_err or "unknown error"), clj_src))
@@ -895,7 +937,7 @@ function CodeBlock(el)
           local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
             .. script_tag("echarts")
             .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
-          table.insert(blocks, pandoc.RawBlock("html", html))
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         else
           table.insert(blocks, error_block(
             ":kind/echarts — " .. (json_err or "unknown error"), clj_src))
@@ -913,7 +955,7 @@ function CodeBlock(el)
             .. script_tag("cytoscape")
             .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
             .. 'cytoscape(spec);</script>'
-          table.insert(blocks, pandoc.RawBlock("html", html))
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         else
           table.insert(blocks, error_block(
             ":kind/cytoscape — " .. (json_err or "unknown error"), clj_src))
@@ -930,7 +972,7 @@ function CodeBlock(el)
           local html = '<div id="' .. div_id .. '"></div>'
             .. script_tag("highcharts")
             .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
-          table.insert(blocks, pandoc.RawBlock("html", html))
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         else
           table.insert(blocks, error_block(
             ":kind/highcharts — " .. (json_err or "unknown error"), clj_src))
@@ -954,6 +996,14 @@ function CodeBlock(el)
     end
   end
 
+  -- Wrap the (echo, cell-output-*) pair in Quarto's outer `cell` Div so
+  -- theme rules scoped to `.cell` (spacing, dark-mode panels, collapse
+  -- chrome) apply to Janqua blocks the same way they apply to native
+  -- executable cells. Empty list returns as-is so we don't leave an
+  -- empty `<div class="cell"></div>` in the rendered doc.
+  if #blocks > 0 then
+    return { pandoc.Div(blocks, pandoc.Attr("", {"cell"})) }
+  end
   return blocks
 end
 
