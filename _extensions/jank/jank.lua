@@ -63,14 +63,20 @@ local function shell_quote(s)
   return "'" .. s:gsub("'", "'\\''") .. "'"
 end
 
--- Check whether a port is actually reachable (TCP connect test).
--- Uses bash /dev/tcp (works on Linux and macOS with bash 3+).
+-- Verify a port speaks nREPL by performing a trivial eval.
+-- A plain TCP-connect probe would falsely accept any listener that
+-- happens to occupy the port (e.g. after the original jank crashed and
+-- the OS recycled the port to an unrelated service). Doing a real eval
+-- proves the listener is actually nREPL.
 -- Port must be validated as numeric before calling this function.
-local function port_reachable(port)
-  local ok = os.execute(
-    "bash -c 'echo > /dev/tcp/127.0.0.1/" .. port .. "' 2>/dev/null"
-  )
-  return ok == true or ok == 0
+local function nrepl_probe(port)
+  local cmd = "clj-nrepl-eval -p " .. shell_quote(port)
+    .. " --timeout 2000 '(+ 1 2)' 2>&1"
+  local handle = io.popen(cmd)
+  if not handle then return false end
+  local out = handle:read("*a")
+  handle:close()
+  return out:match("=> 3") ~= nil
 end
 
 -- Read a single number from a file (used for PID and port files).
@@ -240,8 +246,8 @@ local function resolve_port(meta)
     local port = meta.jank.port
     if port then
       port = pandoc.utils.stringify(port)
-      if port:match("^%d+$") and port_reachable(port) then return port end
-      io.stderr:write("[jank filter] Port " .. port .. " from frontmatter is not reachable, trying next.\n")
+      if port:match("^%d+$") and nrepl_probe(port) then return port end
+      io.stderr:write("[jank filter] Port " .. port .. " from frontmatter did not respond as nREPL, trying next.\n")
     end
   end
 
@@ -251,14 +257,14 @@ local function resolve_port(meta)
   local pid = read_number_file(project_root .. "/.jank-pid")
   if pid and pid_alive(pid) then
     local port = read_number_file(project_root .. "/.jank-nrepl-port")
-    if port and port_reachable(port) then return port end
+    if port and nrepl_probe(port) then return port end
   end
 
   -- 3. Environment variable
   local env_port = os.getenv("JANK_PORT")
   if env_port and env_port:match("^%d+$") then
-    if port_reachable(env_port) then return env_port end
-    io.stderr:write("[jank filter] Port " .. env_port .. " from JANK_PORT is not reachable, trying next.\n")
+    if nrepl_probe(env_port) then return env_port end
+    io.stderr:write("[jank filter] Port " .. env_port .. " from JANK_PORT did not respond as nREPL, trying next.\n")
   end
 
   -- 4. Process discovery via lsof/ss
