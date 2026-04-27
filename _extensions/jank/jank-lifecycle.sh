@@ -157,18 +157,32 @@ cmd_start() {
 
     # Start jank repl with stdin held open.
     # tail -f /dev/null blocks forever (cross-platform, unlike sleep infinity).
+    # The bash wrapper persists as parent of jank for the session's lifetime;
+    # we never store the wrapper PID as the "jank PID".
     bash -c 'jank repl < <(tail -f /dev/null)' > "$LOG_FILE" 2>&1 &
     local wrapper_pid=$!
 
-    # Wait briefly for jank to spawn as a child of the bash wrapper
-    sleep 0.5
+    # Wait up to 5s for jank to be forked as a child of the bash wrapper.
+    # This is separate from the 45s nREPL-port poll below: jank's process
+    # exists long before its REPL is ready to accept connections.
+    local jank_pid=""
+    for i in $(seq 1 10); do
+        jank_pid=$(pgrep -P "$wrapper_pid" -x jank 2>/dev/null || echo "")
+        if [ -n "$jank_pid" ]; then
+            break
+        fi
+        if ! kill -0 "$wrapper_pid" 2>/dev/null; then
+            echo "[jank-lifecycle] ERROR: bash wrapper died before jank spawned. Check $LOG_FILE" >&2
+            exit 1
+        fi
+        sleep 0.5
+    done
 
-    # Find the actual jank process (child of the wrapper)
-    local jank_pid
-    jank_pid=$(pgrep -P "$wrapper_pid" -x jank 2>/dev/null || echo "")
     if [ -z "$jank_pid" ]; then
-        # Fallback: the wrapper itself might be jank
-        jank_pid=$wrapper_pid
+        echo "[jank-lifecycle] ERROR: jank process never spawned within 5s. Check $LOG_FILE" >&2
+        kill "$wrapper_pid" 2>/dev/null || true
+        pkill -P "$wrapper_pid" 2>/dev/null || true
+        exit 1
     fi
 
     echo "$jank_pid" > "$PID_FILE"
