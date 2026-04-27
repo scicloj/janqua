@@ -693,16 +693,11 @@ local function html_target()
   return true
 end
 
-local skip_format = false
-
 -- Extract the Jank port from document metadata.
 -- resolve_port already prints a loud block when it fails, so don't add
 -- another redundant warning here.
 function Meta(meta)
-  if not html_target() then
-    skip_format = true
-    return
-  end
+  if not html_target() then return end
   project_root = resolve_project_root()
   if not project_root or project_root == "" or project_root == "/" then
     print_loud({
@@ -722,7 +717,7 @@ function CodeBlock(el)
   -- Non-HTML target: leave `.jank` blocks alone so Pandoc renders them
   -- as plain syntax-highlighted code in PDF/docx/gfm. The user keeps the
   -- source visible and we don't poison the AST with stray HTML.
-  if skip_format then
+  if not html_target() then
     return nil
   end
 
