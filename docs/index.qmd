@@ -40,9 +40,9 @@ Quarto supports several project types:
 
 ## Clojure ecosystem connection
 
-[Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative publishing space, is built on Quarto via [Clay](https://scicloj.github.io/clay/) — and can render `.qmd` files directly, so Jank posts authored with Janqua can be shared there too.
+[Clay](https://scicloj.github.io/clay/) generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows — the established path for Clojure documents in the Quarto world.
 
-Janqua takes a different approach from Clay: rather than generating Quarto markdown from a Jank namespace, the Quarto filter evaluates `{.clojure .jank}` blocks embedded directly in `.qmd` files. It follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations — with partial coverage at this stage — so familiar Kindly metadata patterns apply when authoring Jank documents.
+Janqua takes a different approach: rather than generating Quarto markdown from a Jank namespace, the Quarto filter evaluates `{.clojure .jank}` blocks embedded directly in `.qmd` files. It follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations — with partial coverage at this stage — so familiar Kindly metadata patterns apply when authoring Jank documents.
 
 ## How it works
 
