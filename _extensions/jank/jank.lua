@@ -48,6 +48,14 @@ local function parse_bool(s)
   return nil
 end
 
+-- Return s if it's a non-empty digit-only string, nil otherwise.
+-- Used everywhere we accept user input that should be a port, PID, or
+-- pixel count: filenames, env vars, frontmatter values, fence attributes.
+local function digits_or_nil(s)
+  if s and s:match("^%d+$") then return s end
+  return nil
+end
+
 -- Resolve where to anchor PID/port/log files for this render.
 -- Quarto's `quarto.project.directory` returns the input file's directory in
 -- both project mode (with _quarto.yml) and standalone mode (without). We
@@ -91,14 +99,10 @@ end
 -- Returns the number as a string, or nil if the file is missing/corrupt.
 local function read_number_file(path)
   local f = io.open(path, "r")
-  if f then
-    local content = f:read("*l")
-    f:close()
-    if content and content:match("^%d+$") then
-      return content
-    end
-  end
-  return nil
+  if not f then return nil end
+  local content = f:read("*l")
+  f:close()
+  return digits_or_nil(content)
 end
 
 -- Discover jank nREPL port from a running jank process.
@@ -119,9 +123,7 @@ local function discover_port_from_process()
   if handle then
     local port = handle:read("*l")
     handle:close()
-    if port and port:match("^%d+$") then
-      return port
-    end
+    if digits_or_nil(port) then return port end
   end
 
   local ss_cmd = [[
@@ -135,9 +137,7 @@ local function discover_port_from_process()
   if handle then
     local port = handle:read("*l")
     handle:close()
-    if port and port:match("^%d+$") then
-      return port
-    end
+    if digits_or_nil(port) then return port end
   end
 
   return nil
@@ -276,7 +276,7 @@ local function auto_start_jank()
   local port = handle:read("*l")
   handle:close()
 
-  if port and port:match("^%d+$") then
+  if digits_or_nil(port) then
     local pid = read_number_file(project_root .. "/.jank-pid") or "(see .jank-pid)"
     print_loud({
       "Started a long-lived Jank nREPL session.",
@@ -349,7 +349,7 @@ local function resolve_port(meta)
     local port = meta.jank.port
     if port then
       port = pandoc.utils.stringify(port)
-      if port:match("^%d+$") and nrepl_probe(port) then return port end
+      if digits_or_nil(port) and nrepl_probe(port) then return port end
       io.stderr:write("[jank filter] Port " .. port .. " from frontmatter did not respond as nREPL, trying next.\n")
     end
   end
@@ -364,8 +364,8 @@ local function resolve_port(meta)
   end
 
   -- 3. Environment variable
-  local env_port = os.getenv("JANK_PORT")
-  if env_port and env_port:match("^%d+$") then
+  local env_port = digits_or_nil(os.getenv("JANK_PORT"))
+  if env_port then
     if nrepl_probe(env_port) then return env_port end
     io.stderr:write("[jank filter] Port " .. env_port .. " from JANK_PORT did not respond as nREPL, trying next.\n")
   end
@@ -648,6 +648,95 @@ local function clj_to_json(clj_value)
 end
 
 
+-- Kindly kind → output_mode dispatch. `:kind/hiccup` is special-cased in
+-- CodeBlock because it needs a second eval to convert hiccup → HTML before
+-- the html branch can render it; the rest are pure renames.
+local KIND_TO_MODE = {
+  [":kind/html"] = "html",
+  [":kind/md"] = "markdown",
+  [":kind/hidden"] = "hidden",
+  [":kind/mermaid"] = "mermaid",
+  [":kind/graphviz"] = "graphviz",
+  [":kind/tex"] = "tex",
+  [":kind/code"] = "code-display",
+  [":kind/vega-lite"] = "vega-lite",
+  [":kind/plotly"] = "plotly",
+  [":kind/echarts"] = "echarts",
+  [":kind/cytoscape"] = "cytoscape",
+  [":kind/highcharts"] = "highcharts",
+}
+
+-- JS-rendered chart kinds: each entry pairs a list of CDN libraries with
+-- the inline init script that hands the JSON spec to the library. ECharts
+-- and Cytoscape ship default sizes because their libraries refuse to
+-- render to a size-less div; the others auto-fit.
+local CHART_KINDS = {
+  ["vega-lite"] = {
+    libs = {"vega", "vega-lite", "vega-embed"},
+    init = function(div_id, json)
+      return 'vegaEmbed("#' .. div_id .. '", ' .. json .. ');'
+    end,
+  },
+  plotly = {
+    libs = {"plotly"},
+    init = function(div_id, json)
+      return 'var spec=' .. json .. ';'
+        .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);'
+    end,
+  },
+  echarts = {
+    libs = {"echarts"},
+    default_w = "600",
+    default_h = "400",
+    init = function(div_id, json)
+      return 'echarts.init(document.getElementById("' .. div_id
+        .. '")).setOption(' .. json .. ');'
+    end,
+  },
+  cytoscape = {
+    libs = {"cytoscape"},
+    default_w = "600",
+    default_h = "400",
+    init = function(div_id, json)
+      return 'var spec=' .. json
+        .. ';spec.container=document.getElementById("' .. div_id .. '");'
+        .. 'cytoscape(spec);'
+    end,
+  },
+  highcharts = {
+    libs = {"highcharts"},
+    init = function(div_id, json)
+      return 'Highcharts.chart("' .. div_id .. '", ' .. json .. ');'
+    end,
+  },
+}
+
+-- Render a Kindly chart value as a wrapper div + library script tag(s) +
+-- inline init script. Any clj_to_json failure surfaces as a visible
+-- error block (the chart-kind name lets the reader spot which block).
+local function emit_chart(blocks, output_mode, value, width, height)
+  local cfg = CHART_KINDS[output_mode]
+  local clj_src = unquote_clj_string(value)
+  local json, json_err = clj_to_json(clj_src)
+  if not json then
+    table.insert(blocks, error_block(
+      ":kind/" .. output_mode .. " — " .. (json_err or "unknown error"),
+      clj_src))
+    return
+  end
+  local div_id = next_div_id()
+  local tags = {}
+  for _, lib in ipairs(cfg.libs) do
+    table.insert(tags, script_tag(lib))
+  end
+  local html = '<div id="' .. div_id .. '"'
+    .. dim_style(width, height, cfg.default_w, cfg.default_h) .. '></div>'
+    .. table.concat(tags)
+    .. '<script>' .. cfg.init(div_id, json) .. '</script>'
+  emit_display_block(blocks, pandoc.RawBlock("html", html))
+end
+
+
 -- Bootstrap janqua helpers in the Jank session (once).
 -- If no port is available, skip silently — the loud block from resolve_port
 -- already informed the user; per-block warnings would just be noise.
@@ -689,7 +778,7 @@ local function wrap_with_kindly(code)
     .. '                  (:height opts__janqua))'
     .. ' :janqua/value (pr-str'
     .. ' (if (or (get-in m__janqua [:kindly/options :wrapped-value])'
-    .. '         (and (#{:kind/html :kind/md :kind/markdown :kind/mermaid :kind/graphviz :kind/tex :kind/code} kind__janqua)'
+    .. '         (and (#{:kind/html :kind/md :kind/mermaid :kind/graphviz :kind/tex :kind/code} kind__janqua)'
     .. '              (vector? v__janqua)))'
     .. '   (first v__janqua) v__janqua))})'
     .. ' (when m__janqua'
@@ -803,8 +892,7 @@ function Meta(meta)
   if meta and meta.jank then
     local t = meta.jank.timeout
     if t then
-      local s = pandoc.utils.stringify(t)
-      if s:match("^%d+$") then default_timeout = s end
+      default_timeout = digits_or_nil(pandoc.utils.stringify(t))
     end
     local h = meta.jank["hide-stdout"]
     if h ~= nil then
@@ -838,15 +926,10 @@ function CodeBlock(el)
   -- after eval since :kindly/options on the value can also set them.
   -- Precedence (post-eval knobs): fence > Kindly options > frontmatter
   -- > built-in default.
-  local timeout = el.attributes["timeout"]
-  if timeout and not timeout:match("^%d+$") then timeout = nil end
-  timeout = timeout or default_timeout
-
+  local timeout = digits_or_nil(el.attributes["timeout"]) or default_timeout
   local fence_hide_stdout = parse_bool(el.attributes["hide-stdout"])
-  local fence_width = el.attributes["width"]
-  local fence_height = el.attributes["height"]
-  if fence_width and not fence_width:match("^%d+$") then fence_width = nil end
-  if fence_height and not fence_height:match("^%d+$") then fence_height = nil end
+  local fence_width = digits_or_nil(el.attributes["width"])
+  local fence_height = digits_or_nil(el.attributes["height"])
 
   -- output=hidden implies both echo=false and suppressed output
   if output_mode == "hidden" then
@@ -891,30 +974,8 @@ function CodeBlock(el)
           end
         end
         output_mode = "html"
-      elseif kind == ":kind/html" then
-        output_mode = "html"
-      elseif kind == ":kind/md" or kind == ":kind/markdown" then
-        output_mode = "markdown"
-      elseif kind == ":kind/hidden" then
-        output_mode = "hidden"
-      elseif kind == ":kind/mermaid" then
-        output_mode = "mermaid"
-      elseif kind == ":kind/graphviz" then
-        output_mode = "graphviz"
-      elseif kind == ":kind/tex" then
-        output_mode = "tex"
-      elseif kind == ":kind/code" then
-        output_mode = "code-display"
-      elseif kind == ":kind/vega-lite" then
-        output_mode = "vega-lite"
-      elseif kind == ":kind/plotly" then
-        output_mode = "plotly"
-      elseif kind == ":kind/echarts" then
-        output_mode = "echarts"
-      elseif kind == ":kind/cytoscape" then
-        output_mode = "cytoscape"
-      elseif kind == ":kind/highcharts" then
-        output_mode = "highcharts"
+      elseif KIND_TO_MODE[kind] then
+        output_mode = KIND_TO_MODE[kind]
       else
         -- Recognized as a Kindly kind but no dispatch branch handles it.
         -- Without this, an unsupported kind looks identical to a typo:
@@ -939,186 +1000,69 @@ function CodeBlock(el)
   local width = fence_width or opts.width
   local height = fence_height or opts.height
 
-  -- Show code (as clojure for syntax highlighting)
   if echo then
     table.insert(blocks, pandoc.CodeBlock(code, pandoc.Attr("", {"clojure"})))
   end
 
-  -- Render output
   if eval then
     if err then
       table.insert(blocks, pandoc.Div(
         pandoc.CodeBlock(err, pandoc.Attr("", {"error"})),
         pandoc.Attr("", {"cell-output", "cell-output-error"})
       ))
-    elseif output_mode == "hidden" then
-      -- Evaluate but show nothing
-    elseif output_mode == "html" then
+    elseif output_mode ~= "hidden" then
       emit_stdout_block(blocks, stdout)
       if value then
-        local html = unquote_clj_string(value)
-        emit_display_block(blocks, pandoc.RawBlock("html", html))
-      end
-    elseif output_mode == "markdown" then
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local md = unquote_clj_string(value)
-        local doc = pandoc.read(md, "markdown")
-        emit_display_block(blocks, doc.blocks)
-      end
-    elseif output_mode == "mermaid" then
-      emit_stdout_block(blocks, stdout)
-      if value then
-        -- Use the UMD build (loaded via <script src>) instead of the ESM
-        -- module import: SRI on a <script> tag is broadly supported, but
-        -- import-map integrity for ESM imports is not.
-        local diagram = unquote_clj_string(value)
-        local div_id = next_div_id()
-        local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
-          .. script_tag("mermaid")
-          .. '<script>'
-          .. 'mermaid.initialize({ startOnLoad: false });'
-          .. 'mermaid.render("' .. div_id .. '-svg", '
-          .. js_string_encode(diagram) .. ').then(({svg}) => {'
-          .. 'document.getElementById("' .. div_id .. '").innerHTML = svg;'
-          .. '});'
-          .. '</script>'
-        emit_display_block(blocks, pandoc.RawBlock("html", html))
-      end
-
-    elseif output_mode == "graphviz" then
-      -- Graphviz DOT diagram — render to SVG via dot command
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local dot_src = unquote_clj_string(value)
-        local cmd = 'echo ' .. shell_quote(dot_src) .. ' | dot -Tsvg'
-        local handle = io.popen(cmd)
-        local svg = handle:read('*a')
-        handle:close()
-        if svg and #svg > 0 then
-          emit_display_block(blocks, pandoc.RawBlock('html', svg))
-        else
-          table.insert(blocks, error_block(
-            "Graphviz `dot` command failed or is not installed.",
-            "Install Graphviz (https://graphviz.org/) and ensure `dot` is on PATH.\n\nSource:\n" .. dot_src
-          ))
-        end
-      end
-    elseif output_mode == "tex" then
-      -- TeX formula — wrap in $$...$$ and render as markdown
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local tex = unquote_clj_string(value)
-        local md = "$$" .. tex .. "$$"
-        local doc = pandoc.read(md, "markdown")
-        emit_display_block(blocks, doc.blocks)
-      end
-    elseif output_mode == "code-display" then
-      -- Syntax-highlighted code display (not evaluated)
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local code_str = unquote_clj_string(value)
-        emit_display_block(blocks, pandoc.CodeBlock(code_str, pandoc.Attr("", {"clojure"})))
-      end
-    elseif output_mode == "vega-lite" then
-      -- Vega-Lite chart via vegaEmbed
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local clj_src = unquote_clj_string(value)
-        local json, json_err = clj_to_json(clj_src)
-        if json then
+        if output_mode == "html" then
+          emit_display_block(blocks, pandoc.RawBlock("html", unquote_clj_string(value)))
+        elseif output_mode == "markdown" then
+          local doc = pandoc.read(unquote_clj_string(value), "markdown")
+          emit_display_block(blocks, doc.blocks)
+        elseif output_mode == "mermaid" then
+          -- Use the UMD build (loaded via <script src>) instead of the ESM
+          -- module import: SRI on a <script> tag is broadly supported, but
+          -- import-map integrity for ESM imports is not.
+          local diagram = unquote_clj_string(value)
           local div_id = next_div_id()
           local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
-            .. script_tag("vega")
-            .. script_tag("vega-lite")
-            .. script_tag("vega-embed")
-            .. '<script>vegaEmbed("#' .. div_id .. '", ' .. json .. ');</script>'
+            .. script_tag("mermaid")
+            .. '<script>'
+            .. 'mermaid.initialize({ startOnLoad: false });'
+            .. 'mermaid.render("' .. div_id .. '-svg", '
+            .. js_string_encode(diagram) .. ').then(({svg}) => {'
+            .. 'document.getElementById("' .. div_id .. '").innerHTML = svg;'
+            .. '});'
+            .. '</script>'
           emit_display_block(blocks, pandoc.RawBlock("html", html))
+        elseif output_mode == "graphviz" then
+          local dot_src = unquote_clj_string(value)
+          local cmd = 'echo ' .. shell_quote(dot_src) .. ' | dot -Tsvg'
+          local handle = io.popen(cmd)
+          local svg = handle:read('*a')
+          handle:close()
+          if svg and #svg > 0 then
+            emit_display_block(blocks, pandoc.RawBlock('html', svg))
+          else
+            table.insert(blocks, error_block(
+              "Graphviz `dot` command failed or is not installed.",
+              "Install Graphviz (https://graphviz.org/) and ensure `dot` is on PATH.\n\nSource:\n" .. dot_src
+            ))
+          end
+        elseif output_mode == "tex" then
+          local md = "$$" .. unquote_clj_string(value) .. "$$"
+          local doc = pandoc.read(md, "markdown")
+          emit_display_block(blocks, doc.blocks)
+        elseif output_mode == "code-display" then
+          emit_display_block(blocks, pandoc.CodeBlock(unquote_clj_string(value), pandoc.Attr("", {"clojure"})))
+        elseif CHART_KINDS[output_mode] then
+          emit_chart(blocks, output_mode, value, width, height)
         else
-          table.insert(blocks, error_block(
-            ":kind/vega-lite — " .. (json_err or "unknown error"), clj_src))
+          -- Default: code output. Stdout and value go in separate divs so a
+          -- reader can tell debug `(println …)` from the actual return value,
+          -- and so theme rules scoped to `.cell-output-stdout` don't apply
+          -- to return values. Mirrors the `:kind/code` branch.
+          emit_display_block(blocks, pandoc.CodeBlock(value, pandoc.Attr("", {"clojure"})))
         end
-      end
-    elseif output_mode == "plotly" then
-      -- Plotly chart
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local clj_src = unquote_clj_string(value)
-        local json, json_err = clj_to_json(clj_src)
-        if json then
-          local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
-            .. script_tag("plotly")
-            .. '<script>var spec=' .. json .. ';'
-            .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
-          emit_display_block(blocks, pandoc.RawBlock("html", html))
-        else
-          table.insert(blocks, error_block(
-            ":kind/plotly — " .. (json_err or "unknown error"), clj_src))
-        end
-      end
-    elseif output_mode == "echarts" then
-      -- ECharts chart
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local clj_src = unquote_clj_string(value)
-        local json, json_err = clj_to_json(clj_src)
-        if json then
-          local div_id = next_div_id()
-          -- ECharts won't render to a size-less div, so default to 600x400.
-          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height, "600", "400") .. '></div>'
-            .. script_tag("echarts")
-            .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
-          emit_display_block(blocks, pandoc.RawBlock("html", html))
-        else
-          table.insert(blocks, error_block(
-            ":kind/echarts — " .. (json_err or "unknown error"), clj_src))
-        end
-      end
-    elseif output_mode == "cytoscape" then
-      -- Cytoscape graph
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local clj_src = unquote_clj_string(value)
-        local json, json_err = clj_to_json(clj_src)
-        if json then
-          local div_id = next_div_id()
-          -- Cytoscape won't render to a size-less div, so default to 600x400.
-          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height, "600", "400") .. '></div>'
-            .. script_tag("cytoscape")
-            .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
-            .. 'cytoscape(spec);</script>'
-          emit_display_block(blocks, pandoc.RawBlock("html", html))
-        else
-          table.insert(blocks, error_block(
-            ":kind/cytoscape — " .. (json_err or "unknown error"), clj_src))
-        end
-      end
-    elseif output_mode == "highcharts" then
-      -- Highcharts chart
-      emit_stdout_block(blocks, stdout)
-      if value then
-        local clj_src = unquote_clj_string(value)
-        local json, json_err = clj_to_json(clj_src)
-        if json then
-          local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
-            .. script_tag("highcharts")
-            .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
-          emit_display_block(blocks, pandoc.RawBlock("html", html))
-        else
-          table.insert(blocks, error_block(
-            ":kind/highcharts — " .. (json_err or "unknown error"), clj_src))
-        end
-      end
-    else
-      -- Default: code output. Stdout and value go in separate divs so a
-      -- reader can tell debug `(println …)` from the actual return value,
-      -- and so theme rules scoped to `.cell-output-stdout` don't apply
-      -- to return values. Mirrors the `:kind/code` branch.
-      emit_stdout_block(blocks, stdout)
-      if value then
-        emit_display_block(blocks, pandoc.CodeBlock(value, pandoc.Attr("", {"clojure"})))
       end
     end
   end

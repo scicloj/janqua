@@ -92,7 +92,7 @@ The filter examines the `:janqua/kind` field from the wrapper response:
 |:-----|:-------|
 | `:kind/hiccup` | Hiccup data is converted to HTML via a helper function defined in the Jank session |
 | `:kind/html` | String is inserted as raw HTML |
-| `:kind/md` or `:kind/markdown` | String is parsed as Markdown and inserted |
+| `:kind/md` | String is parsed as Markdown and inserted |
 | `:kind/hidden` | Output is suppressed (code still evaluates) |
 | `:kind/mermaid` | String is rendered as a Mermaid diagram (client-side JS) |
 | `:kind/graphviz` | String is rendered as a Graphviz SVG via the `dot` command |
