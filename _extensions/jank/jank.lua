@@ -134,6 +134,39 @@ local function lifecycle_script()
   return dir .. "jank-lifecycle.sh"
 end
 
+-- Inject jank.css into the document via `header-includes`. The CSS
+-- contribution declared in `_extension.yml` is honored by Quarto only
+-- for *format* extensions; Janqua is a filter extension, so the file
+-- never reaches the rendered HTML otherwise. Reading and inlining it
+-- here keeps jank.css as the single source of truth.
+local function inject_header_css(meta)
+  local script = PANDOC_SCRIPT_FILE
+  local dir = script:match("(.*[/\\])") or "./"
+  local f = io.open(dir .. "jank.css", "r")
+  if not f then return meta end
+  local css = f:read("*a")
+  f:close()
+  if not css or css == "" then return meta end
+
+  local style_block = pandoc.RawBlock("html", "<style>\n" .. css .. "</style>")
+  local existing = meta["header-includes"]
+  if not existing then
+    meta["header-includes"] = pandoc.MetaBlocks({style_block})
+  elseif existing.t == "MetaBlocks" then
+    table.insert(existing, style_block)
+  elseif existing.t == "MetaList" then
+    table.insert(existing, pandoc.MetaBlocks({style_block}))
+  else
+    -- Other meta types (e.g. MetaInlines from a single-string include):
+    -- preserve the original by promoting to a MetaList.
+    meta["header-includes"] = pandoc.MetaList({
+      existing,
+      pandoc.MetaBlocks({style_block}),
+    })
+  end
+  return meta
+end
+
 -- Check if a PID is alive via kill -0.
 -- PID must be validated as numeric before calling this function.
 local function pid_alive(pid)
@@ -707,6 +740,7 @@ function Meta(meta)
     return
   end
   jank_port = resolve_port(meta)
+  return inject_header_css(meta)
 end
 
 -- Process Jank code blocks.
@@ -974,19 +1008,13 @@ function CodeBlock(el)
         end
       end
     else
-      -- Default: code output
-      local output_parts = {}
-      if stdout then
-        table.insert(output_parts, stdout)
-      end
+      -- Default: code output. Stdout and value go in separate divs so a
+      -- reader can tell debug `(println …)` from the actual return value,
+      -- and so theme rules scoped to `.cell-output-stdout` don't apply
+      -- to return values. Mirrors the `:kind/code` branch.
+      emit_stdout_block(blocks, stdout)
       if value then
-        table.insert(output_parts, value)
-      end
-      if #output_parts > 0 then
-        table.insert(blocks, pandoc.Div(
-          pandoc.CodeBlock(table.concat(output_parts, "\n"), pandoc.Attr("", {"clojure"})),
-          pandoc.Attr("", {"cell-output", "cell-output-stdout"})
-        ))
+        emit_display_block(blocks, pandoc.CodeBlock(value, pandoc.Attr("", {"clojure"})))
       end
     end
   end
