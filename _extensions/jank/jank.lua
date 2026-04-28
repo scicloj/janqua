@@ -32,6 +32,22 @@
 local jank_port = nil
 local project_root = nil
 
+-- Document-wide defaults read from frontmatter `jank:` map. Per-block fence
+-- attributes and value-level Kindly options override these.
+local default_timeout = nil
+local default_hide_stdout = nil
+
+-- Parse a string into a boolean. Accepts the common true/false aliases.
+-- Returns nil for unrecognized input so callers can distinguish "explicitly
+-- set" from "absent".
+local function parse_bool(s)
+  if s == nil then return nil end
+  s = tostring(s):lower()
+  if s == "true" or s == "yes" or s == "1" or s == "on" then return true end
+  if s == "false" or s == "no" or s == "0" or s == "off" then return false end
+  return nil
+end
+
 -- Resolve where to anchor PID/port/log files for this render.
 -- Quarto's `quarto.project.directory` returns the input file's directory in
 -- both project mode (with _quarto.yml) and standalone mode (without). We
@@ -540,14 +556,32 @@ local function script_tag(name)
     .. '" crossorigin="anonymous"></script>'
 end
 
+-- Build an inline CSS style attribute for a chart wrapper div.
+-- For ECharts/Cytoscape (libraries that won't render to a size-less div)
+-- callers pass default_w/default_h ("600"/"400") so size is always present.
+-- Other chart kinds pass nil defaults so the wrapper stays bare unless the
+-- user explicitly sets width and/or height. Inputs are pre-validated as
+-- digit strings; the function returns "" or ` style="..."` ready to splice.
+local function dim_style(width, height, default_w, default_h)
+  local w = width or default_w
+  local h = height or default_h
+  if not w and not h then return "" end
+  local parts = {}
+  if w then table.insert(parts, "width:" .. w .. "px") end
+  if h then table.insert(parts, "height:" .. h .. "px") end
+  return ' style="' .. table.concat(parts, ";") .. ';"'
+end
+
 -- Send raw code to Jank via clj-nrepl-eval.
 -- Returns: raw output string, error string (may be nil)
-local function eval_jank_raw(code)
+-- `timeout` is in milliseconds; nil falls back to 10000.
+local function eval_jank_raw(code, timeout)
   if not jank_port then
     return nil, "Jank nREPL port not available. Could not discover or start Jank."
   end
 
-  local cmd = "clj-nrepl-eval -p " .. shell_quote(jank_port) .. " --timeout 10000 " .. shell_quote(code) .. " 2>&1"
+  local timeout_ms = timeout or "10000"
+  local cmd = "clj-nrepl-eval -p " .. shell_quote(jank_port) .. " --timeout " .. shell_quote(tostring(timeout_ms)) .. " " .. shell_quote(code) .. " 2>&1"
   local handle = io.popen(cmd)
   local raw = handle:read("*a")
   handle:close()
@@ -638,11 +672,21 @@ end
 -- Wrap user code to extract Kindly metadata from the result.
 -- Uses fn call instead of let to work around a Jank bug where let bindings
 -- lose reader-attached metadata (e.g. ^:kind/hiccup).
+-- Per-block options (:hide-stdout, :width, :height) come from the value's
+-- :kindly/options map, so library functions can set defaults via with-meta.
+-- Type-check before coercion so a malformed option (e.g. :width "800px")
+-- doesn't throw and lose the user's actual return value.
 local function wrap_with_kindly(code)
   return '((fn [v__janqua]'
     .. ' ((fn [m__janqua]'
-    .. ' ((fn [kind__janqua]'
+    .. ' ((fn [kind__janqua opts__janqua]'
     .. ' {:janqua/kind kind__janqua'
+    .. ' :janqua/hide-stdout (when (contains? opts__janqua :hide-stdout)'
+    .. '                       (boolean (:hide-stdout opts__janqua)))'
+    .. ' :janqua/width (when (integer? (:width opts__janqua))'
+    .. '                 (:width opts__janqua))'
+    .. ' :janqua/height (when (integer? (:height opts__janqua))'
+    .. '                  (:height opts__janqua))'
     .. ' :janqua/value (pr-str'
     .. ' (if (or (get-in m__janqua [:kindly/options :wrapped-value])'
     .. '         (and (#{:kind/html :kind/md :kind/markdown :kind/mermaid :kind/graphviz :kind/tex :kind/code} kind__janqua)'
@@ -651,32 +695,47 @@ local function wrap_with_kindly(code)
     .. ' (when m__janqua'
     .. ' (or (:kindly/kind m__janqua)'
     .. ' (some (fn [k] (when (and (keyword? k) (= (namespace k) "kind") (get m__janqua k)) k))'
-    .. ' (keys m__janqua))))))'
+    .. ' (keys m__janqua))))'
+    .. ' (or (:kindly/options m__janqua) {})))'
     .. ' (meta v__janqua)))'
     .. ' (do ' .. code .. '))'
 end
 
--- Parse the wrapper response to extract kind and value.
+-- Parse the wrapper response to extract kind, value, and options.
+-- Options keys appear before :janqua/value in the wrapper map, so the
+-- existing greedy `:janqua/value (.+)}%s*$` value match still anchors
+-- correctly on the trailing `}` of the outer map.
 local function parse_kindly_response(value_str)
-  if not value_str then return nil, nil end
+  if not value_str then return nil, nil, nil end
 
-  -- Match :janqua/kind value
   local kind = value_str:match(":janqua/kind (:kind/[%w_-]+)")
 
-  -- Match :janqua/value — everything between :janqua/value and the final }
+  local opts = {}
+  local hide_stdout = value_str:match(":janqua/hide%-stdout (%S+)")
+  if hide_stdout == "true" then
+    opts.hide_stdout = true
+  elseif hide_stdout == "false" then
+    opts.hide_stdout = false
+  end
+  opts.width = value_str:match(":janqua/width (%d+)")
+  opts.height = value_str:match(":janqua/height (%d+)")
+
   local raw_value = value_str:match(":janqua/value (.+)}%s*$")
 
-  return kind, raw_value
+  return kind, raw_value, opts
 end
 
 -- Evaluate Jank code via clj-nrepl-eval with Kindly wrapper.
--- Returns: value string, stdout string, error string, kind string (all may be nil)
-local function eval_jank(code)
+-- Returns: value, stdout, err, kind, opts (all may be nil except opts which
+-- is always a table). `opts` carries :hide-stdout (bool), :width, :height
+-- extracted from the value's :kindly/options metadata.
+-- `timeout` overrides the per-block eval timeout (ms).
+local function eval_jank(code, timeout)
   ensure_bootstrap()
 
   local wrapped = wrap_with_kindly(code)
-  local raw, err = eval_jank_raw(wrapped)
-  if err then return nil, nil, err, nil end
+  local raw, err = eval_jank_raw(wrapped, timeout)
+  if err then return nil, nil, err, nil, {} end
 
   local value, stdout = parse_nrepl_output(raw)
 
@@ -686,16 +745,16 @@ local function eval_jank(code)
   if not value then
     return nil, stdout,
       "Jank returned no value. Raw response: " .. (raw or "(empty)"),
-      nil
+      nil, {}
   end
 
   -- If the wrapper map wasn't returned, the code likely threw an error.
   -- The raw value IS the error message in that case.
   if not value:match(":janqua/kind") then
-    return nil, stdout, value, nil
+    return nil, stdout, value, nil, {}
   end
 
-  local kind, actual_value = parse_kindly_response(value)
+  local kind, actual_value, opts = parse_kindly_response(value)
 
   -- Kind matched but value regex missed: surface as an error so we don't
   -- silently render an empty block.
@@ -703,13 +762,13 @@ local function eval_jank(code)
     return nil, stdout,
       "Could not parse Kindly wrapper response (kind " .. kind ..
       "). Raw response: " .. value,
-      kind
+      kind, opts
   end
 
   -- Unquote the pr-str serialization layer from the wrapper
   actual_value = unquote_clj_string(actual_value)
 
-  return actual_value, stdout, nil, kind
+  return actual_value, stdout, nil, kind, opts
 end
 
 -- Whether the current Pandoc target is HTML. Janqua's chart/diagram
@@ -739,6 +798,20 @@ function Meta(meta)
     })
     return
   end
+
+  -- Doc-wide defaults from frontmatter `jank:` map.
+  if meta and meta.jank then
+    local t = meta.jank.timeout
+    if t then
+      local s = pandoc.utils.stringify(t)
+      if s:match("^%d+$") then default_timeout = s end
+    end
+    local h = meta.jank["hide-stdout"]
+    if h ~= nil then
+      default_hide_stdout = parse_bool(pandoc.utils.stringify(h))
+    end
+  end
+
   jank_port = resolve_port(meta)
   return inject_header_css(meta)
 end
@@ -760,6 +833,21 @@ function CodeBlock(el)
   local echo = el.attributes["echo"] ~= "false"
   local eval = el.attributes["eval"] ~= "false"
 
+  -- Per-block options. timeout resolves now (needed before eval); the
+  -- hide-stdout / width / height fence attrs are read now but resolved
+  -- after eval since :kindly/options on the value can also set them.
+  -- Precedence (post-eval knobs): fence > Kindly options > frontmatter
+  -- > built-in default.
+  local timeout = el.attributes["timeout"]
+  if timeout and not timeout:match("^%d+$") then timeout = nil end
+  timeout = timeout or default_timeout
+
+  local fence_hide_stdout = parse_bool(el.attributes["hide-stdout"])
+  local fence_width = el.attributes["width"]
+  local fence_height = el.attributes["height"]
+  if fence_width and not fence_width:match("^%d+$") then fence_width = nil end
+  if fence_height and not fence_height:match("^%d+$") then fence_height = nil end
+
   -- output=hidden implies both echo=false and suppressed output
   if output_mode == "hidden" then
     echo = false
@@ -768,9 +856,9 @@ function CodeBlock(el)
   local blocks = {}
 
   -- Evaluate first so Kindly metadata can influence echo/output_mode
-  local value, stdout, err, kind = nil, nil, nil, nil
+  local value, stdout, err, kind, opts = nil, nil, nil, nil, {}
   if eval then
-    value, stdout, err, kind = eval_jank(code)
+    value, stdout, err, kind, opts = eval_jank(code, timeout)
 
     -- Kindly metadata overrides the output= attribute
     if kind then
@@ -837,6 +925,20 @@ function CodeBlock(el)
     end
   end
 
+  -- Resolve post-eval options now that Kindly options are known.
+  -- hide_stdout: gate stdout to nil up front so every render branch picks
+  -- it up without per-branch checks.
+  local hide_stdout = fence_hide_stdout
+  if hide_stdout == nil then hide_stdout = opts.hide_stdout end
+  if hide_stdout == nil then hide_stdout = default_hide_stdout end
+  if hide_stdout == nil then hide_stdout = false end
+  if hide_stdout then stdout = nil end
+
+  -- width/height: nil means "no override"; chart branches choose whether
+  -- to apply a built-in default (ECharts/Cytoscape) or stay bare (others).
+  local width = fence_width or opts.width
+  local height = fence_height or opts.height
+
   -- Show code (as clojure for syntax highlighting)
   if echo then
     table.insert(blocks, pandoc.CodeBlock(code, pandoc.Attr("", {"clojure"})))
@@ -872,7 +974,7 @@ function CodeBlock(el)
         -- import-map integrity for ESM imports is not.
         local diagram = unquote_clj_string(value)
         local div_id = next_div_id()
-        local html = '<div id="' .. div_id .. '"></div>'
+        local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
           .. script_tag("mermaid")
           .. '<script>'
           .. 'mermaid.initialize({ startOnLoad: false });'
@@ -926,7 +1028,7 @@ function CodeBlock(el)
         local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '"></div>'
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
             .. script_tag("vega")
             .. script_tag("vega-lite")
             .. script_tag("vega-embed")
@@ -945,7 +1047,7 @@ function CodeBlock(el)
         local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '"></div>'
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
             .. script_tag("plotly")
             .. '<script>var spec=' .. json .. ';'
             .. 'Plotly.newPlot("' .. div_id .. '", spec.data, spec.layout);</script>'
@@ -963,7 +1065,8 @@ function CodeBlock(el)
         local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
+          -- ECharts won't render to a size-less div, so default to 600x400.
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height, "600", "400") .. '></div>'
             .. script_tag("echarts")
             .. '<script>echarts.init(document.getElementById("' .. div_id .. '")).setOption(' .. json .. ');</script>'
           emit_display_block(blocks, pandoc.RawBlock("html", html))
@@ -980,7 +1083,8 @@ function CodeBlock(el)
         local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '" style="width:600px;height:400px;"></div>'
+          -- Cytoscape won't render to a size-less div, so default to 600x400.
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height, "600", "400") .. '></div>'
             .. script_tag("cytoscape")
             .. '<script>var spec=' .. json .. ';spec.container=document.getElementById("' .. div_id .. '");'
             .. 'cytoscape(spec);</script>'
@@ -998,7 +1102,7 @@ function CodeBlock(el)
         local json, json_err = clj_to_json(clj_src)
         if json then
           local div_id = next_div_id()
-          local html = '<div id="' .. div_id .. '"></div>'
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
             .. script_tag("highcharts")
             .. '<script>Highcharts.chart("' .. div_id .. '", ' .. json .. ');</script>'
           emit_display_block(blocks, pandoc.RawBlock("html", html))

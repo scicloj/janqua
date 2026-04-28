@@ -173,7 +173,7 @@ Janqua automatically unwraps the vector for all string-valued kinds (`kind/html`
 
 ## Code block attributes
 
-These attributes go on the code fence and control display independently of Kindly. See the [Quarto documentation on code cells](https://quarto.org/docs/reference/cells/) for more options.
+The Quarto-standard attributes `echo` and `eval` go on the code fence and control display:
 
 | Attribute | Effect |
 |:----------|:-------|
@@ -183,6 +183,58 @@ These attributes go on the code fence and control display independently of Kindl
 ```{.clojure .jank echo=false}
 ^:kind/hiccup
 [:div "Only the rendered HTML appears — no source code shown"]
+```
+
+See the [Quarto documentation on code cells](https://quarto.org/docs/reference/cells/) for more.
+
+## Per-block options
+
+Janqua also recognizes a few knobs you can set in three places, with **precedence: fence attribute > `:kindly/options` on the value > frontmatter `jank:` map > built-in default**.
+
+| Option | Type | Default | Notes |
+|:---|:---|:---|:---|
+| `timeout` | integer (ms) | `10000` | Per-block eval timeout. Fence + frontmatter only — set before the value exists, so it has no Kindly form. |
+| `hide-stdout` | boolean | `false` | Suppress captured stdout while keeping the return value. |
+| `width` | integer (px) | varies | Chart width. ECharts and Cytoscape need a sized container, so they default to `600`; other chart kinds auto-fit when unset. |
+| `height` | integer (px) | varies | Chart height. ECharts and Cytoscape default to `400`; other chart kinds auto-fit when unset. |
+
+### Fence attribute
+
+Set on the code fence:
+
+````
+```{.clojure .jank timeout=30000 hide-stdout=true}
+(do (println "noisy debug")
+    (Thread/sleep 100)
+    42)
+```
+````
+
+### `:kindly/options` on the value
+
+Annotate the value's metadata under `:kindly/options`:
+
+```{.clojure .jank}
+^{:kindly/kind :kind/plotly
+  :kindly/options {:width 800 :height 500}}
+{:data [{:x [1 2 3] :y [10 20 15] :type "bar"}]
+ :layout {:title "Sized via :kindly/options"}}
+```
+
+Library functions can attach these via `with-meta` / `vary-meta`, so callers don't need to set them at the call site.
+
+### Frontmatter
+
+Doc-wide defaults go in the YAML frontmatter:
+
+```yaml
+---
+filters:
+  - jank
+jank:
+  timeout: 30000
+  hide-stdout: true
+---
 ```
 
 ## Summary
