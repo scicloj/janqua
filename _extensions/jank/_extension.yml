@@ -4,7 +4,3 @@ version: 0.1.0
 contributes:
   filters:
     - jank.lua
-  format:
-    html:
-      css:
-        - jank.css
