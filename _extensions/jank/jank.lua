@@ -444,6 +444,7 @@ local janqua_bootstrap = [=[
           (clojure.string/escape s
             {\\ "\\\\"
              \" "\\\""
+             \< "\\u003c"  ; keep </script> in user data from breaking inline JS
              \newline "\\n"
              \return "\\r"
              \tab "\\t"}))]
