@@ -5,9 +5,11 @@ filters:
 
 # Overview {.unnumbered}
 
-**Janqua** is a [Quarto](https://quarto.org) extension for evaluating [Jank](https://jank-lang.org) code blocks in documents.
+**Janqua** is a [Quarto](https://quarto.org) extension that brings [Jank](https://jank-lang.org) to interactive data visualization, documentation, and research reports.
 
-Write Jank code in `.qmd` files and get live results — code output, inline [SVG](https://en.wikipedia.org/wiki/SVG), [Plotly.js](https://plotly.com/javascript/) charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with `quarto preview`, which re-renders on every save. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering, compatible with the [Clojure](https://clojure.org/) ecosystem.
+Write Jank code in `.qmd` files and get live results — code output, inline [SVG](https://en.wikipedia.org/wiki/SVG), [Plotly.js](https://plotly.com/javascript/) charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with `quarto preview`, which re-renders on every save. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering (partial coverage at this stage).
+
+Janqua also opens the door to publishing Jank work on [Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative space.
 
 ::: {.callout-note}
 Janqua is at an **experimental stage**. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on [GitHub](https://github.com/scicloj/janqua/issues) or reach out on the [Clojurians Zulip chat](https://scicloj.github.io/docs/community/chat/).
@@ -15,7 +17,9 @@ Janqua is at an **experimental stage**. Things may change, and some rough edges 
 
 ## What is Quarto?
 
-[Quarto](https://quarto.org) is an open-source publishing system for technical documents. You write `.qmd` (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.
+[Quarto](https://quarto.org) is an open-source publishing system for technical documents — widely used in scientific communities for blog posts, books, academic papers, and reproducible research. You write `.qmd` (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.
+
+Quarto has been used in multiple Clojure projects, most often through [Clay](https://scicloj.github.io/clay/) — a Clojure tool that generates Quarto markdown from Clojure namespaces.
 
 Quarto supports several project types:
 
@@ -27,11 +31,18 @@ Quarto supports several project types:
 
 [Jank](https://jank-lang.org) is a [Clojure](https://clojure.org/) dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
 
+## Use Janqua for…
+
+- **Tutorials and documentation** — about Jank itself or libraries built on it, with live-evaluated examples woven into the narrative
+- **Research reports and data analysis** — figures, tables, math, and prose in a single reproducible document
+- **Interactive exploration** — iterate quickly with `quarto preview`, which re-renders the page each time you save
+- **Sharing on [Clojure Civitas](https://clojurecivitas.github.io/)** — Jank posts on the Clojure community's collaborative space
+
 ## Clojure ecosystem connection
 
-[Clay](https://scicloj.github.io/clay) is a Clojure tool for data visualization and [literate programming](https://en.wikipedia.org/wiki/Literate_programming). Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. [Clojure Civitas](https://clojurecivitas.org/), the community blog, is built this way. Civitas can also render `.qmd` files directly (not just Clay-generated ones), so Janqua documents are expected to work well with it.
+[Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative publishing space, is built on Quarto via [Clay](https://scicloj.github.io/clay/) — and can render `.qmd` files directly, so Jank posts authored with Janqua can be shared there too.
 
-Janqua brings a similar experience to Jank: you write Jank code directly in `.qmd` files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations, so code patterns are transferable between the two ecosystems.
+Janqua takes a different approach from Clay: rather than generating Quarto markdown from a Jank namespace, the Quarto filter evaluates `{.clojure .jank}` blocks embedded directly in `.qmd` files. It follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations — with partial coverage at this stage — so familiar Kindly metadata patterns apply when authoring Jank documents.
 
 ## How it works
 
@@ -50,10 +61,9 @@ The Jank process starts automatically on first render and stays running for fast
 
 ## Future goals
 
-- **[Clojure Civitas](https://clojurecivitas.org/) integration** — enabling community members to publish Jank posts on the blog
 - **Broader Kindly support** — more visualization kinds (tables, images, etc.)
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
-- **[Clay](https://scicloj.github.io/clay) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
+- **[Clay](https://scicloj.github.io/clay/) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
 - **Jupyter support** — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments
 
 ## Chapters

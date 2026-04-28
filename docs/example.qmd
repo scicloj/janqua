@@ -40,6 +40,39 @@ A `hide-stdout=true` fence attribute drops the captured stdout while keeping the
 (do (println "debug — won't appear") (* 6 7))
 ```
 
+## C++ interop
+
+Jank's distinctive feature is seamless C++ interop — `cpp/` forms construct values, call functions, and use operators from C++ inside a Jank expression. Values cross between Jank and C++ automatically.
+
+A simple call into the C standard library:
+
+```{.clojure .jank}
+(do
+  (cpp/raw "#include <cmath>")
+  (cpp/std.sqrtf (cpp/float. 2.0)))
+```
+
+C++ operators compose with `cpp/` values. Pythagoras' theorem via `cpp/+`, `cpp/*`, and `cpp/std.sqrtf`:
+
+```{.clojure .jank}
+(let [a (cpp/float. 3.0)
+      b (cpp/float. 4.0)
+      c2 (cpp/+ (cpp/* a a) (cpp/* b b))]
+  (cpp/std.sqrtf c2))
+```
+
+C++ functions integrate with regular Jank sequences. A Plotly chart whose y-values come from `cpp/std.sinf`:
+
+```{.clojure .jank}
+(let [xs (vec (map #(* 0.1 %) (range 65)))
+      ys (mapv #(cpp/std.sinf (cpp/float. %)) xs)]
+  ^:kind/plotly
+  {:data [{:x xs :y ys :type "scatter" :mode "lines" :name "sin(x)"}]
+   :layout {:title "Sine wave computed via cpp/std.sinf"}})
+```
+
+For the full picture of Jank's C++ interop — types, member access, library use — see the [Jank book](https://book.jank-lang.org/).
+
 ## Hiccup
 
 Annotate a vector with `^:kind/hiccup` to render it as HTML:
