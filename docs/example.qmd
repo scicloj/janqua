@@ -34,6 +34,12 @@ Printed output appears alongside the return value:
 (do (println "computing...") (* 6 7))
 ```
 
+A `hide-stdout=true` fence attribute drops the captured stdout while keeping the value — handy when a noisy debug `println` is left in the code:
+
+```{.clojure .jank hide-stdout=true}
+(do (println "debug — won't appear") (* 6 7))
+```
+
 ## Hiccup
 
 Annotate a vector with `^:kind/hiccup` to render it as HTML:
@@ -84,6 +90,16 @@ Use `^:kind/plotly` with a map containing `:data` and `:layout` keys:
             :xaxis {:title "x"}
             :yaxis {:title "y"}}})
 ```
+
+`width` and `height` fence attributes resize the wrapper — useful for ECharts/Cytoscape (which need a sized container) or to constrain any chart kind:
+
+```{.clojure .jank width=400 height=250}
+^:kind/plotly
+{:data [{:x [1 2 3 4 5] :y [4 1 5 3 2] :type "bar"}]
+ :layout {:title "Sized 400×250 via fence attrs"}}
+```
+
+See [Per-block options](kindly.html#per-block-options) for the full set (`timeout`, `hide-stdout`, `width`, `height`) and precedence rules.
 
 ## Markdown table
 
