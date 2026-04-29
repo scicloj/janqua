@@ -67,7 +67,9 @@ filters:
 ```
 ````
 
-Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. Both use dot prefixes — that's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) (the YAML header at the top of the file, between the `---` markers) tells Quarto to use the Janqua filter.
+Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. Both use dot prefixes — that's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans).
+
+The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) (the YAML header at the top of the file, between the `---` markers) tells Quarto to use the Janqua filter.
 
 ## Render it
 
