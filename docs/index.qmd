@@ -42,6 +42,8 @@ Quarto supports several project types:
 
 Janqua takes a different approach: rather than generating Quarto markdown from a Jank namespace, the Quarto filter evaluates `{.clojure .jank}` blocks embedded directly in `.qmd` files. It follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering annotations — with partial coverage at this stage — so familiar Kindly metadata patterns apply when authoring Jank documents.
 
+The two approaches are different and somewhat complementary, both following the Kindly convention.
+
 ## How it works
 
 1. You write a `.qmd` file with `{.clojure .jank}` code blocks
@@ -57,7 +59,9 @@ Janqua takes a different approach: rather than generating Quarto markdown from a
 
 The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Live Demo](example.qmd) to see evaluated examples.
 
-## Future goals
+## Roadmap
+
+Full Kindly support and Clay support for Jank are the larger goals.
 
 - **Broader Kindly support** — more visualization kinds (tables, images, etc.)
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
