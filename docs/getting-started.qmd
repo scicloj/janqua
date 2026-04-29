@@ -23,8 +23,6 @@ bb --version
 clj-nrepl-eval --help
 ```
 
-Optional: **[Graphviz](https://graphviz.org/)** is needed for `^:kind/graphviz` diagrams (`dot` must be on your `PATH`).
-
 ## Create a project
 
 ```bash

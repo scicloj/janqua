@@ -20,7 +20,7 @@
 --   ^:kind/md "..."           — renders string as markdown
 --   ^:kind/hidden [...]       — suppresses output (code still shown)
 --   ^:kind/mermaid "..."      — Mermaid diagram (Quarto native)
---   ^:kind/graphviz "..."     — Graphviz DOT diagram (Quarto native)
+--   ^:kind/graphviz "..."     — Graphviz DOT diagram (via CDN)
 --   ^:kind/tex "..."          — TeX/LaTeX formula
 --   ^:kind/code "..."         — syntax-highlighted Clojure code display
 --   ^:kind/vega-lite {...}    — Vega-Lite chart (via CDN)
@@ -556,6 +556,10 @@ local CDN = {
     src = "https://code.highcharts.com/12.6.0/highcharts.js",
     integrity = "sha384-oVN+UvYVEgXjYVI7ww5itQNNt/Tgr7TOADG2btfqV/eQkPwpOL44P81GtEp2L7wt",
   },
+  graphviz = {
+    src = "https://cdn.jsdelivr.net/npm/@viz-js/viz@3.17.0/dist/viz-global.min.js",
+    integrity = "sha384-hhfCh87gn6AaMzlh2cgEwt+9VyM3DUYUrUg4H8eLNaLkjDrX78xSf3Nc84ZUmnLL",
+  },
 }
 
 -- Tracks which CDN libraries have already had a <script src> emitted in
@@ -1072,19 +1076,30 @@ function CodeBlock(el)
             .. '</script>'
           emit_display_block(blocks, pandoc.RawBlock("html", html))
         elseif output_mode == "graphviz" then
+          -- Render in the browser via @viz-js/viz (a WASM build of
+          -- Graphviz). Avoids requiring `dot` to be installed on the
+          -- build machine, at the cost of HTML-only output. Errors
+          -- from the library or the DOT source surface in the page
+          -- itself, mirroring the mermaid pattern.
           local dot_src = unquote_clj_string(value)
-          local cmd = 'echo ' .. shell_quote(dot_src) .. ' | dot -Tsvg'
-          local handle = io.popen(cmd)
-          local svg = handle:read('*a')
-          handle:close()
-          if svg and #svg > 0 then
-            emit_display_block(blocks, pandoc.RawBlock('html', svg))
-          else
-            table.insert(blocks, error_block(
-              "Graphviz `dot` command failed or is not installed.",
-              "Install Graphviz (https://graphviz.org/) and ensure `dot` is on PATH.\n\nSource:\n" .. dot_src
-            ))
-          end
+          local div_id = next_div_id()
+          local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
+            .. script_tag("graphviz")
+            .. '<script>'
+            .. 'Viz.instance().then(function (viz) {'
+            .. 'try {'
+            .. 'document.getElementById("' .. div_id .. '").appendChild('
+            .. 'viz.renderSVGElement(' .. js_string_encode(dot_src) .. '));'
+            .. '} catch (e) {'
+            .. 'document.getElementById("' .. div_id .. '").innerText = '
+            .. '"Graphviz error: " + (e && e.message ? e.message : e);'
+            .. '}'
+            .. '}).catch(function (e) {'
+            .. 'document.getElementById("' .. div_id .. '").innerText = '
+            .. '"Graphviz library failed to load: " + (e && e.message ? e.message : e);'
+            .. '});'
+            .. '</script>'
+          emit_display_block(blocks, pandoc.RawBlock("html", html))
         elseif output_mode == "tex" then
           local md = "$$" .. unquote_clj_string(value) .. "$$"
           local doc = pandoc.read(md, "markdown")

@@ -73,7 +73,7 @@ Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. The Mermaid JS
 
 ## `^:kind/graphviz` — Graphviz diagrams
 
-Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. Requires Graphviz to be installed:
+Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. The `viz-js` library is loaded from CDN; no local Graphviz install needed:
 
 ```{.clojure .jank}
 ^:kind/graphviz
