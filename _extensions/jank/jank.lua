@@ -266,7 +266,30 @@ end
 -- Start jank repl via lifecycle script and return the port.
 -- On success, prints a loud block so the user knows a long-lived process
 -- was spawned and how to stop it.
+-- Check whether `jank` is on PATH. Only needed for auto-start: if the
+-- user already has a running session (steps 1-4 of resolve_port), we
+-- never invoke `jank` directly. Defined adjacent to `auto_start_jank`
+-- because Lua resolves references at definition time — this helper
+-- must be in scope before the caller is defined.
+local function jank_available()
+  local ok = os.execute("command -v jank >/dev/null 2>&1")
+  return ok == true or ok == 0
+end
+
 local function auto_start_jank()
+  if not jank_available() then
+    print_loud({
+      "ERROR: `jank` is not on PATH.",
+      "Janqua tried to auto-start a Jank nREPL but couldn't find the binary.",
+      "",
+      "Install Jank from:",
+      "  https://jank-lang.org",
+      "",
+      "(See the Getting Started guide for full prerequisites.)",
+    })
+    return nil
+  end
+
   io.stderr:write("[janqua] No running Jank nREPL found. Starting one...\n")
 
   local script_path = lifecycle_script()
