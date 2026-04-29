@@ -157,7 +157,7 @@ Now simply calling the function renders the chart — no annotation needed at th
 (bar-chart ["a" "b" "c"] [10 20 15])
 ```
 
-This is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that "just work" in any Kindly-aware tool — Janqua, Clay, or others.
+This is a key idea behind Kindly: rendering intent lives in the metadata of Jank forms or values, not in the document markup. Libraries can provide visualization functions that "just work" in any Kindly-aware tool — Janqua, Clay, or others.
 
 ## Why wrap strings in vectors?
 
