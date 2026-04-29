@@ -1,8 +1,6 @@
 # Janqua
 
-A [Quarto](https://quarto.org) extension that brings [Jank](https://jank-lang.org) to interactive data visualization, documentation, and research reports.
-
-Write Jank code in `.qmd` files and get live results — code output, SVG, charts (Plotly, Vega-Lite, etc.), diagrams (Mermaid, Graphviz), markdown tables, and more. Uses the [Kindly](https://scicloj.github.io/kindly-noted/) convention for rendering (partial coverage at this stage).
+Janqua is a [Quarto](https://quarto.org) extension for writing [Jank](https://jank-lang.org) code in visual documents. You write a `.qmd` (Quarto Markdown) file — prose mixed with `{.clojure .jank}` code blocks — and render it to an interactive HTML page where each block is evaluated by a Jank REPL: code output, charts (Plotly, Vega-Lite, ECharts, …), diagrams (Mermaid, Graphviz), markdown tables, computed HTML. Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
 
 Quarto is widely used in scientific communities for technical writing, and has been used in multiple Clojure projects, most often through [Clay](https://scicloj.github.io/clay/). Janqua brings this publishing experience to the Jank community — and lets Jank developers share posts on [Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative space.
 
