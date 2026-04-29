@@ -90,6 +90,6 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 ## Next steps
 
 - See [Workflow](workflow.qmd) for managing the Jank process, auto-start tuning, and publishing to GitHub Pages
-- See [Kindly kinds](kinds.qmd) for controlling how each result renders (HTML, charts, diagrams, math, …)
+- See [Kindly kinds](kindly-kinds.qmd) for controlling how each result renders (HTML, charts, diagrams, math, …)
 - See [Authoring Jank documents](authoring.qmd) for code-block attributes and per-block options
-- See the [Demo](example.qmd) for evaluated examples
+- See the [Demo](demo.qmd) for evaluated examples

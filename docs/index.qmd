@@ -51,7 +51,7 @@ The two approaches are different and somewhat complementary, both following the 
 1. You write a `.qmd` file with `{.clojure .jank}` code blocks
 2. When Quarto renders the document, the Janqua filter intercepts these blocks
 3. Each block is sent to a Jank nREPL server for evaluation
-4. Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on [Kindly kinds](kinds.qmd)
+4. Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on [Kindly kinds](kindly-kinds.qmd)
 
 ```{.clojure .jank}
 ^:kind/hiccup
@@ -59,7 +59,7 @@ The two approaches are different and somewhat complementary, both following the 
   "Hello from Jank!"]
 ```
 
-The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Demo](example.qmd) to see evaluated examples.
+The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Demo](demo.qmd) to see evaluated examples.
 
 ## Roadmap
 
@@ -74,7 +74,7 @@ Full Kindly support and Clay support for Jank are the larger goals.
 
 - [Getting Started](getting-started.qmd) — prerequisites, installation, first document, rendering
 - [Workflow](workflow.qmd) — managing the Jank process, auto-start tuning, publishing
-- [Kindly kinds](kinds.qmd) — controlling how a value renders (HTML, charts, diagrams, math, …)
+- [Kindly kinds](kindly-kinds.qmd) — controlling how a value renders (HTML, charts, diagrams, math, …)
 - [Authoring Jank documents](authoring.qmd) — code-block attributes, per-block options, and document-level Quarto features
 - [How It Works](how-it-works.qmd) — architecture, port discovery, process management, evaluation pipeline
-- [Demo](example.qmd) — evaluated examples of all output kinds
+- [Demo](demo.qmd) — evaluated examples of all output kinds

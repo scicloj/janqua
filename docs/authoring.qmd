@@ -5,7 +5,7 @@ filters:
 
 # Authoring Jank documents
 
-The previous chapter ([Kindly kinds](kinds.qmd)) covered how to control the rendering of a *value*. This chapter covers the knobs *around* `.jank` blocks — display attributes (`echo`, `eval`), Janqua's `output=` override, per-block options (timing, sizing, output suppression) — and finishes with the document-level Quarto features (math, callouts) that pair with live evaluation.
+The previous chapter ([Kindly kinds](kindly-kinds.qmd)) covered how to control the rendering of a *value*. This chapter covers the knobs *around* `.jank` blocks — display attributes (`echo`, `eval`), Janqua's `output=` override, per-block options (timing, sizing, output suppression) — and finishes with the document-level Quarto features (math, callouts) that pair with live evaluation.
 
 ## Code block attributes
 
