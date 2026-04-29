@@ -124,6 +124,17 @@ export JANK_AUTO_START=0
 
 When auto-start is disabled and no Jank session is found, the filter prints a notice telling you how to start one manually and skips evaluation.
 
+### Forcing a clean render
+
+Because the Jank session persists across renders, definitions from earlier renders linger — handy for fast iteration, but a renamed function may keep resolving to its old definition. To force a fresh process at the start of each render, add to the frontmatter:
+
+```yaml
+jank:
+  reset-on-render: true
+```
+
+Each render then stops any running session and starts a new one, paying the boot cost every time. Useful for production renders or when you suspect stale state; not recommended under `quarto preview` because every save triggers a fresh start.
+
 ## Publishing to GitHub Pages
 
 If your project is a Quarto book or website, you can publish it to [GitHub Pages](https://pages.github.com/) directly from your project directory:

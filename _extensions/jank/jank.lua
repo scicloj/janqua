@@ -263,6 +263,33 @@ local function auto_start_disabled(meta)
   return false
 end
 
+-- Whether the user requested a clean render via frontmatter
+-- `jank: reset-on-render: true`. Default is false. When true, Meta()
+-- stops any running Jank session before resolving a port, so the next
+-- render starts from a fresh process — the slow-but-bulletproof escape
+-- hatch when stale defs from a prior render contaminate the current
+-- one.
+local function reset_on_render_requested(meta)
+  if meta and meta.jank then
+    local opt = meta.jank["reset-on-render"]
+    if opt ~= nil then
+      return parse_bool(pandoc.utils.stringify(opt)) == true
+    end
+  end
+  return false
+end
+
+-- Stop any running Jank session anchored at project_root. Idempotent —
+-- safe to call when nothing is running. Used by reset-on-render.
+-- Stderr is suppressed because the lifecycle script's stop is chatty
+-- about the no-session case, which is normal here.
+local function stop_jank_session()
+  local script_path = lifecycle_script()
+  local cmd = "JANQUA_PROJECT_ROOT=" .. shell_quote(project_root) .. " "
+    .. shell_quote(script_path) .. " stop 2>/dev/null"
+  os.execute(cmd)
+end
+
 -- Start jank repl via lifecycle script and return the port.
 -- On success, prints a loud block so the user knows a long-lived process
 -- was spawned and how to stop it.
@@ -926,6 +953,11 @@ function Meta(meta)
     if h ~= nil then
       default_hide_stdout = parse_bool(pandoc.utils.stringify(h))
     end
+  end
+
+  if reset_on_render_requested(meta) then
+    io.stderr:write("[janqua] reset-on-render: stopping any running Jank session for a clean start.\n")
+    stop_jank_session()
   end
 
   jank_port = resolve_port(meta)
