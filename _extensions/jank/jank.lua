@@ -1053,6 +1053,11 @@ function CodeBlock(el)
           -- import-map integrity for ESM imports is not.
           local diagram = unquote_clj_string(value)
           local div_id = next_div_id()
+          -- The .catch surfaces Mermaid syntax errors in the page itself.
+          -- Without it, a malformed diagram leaves a blank div with the
+          -- error only in the browser console — breaks the "errors are
+          -- visible" contract that filter-side failures already follow
+          -- via `cell-output-error` blocks.
           local html = '<div id="' .. div_id .. '"' .. dim_style(width, height) .. '></div>'
             .. script_tag("mermaid")
             .. '<script>'
@@ -1060,6 +1065,9 @@ function CodeBlock(el)
             .. 'mermaid.render("' .. div_id .. '-svg", '
             .. js_string_encode(diagram) .. ').then(({svg}) => {'
             .. 'document.getElementById("' .. div_id .. '").innerHTML = svg;'
+            .. '}).catch(e => {'
+            .. 'document.getElementById("' .. div_id .. '").innerText = '
+            .. '"Mermaid error: " + (e && e.message ? e.message : e);'
             .. '});'
             .. '</script>'
           emit_display_block(blocks, pandoc.RawBlock("html", html))
