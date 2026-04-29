@@ -18,7 +18,7 @@ Quarto is widely used in scientific communities for technical writing, and has b
 - `clj-nrepl-eval` — provided by [clojure-mcp-light](https://github.com/bhauman/clojure-mcp-light); install via bbin:
 
 ```bash
-bbin install io.github.bhauman/clojure-mcp-light
+bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '["-m" "clojure-mcp-light.nrepl-eval"]'
 ```
 
 ## Quick start

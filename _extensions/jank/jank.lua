@@ -387,7 +387,7 @@ local function resolve_port(meta)
       "Janqua uses it to talk to the Jank nREPL.",
       "",
       "Install it with:",
-      "  bbin install io.github.bhauman/clojure-mcp-light",
+      "  bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '[\"-m\" \"clojure-mcp-light.nrepl-eval\"]'",
       "",
       "(See the Getting Started guide for full prerequisites.)",
     })
@@ -644,7 +644,7 @@ local function eval_jank_raw(code, timeout)
   if raw:match("clj%-nrepl%-eval: command not found")
      or raw:match("clj%-nrepl%-eval: not found")
      or raw:match("No such file or directory.*clj%-nrepl%-eval") then
-    return nil, "`clj-nrepl-eval` is not on PATH. Install it with `bbin install io.github.bhauman/clojure-mcp-light` (see the Getting Started guide for full prerequisites)."
+    return nil, "`clj-nrepl-eval` is not on PATH. Install it with `bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '[\"-m\" \"clojure-mcp-light.nrepl-eval\"]'` (see the Getting Started guide for full prerequisites)."
   end
 
   if raw:match("ConnectException") or raw:match("Connection refused") then

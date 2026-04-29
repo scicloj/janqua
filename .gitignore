@@ -15,3 +15,5 @@ docs/_book/
 docs/.quarto/
 dev-notes/
 drafts/
+.calva
+hello_files

@@ -11,7 +11,7 @@ Janqua is currently tested only on Linux. macOS may work — the lifecycle scrip
 5. **clj-nrepl-eval** — an [nREPL](https://nrepl.org/) client. It's provided by [clojure-mcp-light](https://github.com/bhauman/clojure-mcp-light) (the bbin wrapper exposes it as the `clj-nrepl-eval` command):
 
 ```bash
-bbin install io.github.bhauman/clojure-mcp-light
+bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '["-m" "clojure-mcp-light.nrepl-eval"]'
 ```
 
 Verify everything is available:
