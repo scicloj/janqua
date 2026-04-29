@@ -71,8 +71,6 @@ Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in e
 
 If you combine Janqua with another Quarto filter that processes code blocks, list `jank` first in `filters:` — Janqua needs the `.jank` class to still be on the block when it runs.
 
-Janqua emits HTML for charts and diagrams, so it's scoped to HTML output. For PDF, LaTeX, docx, or other formats the filter no-ops — `.jank` blocks fall through to Pandoc's default rendering, with the `.clojure` class still driving syntax highlighting.
-
 ## Render it
 
 ```bash
