@@ -4,7 +4,7 @@ filters:
   - jank
 ---
 
-This page contains live Jank code — each block is evaluated during rendering, and the results appear below.
+This page contains example Jank code — each block is evaluated during rendering, and the results appear below.
 
 For examples of every supported `^:kind/...` annotation (Mermaid, Graphviz, Vega-Lite, ECharts, Cytoscape, Highcharts, and more), see [Kindly kinds](kinds.qmd) — that page is also live.
 
