@@ -5,7 +5,9 @@ filters:
 
 # Overview {.unnumbered}
 
-**Janqua** is a [Quarto](https://quarto.org) extension for writing [Jank](https://jank-lang.org) code in visual documents. You write a `.qmd` (Quarto Markdown) file — prose mixed with `{.clojure .jank}` code blocks — and render it to an interactive HTML page where each block is evaluated by a Jank REPL: code output, charts (Plotly, Vega-Lite, ECharts, …), diagrams (Mermaid, Graphviz), markdown tables, computed HTML. Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
+**Janqua** is a [Quarto](https://quarto.org) extension for writing [Jank](https://jank-lang.org) code in visual documents. Each `{.clojure .jank}` block in a `.qmd` file is evaluated by a Jank REPL during rendering, producing code output, charts, diagrams, tables, or computed HTML.
+
+Charts render via Plotly, Vega-Lite, ECharts, Cytoscape, or Highcharts; diagrams via Mermaid and Graphviz. Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
 
 Janqua also opens the door to publishing Jank work on [Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative space.
 
@@ -21,7 +23,7 @@ Quarto has been used in multiple Clojure projects, most often through [Clay](htt
 
 Quarto supports several project types:
 
-- **Single documents** — a standalone `.qmd` file rendered to HTML
+- **Single documents** — a standalone `.qmd` file
 - **[Websites](https://quarto.org/docs/websites/)** — multiple pages with navigation, like a documentation site
 - **[Books](https://quarto.org/docs/books/)** — chapters rendered as a navigable book (like this one)
 
@@ -57,7 +59,7 @@ The two approaches are different and somewhat complementary, both following the 
   "Hello from Jank!"]
 ```
 
-The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Live Demo](example.qmd) to see evaluated examples.
+The Jank process starts automatically on first render and stays running for fast re-evaluation. See [Getting Started](getting-started.qmd) to try it out, or jump to the [Demo](example.qmd) to see evaluated examples.
 
 ## Roadmap
 
@@ -73,4 +75,4 @@ Full Kindly support and Clay support for Jank are the larger goals.
 - [Getting Started](getting-started.qmd) — prerequisites, installation, first document, rendering
 - [Kindly Annotations](kindly.qmd) — controlling output format with metadata
 - [How It Works](how-it-works.qmd) — architecture, port discovery, process management, evaluation pipeline
-- [Live Demo](example.qmd) — evaluated examples of all output kinds
+- [Demo](example.qmd) — evaluated examples of all output kinds
