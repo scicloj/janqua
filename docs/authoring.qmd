@@ -59,7 +59,6 @@ Set on the opening line of a code block. All four options work here:
 ````
 ```{.clojure .jank timeout=30000 hide-stdout=true}
 (do (println "noisy debug")
-    (Thread/sleep 100)
     42)
 ```
 ````
