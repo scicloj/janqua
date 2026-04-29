@@ -67,7 +67,7 @@ filters:
 ```
 ````
 
-Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. Both use dot prefixes — that's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) tells Quarto to use the Janqua filter.
+Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. Both use dot prefixes — that's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) (the YAML header at the top of the file, between the `---` markers) tells Quarto to use the Janqua filter.
 
 If you combine Janqua with another Quarto filter that processes code blocks, list `jank` first in `filters:` — Janqua needs the `.jank` class to still be on the block when it runs.
 
@@ -92,5 +92,6 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 ## Next steps
 
 - See [Workflow](workflow.qmd) for managing the Jank process, auto-start tuning, and publishing to GitHub Pages
-- See [Authoring Jank documents](authoring.qmd) for Kindly annotations, fence attributes, and per-block options
+- See [Kindly kinds](kinds.qmd) for controlling how each result renders (HTML, charts, diagrams, math, …)
+- See [Authoring Jank documents](authoring.qmd) for code-block attributes and per-block options
 - See the [Demo](example.qmd) for evaluated examples

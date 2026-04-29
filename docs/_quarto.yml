@@ -11,6 +11,7 @@ book:
     - index.qmd
     - getting-started.qmd
     - workflow.qmd
+    - kinds.qmd
     - authoring.qmd
     - how-it-works.qmd
     - example.qmd
