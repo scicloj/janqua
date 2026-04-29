@@ -93,3 +93,4 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 - See [Kindly kinds](kindly-kinds.qmd) for controlling how each result renders (HTML, charts, diagrams, math, …)
 - See [Authoring Jank documents](authoring.qmd) for code-block attributes and per-block options
 - See the [Demo](demo.qmd) for evaluated examples
+- For a real-world Janqua-rendered document, see the [first Jank post on Clojure Civitas](https://clojurecivitas.org/jank/hello.html)

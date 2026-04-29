@@ -9,7 +9,7 @@ filters:
 
 Charts render via [Plotly](https://plotly.com/javascript/), [Vega-Lite](https://vega.github.io/vega-lite/), [ECharts](https://echarts.apache.org/), [Cytoscape](https://js.cytoscape.org/), or [Highcharts](https://www.highcharts.com/); diagrams via [Mermaid](https://mermaid.js.org/) and [Graphviz](https://graphviz.org/). Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
 
-Janqua also opens the door to publishing Jank work on [Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative space.
+Janqua already powers the [first Jank post on Clojure Civitas](https://clojurecivitas.org/jank/hello.html) — the Clojure community's [collaborative space](https://clojurecivitas.org/).
 
 ::: {.callout-note}
 Janqua is at an **experimental stage**. Things may change, and some rough edges are expected. Feedback, bug reports, and ideas are very welcome — please open an issue on [GitHub](https://github.com/scicloj/janqua/issues) or reach out on the [Clojurians Zulip chat](https://scicloj.github.io/docs/community/chat/).
@@ -36,7 +36,7 @@ Quarto supports several project types:
 - **Tutorials and documentation** — about Jank itself or libraries built on it, with live-evaluated examples woven into the narrative
 - **Research reports and data analysis** — figures, tables, math, and prose in a single reproducible document
 - **Interactive exploration** — iterate quickly with `quarto preview`, which re-renders the page each time you save
-- **Sharing on [Clojure Civitas](https://clojurecivitas.github.io/)** — Jank posts on the Clojure community's collaborative space
+- **Sharing on [Clojure Civitas](https://clojurecivitas.org/)** — Jank posts on the Clojure community's collaborative space
 
 ## Clojure ecosystem connection
 
