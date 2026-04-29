@@ -8,11 +8,13 @@ Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quart
 
 ```{mermaid}
 flowchart LR
-  qmd[.qmd file] --> pandoc[Pandoc]
-  pandoc --> lua[Lua filter]
+  qmd[.qmd file] --> quarto[Quarto]
+  quarto --> pandoc[Pandoc]
+  pandoc -- AST --> lua[Lua filter]
   lua --> nrepl[Jank nREPL server]
   nrepl --> lua
-  lua --> out[HTML / PDF]
+  lua -- AST --> pandoc
+  pandoc --> out[HTML]
 ```
 
 The filter has two phases, executed in order:
