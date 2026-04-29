@@ -93,7 +93,7 @@ This opens a browser with live preview. Edit your `.qmd`, save, and the page ref
 
 ## Managing the Jank process
 
-The Jank nREPL server starts on the first render and stays running for fast re-evaluation. When auto-start fires, the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact `stop` command — so you always know what got launched and how to clean it up.
+The Jank nREPL server starts on the first render and stays running for fast re-evaluation. The first render may be slightly slow while Jank boots; subsequent renders are fast. When auto-start fires, the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact `stop` command — so you always know what got launched and how to clean it up.
 
 Three small dotfiles appear in your project once a session is running: `.jank-pid`, `.jank-nrepl-port`, and `.jank-repl.log`. They're private to your machine — add them to your `.gitignore`. The log accumulates over a long `quarto preview` session; it's safe to delete, and the lifecycle script will recreate it on the next start.
 

@@ -224,7 +224,9 @@ cmd_start() {
     ) &
     disown
 
-    # Poll for port discovery (jank takes ~15s to start)
+    # Poll for port discovery. The loop is generous because Jank's boot
+    # time varies across platforms and versions; a tight timeout would
+    # spuriously fail on slower environments.
     local port=""
     for i in $(seq 1 45); do
         sleep 1
