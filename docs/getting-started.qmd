@@ -1,6 +1,6 @@
 # Getting Started
 
-Janqua is currently tested only on Linux. macOS may work — the lifecycle script's port discovery uses `lsof` (cross-platform) before falling back to `ss` (Linux-only) — but it hasn't been verified. If you try it on macOS, please [open an issue](https://github.com/scicloj/janqua/issues) with what you find.
+Janqua is currently tested only on Linux. macOS hasn't been verified — if you try it, please [open an issue](https://github.com/scicloj/janqua/issues) with what you find.
 
 ## Prerequisites
 
