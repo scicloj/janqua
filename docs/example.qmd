@@ -132,7 +132,7 @@ Use `^:kind/plotly` with a map containing `:data` and `:layout` keys:
  :layout {:title "Sized 400×250 via fence attrs"}}
 ```
 
-See [Per-block options](kindly.html#per-block-options) for the full set (`timeout`, `hide-stdout`, `width`, `height`) and precedence rules.
+See [Per-block options](authoring.html#per-block-options) for the full set (`timeout`, `hide-stdout`, `width`, `height`) and precedence rules.
 
 ## Markdown table
 

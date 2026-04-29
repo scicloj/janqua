@@ -141,17 +141,7 @@ When something goes wrong inside the filter — a chart's value can't be encoded
 
 ## Code block attributes
 
-The filter respects several attributes on `{.clojure .jank}` blocks:
-
-| Attribute | Effect |
-|:----------|:-------|
-| `output=html` | Force HTML output (override Kindly) |
-| `output=markdown` | Force Markdown output |
-| `output=hidden` | Suppress both code and output |
-| `echo=false` | Hide the source code, show only results |
-| `eval=false` | Show code without evaluating |
-
-Kindly metadata on the result takes precedence over `output=` when both are present.
+See [Authoring Jank documents § Code block attributes](authoring.qmd#code-block-attributes) for the user-facing reference.
 
 ## Bootstrap sequence
 

@@ -1,0 +1,61 @@
+# Workflow
+
+Once you've rendered a first document, day-to-day work with Janqua splits into two concerns: managing the long-running Jank process and publishing the output.
+
+## Managing the Jank process
+
+The Jank nREPL server starts on the first render and stays running for fast re-evaluation. The first render may be slightly slow while Jank boots; subsequent renders are fast. When auto-start fires, the filter prints a framed stderr block listing the new process's PID, port, log path, and the exact `stop` command — so you always know what got launched and how to clean it up.
+
+Three small dotfiles appear in your project once a session is running: `.jank-pid`, `.jank-nrepl-port`, and `.jank-repl.log`. They're private to your machine — add them to your `.gitignore`. The log accumulates over a long `quarto preview` session; it's safe to delete, and the lifecycle script will recreate it on the next start.
+
+Run lifecycle commands from the same directory where the session was started (the auto-start announcement shows the exact path):
+
+```bash
+_extensions/jank/jank-lifecycle.sh status   # check if running
+_extensions/jank/jank-lifecycle.sh start    # start manually
+_extensions/jank/jank-lifecycle.sh stop     # stop when done
+```
+
+The script also walks up from the current directory looking for an existing session, so running it from a subdirectory works too. If you have multiple Quarto projects (or render documents in different directories), each gets its own Jank session — anchored to the directory Quarto reports as the rendering root.
+
+Stop the server when you're done working to free resources.
+
+### Disabling auto-start
+
+If you'd rather start Jank yourself (or never have a process spawned during rendering), disable auto-start either per document with frontmatter:
+
+```yaml
+jank:
+  auto-start: false
+```
+
+…or globally with an environment variable:
+
+```bash
+export JANK_AUTO_START=0
+```
+
+When auto-start is disabled and no Jank session is found, the filter prints a notice telling you how to start one manually and skips evaluation.
+
+### Forcing a clean render
+
+Because the Jank session persists across renders, definitions from earlier renders linger — handy for fast iteration, but a renamed function may keep resolving to its old definition. To force a fresh process at the start of each render, add to the frontmatter:
+
+```yaml
+jank:
+  reset-on-render: true
+```
+
+Each render then stops any running session and starts a new one, paying the boot cost every time. Useful for production renders or when you suspect stale state; not recommended under `quarto preview` because every save triggers a fresh start.
+
+## Publishing to GitHub Pages
+
+If your project is a Quarto book or website, you can publish it to [GitHub Pages](https://pages.github.com/) directly from your project directory:
+
+```bash
+quarto publish gh-pages
+```
+
+This renders the project and pushes the output to the `gh-pages` branch. GitHub Pages then serves it as a website. On first use, Quarto will create the branch and configure it for you.
+
+See the [Quarto publishing guide](https://quarto.org/docs/publishing/github-pages.html) for more options, including custom domains and GitHub Actions automation.

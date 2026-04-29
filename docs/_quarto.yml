@@ -10,6 +10,7 @@ book:
   chapters:
     - index.qmd
     - getting-started.qmd
+    - workflow.qmd
     - authoring.qmd
     - how-it-works.qmd
     - example.qmd

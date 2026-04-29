@@ -175,7 +175,7 @@ Janqua automatically unwraps the vector for all string-valued kinds (`kind/html`
 
 ## Code block attributes
 
-The Quarto-standard attributes `echo` and `eval` go on the code fence and control display:
+The Quarto-standard `echo` and `eval` attributes control display:
 
 | Attribute | Effect |
 |:----------|:-------|
@@ -187,7 +187,17 @@ The Quarto-standard attributes `echo` and `eval` go on the code fence and contro
 [:div "Only the rendered HTML appears — no source code shown"]
 ```
 
-See the [Quarto documentation on code cells](https://quarto.org/docs/reference/cells/) for more.
+Janqua also recognizes an `output=` attribute that picks a renderer when the value isn't tagged with Kindly metadata:
+
+| Attribute | Effect |
+|:----------|:-------|
+| `output=html` | Render the value as raw HTML |
+| `output=markdown` | Parse the value as markdown |
+| `output=hidden` | Suppress both source and result |
+
+When both `:kindly/kind` metadata on the value and `output=` on the fence are set, the Kindly metadata wins.
+
+See the [Quarto documentation on code cells](https://quarto.org/docs/reference/cells/) for more on the standard attributes.
 
 ## Per-block options
 

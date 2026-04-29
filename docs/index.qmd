@@ -73,6 +73,7 @@ Full Kindly support and Clay support for Jank are the larger goals.
 ## Chapters
 
 - [Getting Started](getting-started.qmd) — prerequisites, installation, first document, rendering
+- [Workflow](workflow.qmd) — managing the Jank process, auto-start tuning, publishing
 - [Authoring Jank documents](authoring.qmd) — Kindly annotations, fence attributes, per-block options, and document-level Quarto features
 - [How It Works](how-it-works.qmd) — architecture, port discovery, process management, evaluation pipeline
 - [Demo](example.qmd) — evaluated examples of all output kinds
