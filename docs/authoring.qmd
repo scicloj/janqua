@@ -3,9 +3,11 @@ filters:
   - jank
 ---
 
-# Kindly Annotations
+# Authoring Jank documents
 
-[Kindly](https://scicloj.github.io/kindly-noted/) is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly [metadata](https://clojure.org/reference/metadata), so the same code patterns work in both Jank+Quarto and Clojure+Clay.
+A `.qmd` file is a Quarto document, and Janqua adds live Jank evaluation on top — so Quarto's authoring features (markdown prose, math, callouts, frontmatter) work alongside `.jank` blocks. This chapter covers what you can do with those blocks — annotating values via the [Kindly](https://scicloj.github.io/kindly-noted/) convention, fence attributes, per-block options — and finishes with a few document-level Quarto features that pair well with live evaluation.
+
+Kindly is a convention from the Clojure ecosystem for annotating values with rendering intent. Janqua supports Kindly [metadata](https://clojure.org/reference/metadata), so the same code patterns work in both Jank+Quarto and Clojure+Clay.
 
 Without an annotation, results display as code output:
 
@@ -236,6 +238,23 @@ jank:
   hide-stdout: true
 ---
 ```
+
+## Document-level Quarto features
+
+Quarto's authoring features apply to a `.qmd` file the same way they would in any Quarto document — Janqua only intervenes for `.jank` code blocks. A few worth knowing:
+
+**Math.** Quarto recognizes LaTeX math in prose: write `$\sqrt{x^2 + y^2}$` for inline math like $\sqrt{x^2 + y^2}$, or `$$ ... $$` for a display equation:
+
+$$\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}$$
+
+The same Quarto pipeline handles math returned from `^:kind/md` — Janqua emits the markdown string into Pandoc's AST and Quarto then processes the math:
+
+```{.clojure .jank}
+^:kind/md
+["The area of a circle is $A = \\pi r^2$."]
+```
+
+**Callouts**, **frontmatter** (title, theme, format options), **cross-references**, and **citations** are all standard Quarto. See the [Quarto authoring guide](https://quarto.org/docs/authoring/) for the full set.
 
 ## Summary
 

@@ -51,7 +51,7 @@ The two approaches are different and somewhat complementary, both following the 
 1. You write a `.qmd` file with `{.clojure .jank}` code blocks
 2. When Quarto renders the document, the Janqua filter intercepts these blocks
 3. Each block is sent to a Jank nREPL server for evaluation
-4. Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on [Kindly annotations](kindly.qmd)
+4. Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on [Kindly annotations](authoring.qmd)
 
 ```{.clojure .jank}
 ^:kind/hiccup
@@ -73,6 +73,6 @@ Full Kindly support and Clay support for Jank are the larger goals.
 ## Chapters
 
 - [Getting Started](getting-started.qmd) — prerequisites, installation, first document, rendering
-- [Kindly Annotations](kindly.qmd) — controlling output format with metadata
+- [Authoring Jank documents](authoring.qmd) — Kindly annotations, fence attributes, per-block options, and document-level Quarto features
 - [How It Works](how-it-works.qmd) — architecture, port discovery, process management, evaluation pipeline
 - [Demo](example.qmd) — evaluated examples of all output kinds
