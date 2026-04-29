@@ -251,6 +251,22 @@ cmd_start() {
     exit 1
 }
 
+# Wait briefly for a process to exit, then SIGKILL if still alive.
+# `kill -0` is a no-op signal that only tests liveness — the canonical
+# way to poll for process death without affecting the target.
+# We use a short grace window so a wedged process (e.g. jank stuck in a
+# JIT, signal-mask surprise) doesn't leave a phantom session holding
+# the port; in normal operation the loop exits on the first iteration.
+escalate_after_sigterm() {
+    local pid="$1"
+    local i
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+        kill -0 "$pid" 2>/dev/null || return 0
+        sleep 0.1
+    done
+    kill -9 "$pid" 2>/dev/null || true
+}
+
 # Kill a process and its children, with safety checks.
 #
 # We deliberately do NOT use blanket `pkill -P "$pid"` after killing the
@@ -259,6 +275,11 @@ cmd_start() {
 # children. Instead, snapshot the children up front, then validate each
 # child's command name before killing it individually. Only known
 # wrapper children (jank, tail) are eligible; anything else is skipped.
+#
+# After SIGTERM is sent, we escalate to SIGKILL for any process that
+# didn't exit within the grace window. Empirically jank honors SIGTERM,
+# but a wedged process would otherwise leave `cmd_stop` reporting
+# success while the session lingered.
 safe_kill_jank() {
     local pid="$1"
 
@@ -275,12 +296,21 @@ safe_kill_jank() {
     kill "$pid" 2>/dev/null || true
 
     # Re-validate each child's command name immediately before killing.
+    # Track which we actually SIGTERMed so escalation only targets
+    # processes we initiated shutdown on.
+    local killed=("$pid")
     local child cname
     for child in $children; do
         cname=$(ps -o comm= -p "$child" 2>/dev/null | tr -d ' ') || continue
         if [[ "$cname" == "jank" || "$cname" == "tail" ]]; then
             kill "$child" 2>/dev/null || true
+            killed+=("$child")
         fi
+    done
+
+    local p
+    for p in "${killed[@]}"; do
+        escalate_after_sigterm "$p"
     done
 }
 
