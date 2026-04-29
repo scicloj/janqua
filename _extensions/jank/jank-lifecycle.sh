@@ -318,9 +318,12 @@ cmd_status() {
         exit 0
     fi
 
-    # Check for untracked jank processes (current user only)
+    # Check for untracked jank processes (current user only).
+    # `pgrep` returns one PID per line; if multiple untracked janks exist,
+    # report the first — passing a multi-line value to discover_port would
+    # trip its is_number guard and mangle the output line.
     local pid
-    pid=$(pgrep -u "$(id -u)" -x jank 2>/dev/null || echo "")
+    pid=$(pgrep -u "$(id -u)" -x jank 2>/dev/null | head -1 || echo "")
     if [ -n "$pid" ]; then
         local port
         port=$(discover_port "$pid") || true

@@ -944,8 +944,13 @@ function CodeBlock(el)
   if eval then
     value, stdout, err, kind, opts = eval_jank(code, timeout)
 
-    -- Kindly metadata overrides the output= attribute
-    if kind then
+    -- Kindly metadata overrides the output= attribute. `eval_jank` may
+    -- return `kind` together with a non-nil `err` when the wrapper-value
+    -- regex misses; in that case `value` is nil and the hiccup branch
+    -- below would crash on string concat (and the unsupported-kind
+    -- branch would overwrite the real error). The eval-error block
+    -- downstream handles it.
+    if kind and not err then
       if kind == ":kind/hiccup" then
         -- Convert hiccup to HTML via a second eval.
         -- hiccup->html returns a string, which the nREPL prints quoted.
