@@ -1071,8 +1071,21 @@ function CodeBlock(el)
 
   if eval then
     if err then
+      -- When echo=false, the source isn't shown above the error and the
+      -- user has no immediate way to tell *which* block failed in a long
+      -- doc. Knitr/Jupyter honor echo=false even on errors (we follow
+      -- the same default), but tucking the source into a collapsed
+      -- <details> inside the error block adds a one-click recovery
+      -- path without overriding the user's stated preference.
+      local err_children = {pandoc.CodeBlock(err, pandoc.Attr("", {"error"}))}
+      if not echo then
+        table.insert(err_children, pandoc.RawBlock("html",
+          "<details><summary>Show failing source</summary>"))
+        table.insert(err_children, pandoc.CodeBlock(code, pandoc.Attr("", {"clojure"})))
+        table.insert(err_children, pandoc.RawBlock("html", "</details>"))
+      end
       table.insert(blocks, pandoc.Div(
-        pandoc.CodeBlock(err, pandoc.Attr("", {"error"})),
+        err_children,
         pandoc.Attr("", {"cell-output", "cell-output-error"})
       ))
     elseif output_mode ~= "hidden" then
