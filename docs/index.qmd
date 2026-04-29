@@ -27,7 +27,7 @@ Quarto supports several project types:
 
 ## What is Jank?
 
-[Jank](https://jank-lang.org) is a [Clojure](https://clojure.org/) dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
+[Jank](https://jank-lang.org) is a dialect of [Clojure](https://clojure.org/) hosted on C++ and an LLVM-based JIT. Its distinguishing feature is seamless interop with C and C++: Jank source can reach into C++ libraries to access and define types, functions, and templates directly — `cpp/` forms in your code call into the native ecosystem without bindings or wrappers. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
 
 ## Use Janqua for…
 
