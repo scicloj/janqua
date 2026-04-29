@@ -816,8 +816,11 @@ end
 -- Wrap user code to extract Kindly metadata from the result.
 -- Uses fn call instead of let to work around a Jank bug where let bindings
 -- lose reader-attached metadata (e.g. ^:kind/hiccup).
--- Per-block options (:hide-stdout, :width, :height) come from the value's
--- :kindly/options map, so library functions can set defaults via with-meta.
+-- :width and :height come from the value's :kindly/options map (layout
+-- concerns belong in Kindly's vocabulary, so library functions can set
+-- defaults via with-meta). Other Janqua knobs (timeout, hide-stdout) are
+-- not picked up from :kindly/options — they're Janqua-specific and live
+-- on the fence attribute or in frontmatter.
 -- Type-check before coercion so a malformed option (e.g. :width "800px")
 -- doesn't throw and lose the user's actual return value.
 local function wrap_with_kindly(code)
@@ -825,8 +828,6 @@ local function wrap_with_kindly(code)
     .. ' ((fn [m__janqua]'
     .. ' ((fn [kind__janqua opts__janqua]'
     .. ' {:janqua/kind kind__janqua'
-    .. ' :janqua/hide-stdout (when (contains? opts__janqua :hide-stdout)'
-    .. '                       (boolean (:hide-stdout opts__janqua)))'
     .. ' :janqua/width (when (integer? (:width opts__janqua))'
     .. '                 (:width opts__janqua))'
     .. ' :janqua/height (when (integer? (:height opts__janqua))'
@@ -855,12 +856,6 @@ local function parse_kindly_response(value_str)
   local kind = value_str:match(":janqua/kind (:kind/[%w_-]+)")
 
   local opts = {}
-  local hide_stdout = value_str:match(":janqua/hide%-stdout (%S+)")
-  if hide_stdout == "true" then
-    opts.hide_stdout = true
-  elseif hide_stdout == "false" then
-    opts.hide_stdout = false
-  end
   opts.width = value_str:match(":janqua/width (%d+)")
   opts.height = value_str:match(":janqua/height (%d+)")
 
@@ -871,8 +866,8 @@ end
 
 -- Evaluate Jank code via clj-nrepl-eval with Kindly wrapper.
 -- Returns: value, stdout, err, kind, opts (all may be nil except opts which
--- is always a table). `opts` carries :hide-stdout (bool), :width, :height
--- extracted from the value's :kindly/options metadata.
+-- is always a table). `opts` carries :width and :height extracted from the
+-- value's :kindly/options metadata.
 -- `timeout` overrides the per-block eval timeout (ms).
 local function eval_jank(code, timeout)
   ensure_bootstrap()
@@ -981,13 +976,14 @@ function CodeBlock(el)
   local echo = el.attributes["echo"] ~= "false"
   local eval = el.attributes["eval"] ~= "false"
 
-  -- Per-block options. timeout resolves now (needed before eval); the
-  -- hide-stdout / width / height fence attrs are read now but resolved
-  -- after eval since :kindly/options on the value can also set them.
-  -- Precedence (post-eval knobs): fence > Kindly options > frontmatter
-  -- > built-in default.
+  -- Per-block options. timeout and hide-stdout are Janqua-specific knobs
+  -- (fence > frontmatter > default). width/height also accept :kindly/options
+  -- on the value, so the fence reads happen now but final resolution waits
+  -- until after eval (precedence: fence > :kindly/options > built-in default).
   local timeout = digits_or_nil(el.attributes["timeout"]) or default_timeout
-  local fence_hide_stdout = parse_bool(el.attributes["hide-stdout"])
+  local hide_stdout = parse_bool(el.attributes["hide-stdout"])
+  if hide_stdout == nil then hide_stdout = default_hide_stdout end
+  if hide_stdout == nil then hide_stdout = false end
   local fence_width = digits_or_nil(el.attributes["width"])
   local fence_height = digits_or_nil(el.attributes["height"])
 
@@ -1051,13 +1047,8 @@ function CodeBlock(el)
     end
   end
 
-  -- Resolve post-eval options now that Kindly options are known.
-  -- hide_stdout: gate stdout to nil up front so every render branch picks
-  -- it up without per-branch checks.
-  local hide_stdout = fence_hide_stdout
-  if hide_stdout == nil then hide_stdout = opts.hide_stdout end
-  if hide_stdout == nil then hide_stdout = default_hide_stdout end
-  if hide_stdout == nil then hide_stdout = false end
+  -- Apply hide_stdout (already resolved pre-eval) to the captured stdout
+  -- up front, so every render branch picks it up without per-branch checks.
   if hide_stdout then stdout = nil end
 
   -- width/height: nil means "no override"; chart branches choose whether
