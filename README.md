@@ -63,7 +63,7 @@ quarto preview hello.qmd
 A Jank nREPL is auto-started on first render and kept alive for fast re-evaluation. Stop it when you're done:
 
 ```bash
-_extensions/jank/jank-lifecycle.sh stop
+_extensions/scicloj/jank/jank-lifecycle.sh stop
 ```
 
 See [Getting Started](https://scicloj.github.io/janqua/getting-started.html) for details.

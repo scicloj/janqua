@@ -41,7 +41,7 @@ quarto add scicloj/janqua
 Sanity check that the filter files landed:
 
 ```bash
-ls _extensions/jank/
+ls _extensions/scicloj/jank/
 ```
 
 You should see `jank.lua`, `jank-lifecycle.sh`, `jank.css`, and `_extension.yml`.
