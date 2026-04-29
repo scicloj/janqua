@@ -69,8 +69,6 @@ filters:
 
 Note the `{.clojure .jank}` syntax: `.clojure` enables syntax highlighting (in editors and rendered output), and `.jank` tells the Janqua filter to evaluate the block. Both use dot prefixes — that's [Pandoc class syntax](https://pandoc.org/MANUAL.html#divs-and-spans). The `filters: [jank]` in the [frontmatter](https://quarto.org/docs/authoring/front-matter.html) (the YAML header at the top of the file, between the `---` markers) tells Quarto to use the Janqua filter.
 
-If you combine Janqua with another Quarto filter that processes code blocks, list `jank` first in `filters:` — Janqua needs the `.jank` class to still be on the block when it runs.
-
 ## Render it
 
 ```bash

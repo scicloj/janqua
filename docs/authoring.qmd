@@ -101,6 +101,16 @@ Annotate the value's metadata under `:kindly/options`:
 
 Library functions can attach these via `with-meta` / `vary-meta`, so callers don't need to set them at the call site.
 
+## Combining with other filters
+
+If you list more than one filter in `filters:`, put `jank` first — Janqua needs the `.jank` class to still be on the block when it runs:
+
+```yaml
+filters:
+  - jank
+  - some-other-filter
+```
+
 ## Document-level Quarto features
 
 Quarto's authoring features apply to a `.qmd` file the same way they would in any Quarto document — Janqua only intervenes for `.jank` code blocks. A few worth knowing:
