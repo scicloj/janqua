@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Janqua",
     "section": "",
-    "text": "Overview\nJanqua is a Quarto extension for writing Jank code in visual documents. Each {.clojure .jank} block in a .qmd file is evaluated by a Jank REPL during rendering, producing code output, charts, diagrams, tables, or computed HTML.\nCharts render via Plotly, Vega-Lite, ECharts, Cytoscape, or Highcharts; diagrams via Mermaid and Graphviz. Rendering follows the Kindly convention, the same way Clay handles Clojure docs — so the patterns are familiar if you’re coming from Clay, and ready-to-publish if you’ve never written a notebook before.\nJanqua also opens the door to publishing Jank work on Clojure Civitas, the Clojure community’s collaborative space.",
+    "text": "Overview\nJanqua is a Quarto extension for writing Jank code in visual documents. Each {.clojure .jank} block in a .qmd file is evaluated by a Jank REPL during rendering, producing code output, charts, diagrams, tables, or computed HTML.\nCharts render via Plotly, Vega-Lite, ECharts, Cytoscape, or Highcharts; diagrams via Mermaid and Graphviz. Rendering follows the Kindly convention, the same way Clay handles Clojure docs — so the patterns are familiar if you’re coming from Clay, and ready-to-publish if you’ve never written a notebook before.\nJanqua already powers the first Jank post on Clojure Civitas — the Clojure community’s collaborative space.",
     "crumbs": [
       "Overview"
     ]
@@ -144,7 +144,7 @@
     "href": "getting-started.html#next-steps",
     "title": "1  Getting Started",
     "section": "1.6 Next steps",
-    "text": "1.6 Next steps\n\nSee Workflow for managing the Jank process, auto-start tuning, and publishing to GitHub Pages\nSee Kindly kinds for controlling how each result renders (HTML, charts, diagrams, math, …)\nSee Authoring Jank documents for code-block attributes and per-block options\nSee the Demo for evaluated examples",
+    "text": "1.6 Next steps\n\nSee Workflow for managing the Jank process, auto-start tuning, and publishing to GitHub Pages\nSee Kindly kinds for controlling how each result renders (HTML, charts, diagrams, math, …)\nSee Authoring Jank documents for code-block attributes and per-block options\nSee the Demo for evaluated examples\nFor a real-world Janqua-rendered document, see the first Jank post on Clojure Civitas",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
