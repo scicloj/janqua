@@ -37,22 +37,24 @@ See the [Quarto documentation on code cells](https://quarto.org/docs/reference/c
 
 These are Janqua-specific knobs — not part of the Kindly convention.
 
-| Option | Type | Default | Notes |
+| Option | Type | Default | Where to set it |
 |:---|:---|:---|:---|
-| `timeout` | integer (ms) | `10000` | Per-block eval timeout. |
-| `hide-stdout` | boolean | `false` | Suppress captured stdout while keeping the return value. |
-| `width` | integer (px) | varies | Chart width. ECharts and Cytoscape need a sized container, so they default to `600`; other chart kinds auto-fit when unset. |
-| `height` | integer (px) | varies | Chart height. ECharts and Cytoscape default to `400`; other chart kinds auto-fit when unset. |
+| `timeout` | integer (ms) | `10000` | fence, frontmatter |
+| `hide-stdout` | boolean | `false` | fence, frontmatter |
+| `width` | integer (px) | per chart kind | fence, `:kindly/options` |
+| `height` | integer (px) | per chart kind | fence, `:kindly/options` |
 
-`timeout` and `hide-stdout` are read from two places: a fence attribute on the individual block, or a document-wide default in the **frontmatter** (the YAML header at the top of a `.qmd` file).
+ECharts and Cytoscape default to 600 × 400 pixels because their libraries refuse to render to a size-less container. Other chart kinds (Plotly, Vega-Lite, Highcharts) auto-fit and have no built-in pixel default.
 
-`width` and `height` are also read from a third place: the value's `:kindly/options` metadata. Sizing is a layout concern that belongs in Kindly's vocabulary, so library functions can set chart dimensions for callers via `with-meta`.
+`timeout` and `hide-stdout` are evaluation/runtime concerns. They're set on the **code-block fence** (the opening line of a code block) or as document-wide defaults in the **frontmatter** (the YAML header at the top of a `.qmd` file).
 
-**Precedence (highest first):** fence attribute → `:kindly/options` (`width`/`height` only) → frontmatter → built-in default.
+`width` and `height` are layout concerns, so Janqua also reads them from the value's `:kindly/options` metadata. Library functions can attach chart dimensions via `with-meta` so callers don't have to.
+
+For each option, the highest-priority source that sets it wins, falling back through the others to the built-in default.
 
 ### Fence attribute
 
-Set on the opening line of a code block:
+Set on the opening line of a code block. All four options work here:
 
 ````
 ```{.clojure .jank timeout=30000 hide-stdout=true}
@@ -62,9 +64,17 @@ Set on the opening line of a code block:
 ```
 ````
 
-### Frontmatter
+````
+```{.clojure .jank width=400 height=250}
+^:kind/plotly
+{:data [{:x [1 2 3 4 5] :y [4 1 5 3 2] :type "bar"}]
+ :layout {:title "Sized 400×250"}}
+```
+````
 
-Doc-wide defaults go in the YAML header:
+### Frontmatter (`timeout` and `hide-stdout` only)
+
+Doc-wide defaults for `timeout` and `hide-stdout` go in the YAML header:
 
 ```yaml
 ---
@@ -76,7 +86,9 @@ jank:
 ---
 ```
 
-### `:kindly/options` (width and height only)
+`width` and `height` aren't read from frontmatter — set them per block via the fence or via `:kindly/options`.
+
+### `:kindly/options` (`width` and `height` only)
 
 Annotate the value's metadata under `:kindly/options`:
 
