@@ -114,7 +114,7 @@
     "href": "getting-started.html#install-the-extension",
     "title": "1  Getting Started",
     "section": "1.3 Install the extension",
-    "text": "1.3 Install the extension\nRun this inside your project directory — it creates an _extensions/ folder there:\nquarto add scicloj/janqua\nSanity check that the filter files landed:\nls _extensions/jank/\nYou should see jank.lua, jank-lifecycle.sh, jank.css, and _extension.yml.",
+    "text": "1.3 Install the extension\nRun this inside your project directory — it creates an _extensions/ folder there:\nquarto add scicloj/janqua\nSanity check that the filter files landed:\nls _extensions/scicloj/jank/\nYou should see jank.lua, jank-lifecycle.sh, jank.css, and _extension.yml.",
     "crumbs": [
       "<span class='chapter-number'>1</span>  <span class='chapter-title'>Getting Started</span>"
     ]
@@ -164,7 +164,7 @@
     "href": "workflow.html#managing-the-jank-process",
     "title": "2  Workflow",
     "section": "",
-    "text": "_extensions/jank/jank-lifecycle.sh status   # check if running\n_extensions/jank/jank-lifecycle.sh start    # start manually\n_extensions/jank/jank-lifecycle.sh stop     # stop when done\n\n\n\n2.1.1 Disabling auto-start\nIf you’d rather start Jank yourself (or never have a process spawned during rendering), disable auto-start either per document with frontmatter:\njank:\n  auto-start: false\n…or globally with an environment variable:\nexport JANK_AUTO_START=0\nWhen auto-start is disabled and no Jank session is found, the filter prints a notice telling you how to start one manually and skips evaluation.\n\n\n2.1.2 Forcing a clean render\nBecause the Jank session persists across renders, definitions from earlier renders linger — handy for fast iteration, but a renamed function may keep resolving to its old definition. To force a fresh process at the start of each render, add to the frontmatter:\njank:\n  reset-on-render: true\nEach render then stops any running session and starts a new one, paying the boot cost every time. Useful for production renders or when you suspect stale state; not recommended under quarto preview because every save triggers a fresh start.",
+    "text": "_extensions/scicloj/jank/jank-lifecycle.sh status   # check if running\n_extensions/scicloj/jank/jank-lifecycle.sh start    # start manually\n_extensions/scicloj/jank/jank-lifecycle.sh stop     # stop when done\n\n\n\n2.1.1 Disabling auto-start\nIf you’d rather start Jank yourself (or never have a process spawned during rendering), disable auto-start either per document with frontmatter:\njank:\n  auto-start: false\n…or globally with an environment variable:\nexport JANK_AUTO_START=0\nWhen auto-start is disabled and no Jank session is found, the filter prints a notice telling you how to start one manually and skips evaluation.\n\n\n2.1.2 Forcing a clean render\nBecause the Jank session persists across renders, definitions from earlier renders linger — handy for fast iteration, but a renamed function may keep resolving to its old definition. To force a fresh process at the start of each render, add to the frontmatter:\njank:\n  reset-on-render: true\nEach render then stops any running session and starts a new one, paying the boot cost every time. Useful for production renders or when you suspect stale state; not recommended under quarto preview because every save triggers a fresh start.",
     "crumbs": [
       "<span class='chapter-number'>2</span>  <span class='chapter-title'>Workflow</span>"
     ]
