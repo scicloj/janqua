@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Kindly Annotations – Janqua</title>
+<title>3&nbsp; Kindly kinds – Janqua</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -68,8 +68,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./how-it-works.html" rel="next">
-<link href="./getting-started.html" rel="prev">
+<link href="./authoring.html" rel="next">
+<link href="./workflow.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -166,7 +166,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./kindly.html"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Kindly Annotations</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./kindly-kinds.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Kindly kinds</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -208,20 +208,32 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./kindly.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Kindly Annotations</span></span></a>
+  <a href="./workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Workflow</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./kindly-kinds.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Kindly kinds</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./authoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./how-it-works.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">How It Works</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./example.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Demo</span></span></a>
+  <a href="./demo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Demo</span></span></a>
   </div>
 </li>
     </ul>
@@ -234,26 +246,19 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#kindhiccup-html-from-data" id="toc-kindhiccup-html-from-data" class="nav-link active" data-scroll-target="#kindhiccup-html-from-data"><span class="header-section-number">2.1</span> <code>^:kind/hiccup</code> — HTML from data</a></li>
-  <li><a href="#kindhtml-raw-html" id="toc-kindhtml-raw-html" class="nav-link" data-scroll-target="#kindhtml-raw-html"><span class="header-section-number">2.2</span> <code>^:kind/html</code> — raw HTML</a></li>
-  <li><a href="#kindmd-markdown" id="toc-kindmd-markdown" class="nav-link" data-scroll-target="#kindmd-markdown"><span class="header-section-number">2.3</span> <code>^:kind/md</code> — markdown</a></li>
-  <li><a href="#kindhidden-suppress-output" id="toc-kindhidden-suppress-output" class="nav-link" data-scroll-target="#kindhidden-suppress-output"><span class="header-section-number">2.4</span> <code>^:kind/hidden</code> — suppress output</a></li>
-  <li><a href="#kindmermaid-mermaid-diagrams" id="toc-kindmermaid-mermaid-diagrams" class="nav-link" data-scroll-target="#kindmermaid-mermaid-diagrams"><span class="header-section-number">2.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</a></li>
-  <li><a href="#kindgraphviz-graphviz-diagrams" id="toc-kindgraphviz-graphviz-diagrams" class="nav-link" data-scroll-target="#kindgraphviz-graphviz-diagrams"><span class="header-section-number">2.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</a></li>
-  <li><a href="#kindtex-latex-formulas" id="toc-kindtex-latex-formulas" class="nav-link" data-scroll-target="#kindtex-latex-formulas"><span class="header-section-number">2.7</span> <code>^:kind/tex</code> — LaTeX formulas</a></li>
-  <li><a href="#kindcode-code-display" id="toc-kindcode-code-display" class="nav-link" data-scroll-target="#kindcode-code-display"><span class="header-section-number">2.8</span> <code>^:kind/code</code> — code display</a></li>
-  <li><a href="#kindvega-lite-vega-lite-charts" id="toc-kindvega-lite-vega-lite-charts" class="nav-link" data-scroll-target="#kindvega-lite-vega-lite-charts"><span class="header-section-number">2.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</a></li>
-  <li><a href="#kindplotly-plotly-charts" id="toc-kindplotly-plotly-charts" class="nav-link" data-scroll-target="#kindplotly-plotly-charts"><span class="header-section-number">2.10</span> <code>^:kind/plotly</code> — Plotly charts</a></li>
-  <li><a href="#annotating-in-library-functions" id="toc-annotating-in-library-functions" class="nav-link" data-scroll-target="#annotating-in-library-functions"><span class="header-section-number">2.11</span> Annotating in library functions</a></li>
-  <li><a href="#why-wrap-strings-in-vectors" id="toc-why-wrap-strings-in-vectors" class="nav-link" data-scroll-target="#why-wrap-strings-in-vectors"><span class="header-section-number">2.12</span> Why wrap strings in vectors?</a></li>
-  <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link" data-scroll-target="#code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</a></li>
-  <li><a href="#per-block-options" id="toc-per-block-options" class="nav-link" data-scroll-target="#per-block-options"><span class="header-section-number">2.14</span> Per-block options</a>
-  <ul class="collapse">
-  <li><a href="#fence-attribute" id="toc-fence-attribute" class="nav-link" data-scroll-target="#fence-attribute"><span class="header-section-number">2.14.1</span> Fence attribute</a></li>
-  <li><a href="#kindlyoptions-on-the-value" id="toc-kindlyoptions-on-the-value" class="nav-link" data-scroll-target="#kindlyoptions-on-the-value"><span class="header-section-number">2.14.2</span> <code>:kindly/options</code> on the value</a></li>
-  <li><a href="#frontmatter" id="toc-frontmatter" class="nav-link" data-scroll-target="#frontmatter"><span class="header-section-number">2.14.3</span> Frontmatter</a></li>
-  </ul></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">2.15</span> Summary</a></li>
+  <li><a href="#kindhiccup-html-from-data" id="toc-kindhiccup-html-from-data" class="nav-link active" data-scroll-target="#kindhiccup-html-from-data"><span class="header-section-number">3.1</span> <code>^:kind/hiccup</code> — HTML from data</a></li>
+  <li><a href="#kindhtml-raw-html" id="toc-kindhtml-raw-html" class="nav-link" data-scroll-target="#kindhtml-raw-html"><span class="header-section-number">3.2</span> <code>^:kind/html</code> — raw HTML</a></li>
+  <li><a href="#kindmd-markdown" id="toc-kindmd-markdown" class="nav-link" data-scroll-target="#kindmd-markdown"><span class="header-section-number">3.3</span> <code>^:kind/md</code> — markdown</a></li>
+  <li><a href="#kindhidden-suppress-output" id="toc-kindhidden-suppress-output" class="nav-link" data-scroll-target="#kindhidden-suppress-output"><span class="header-section-number">3.4</span> <code>^:kind/hidden</code> — suppress output</a></li>
+  <li><a href="#kindmermaid-mermaid-diagrams" id="toc-kindmermaid-mermaid-diagrams" class="nav-link" data-scroll-target="#kindmermaid-mermaid-diagrams"><span class="header-section-number">3.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</a></li>
+  <li><a href="#kindgraphviz-graphviz-diagrams" id="toc-kindgraphviz-graphviz-diagrams" class="nav-link" data-scroll-target="#kindgraphviz-graphviz-diagrams"><span class="header-section-number">3.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</a></li>
+  <li><a href="#kindtex-latex-formulas" id="toc-kindtex-latex-formulas" class="nav-link" data-scroll-target="#kindtex-latex-formulas"><span class="header-section-number">3.7</span> <code>^:kind/tex</code> — LaTeX formulas</a></li>
+  <li><a href="#kindcode-code-display" id="toc-kindcode-code-display" class="nav-link" data-scroll-target="#kindcode-code-display"><span class="header-section-number">3.8</span> <code>^:kind/code</code> — code display</a></li>
+  <li><a href="#kindvega-lite-vega-lite-charts" id="toc-kindvega-lite-vega-lite-charts" class="nav-link" data-scroll-target="#kindvega-lite-vega-lite-charts"><span class="header-section-number">3.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</a></li>
+  <li><a href="#kindplotly-plotly-charts" id="toc-kindplotly-plotly-charts" class="nav-link" data-scroll-target="#kindplotly-plotly-charts"><span class="header-section-number">3.10</span> <code>^:kind/plotly</code> — Plotly charts</a></li>
+  <li><a href="#annotating-in-library-functions" id="toc-annotating-in-library-functions" class="nav-link" data-scroll-target="#annotating-in-library-functions"><span class="header-section-number">3.11</span> Annotating in library functions</a></li>
+  <li><a href="#why-wrap-strings-in-vectors" id="toc-why-wrap-strings-in-vectors" class="nav-link" data-scroll-target="#why-wrap-strings-in-vectors"><span class="header-section-number">3.12</span> Why wrap strings in vectors?</a></li>
+  <li><a href="#summary-of-kinds" id="toc-summary-of-kinds" class="nav-link" data-scroll-target="#summary-of-kinds"><span class="header-section-number">3.13</span> Summary of kinds</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -262,7 +267,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Kindly Annotations</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Kindly kinds</span></h1>
 </div>
 
 
@@ -294,8 +299,8 @@ window.Quarto = {
 </div>
 </div>
 <p>Add Kindly metadata to control how a value is rendered.</p>
-<section id="kindhiccup-html-from-data" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="kindhiccup-html-from-data"><span class="header-section-number">2.1</span> <code>^:kind/hiccup</code> — HTML from data</h2>
+<section id="kindhiccup-html-from-data" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="kindhiccup-html-from-data"><span class="header-section-number">3.1</span> <code>^:kind/hiccup</code> — HTML from data</h2>
 <p>Converts a <a href="https://github.com/weavejester/hiccup">hiccup</a> vector to HTML. Hiccup represents HTML as nested Clojure vectors:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
@@ -307,8 +312,8 @@ window.Quarto = {
 </div>
 <p>The vector <code>[:tag {:attr "value"} content]</code> becomes <code>&lt;tag attr="value"&gt;content&lt;/tag&gt;</code>.</p>
 </section>
-<section id="kindhtml-raw-html" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="kindhtml-raw-html"><span class="header-section-number">2.2</span> <code>^:kind/html</code> — raw HTML</h2>
+<section id="kindhtml-raw-html" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="kindhtml-raw-html"><span class="header-section-number">3.2</span> <code>^:kind/html</code> — raw HTML</h2>
 <p>Renders a string as raw HTML. Since strings can’t hold metadata in Clojure, wrap the expression in a vector:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/html</span></span>
@@ -319,8 +324,8 @@ window.Quarto = {
 </div>
 <p>The vector is automatically unwrapped — Janqua extracts the first element for rendering.</p>
 </section>
-<section id="kindmd-markdown" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="kindmd-markdown"><span class="header-section-number">2.3</span> <code>^:kind/md</code> — markdown</h2>
+<section id="kindmd-markdown" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="kindmd-markdown"><span class="header-section-number">3.3</span> <code>^:kind/md</code> — markdown</h2>
 <p>Renders a string as markdown. Same wrapping rule as <code>kind/html</code>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/md</span></span>
@@ -343,16 +348,16 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindhidden-suppress-output" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="kindhidden-suppress-output"><span class="header-section-number">2.4</span> <code>^:kind/hidden</code> — suppress output</h2>
+<section id="kindhidden-suppress-output" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="kindhidden-suppress-output"><span class="header-section-number">3.4</span> <code>^:kind/hidden</code> — suppress output</h2>
 <p>Evaluates the code but hides the result. The code itself is still shown. Useful for setup like defining helper functions:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hidden</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>[(<span class="bu">def</span><span class="fu"> my-data </span>[<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>])]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="kindmermaid-mermaid-diagrams" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="kindmermaid-mermaid-diagrams"><span class="header-section-number">2.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</h2>
+<section id="kindmermaid-mermaid-diagrams" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="kindmermaid-mermaid-diagrams"><span class="header-section-number">3.5</span> <code>^:kind/mermaid</code> — Mermaid diagrams</h2>
 <p>Renders a string as a <a href="https://mermaid.js.org/">Mermaid</a> diagram. The Mermaid JS library is loaded automatically from CDN:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/mermaid</span></span>
@@ -362,9 +367,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindgraphviz-graphviz-diagrams" class="level2" data-number="2.6">
-<h2 data-number="2.6" class="anchored" data-anchor-id="kindgraphviz-graphviz-diagrams"><span class="header-section-number">2.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</h2>
-<p>Renders a string as a <a href="https://graphviz.org/">Graphviz</a> DOT diagram. The <code>viz-js</code> library is loaded from CDN; no local Graphviz install needed:</p>
+<section id="kindgraphviz-graphviz-diagrams" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="kindgraphviz-graphviz-diagrams"><span class="header-section-number">3.6</span> <code>^:kind/graphviz</code> — Graphviz diagrams</h2>
+<p>Renders a string as a <a href="https://graphviz.org/">Graphviz</a> DOT diagram. The <a href="https://github.com/mdaines/viz-js"><code>viz-js</code></a> library is loaded from CDN; no local Graphviz install needed:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/graphviz</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"digraph { rankdir=LR; A -&gt; B -&gt; C; A -&gt; C; }"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -373,9 +378,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindtex-latex-formulas" class="level2" data-number="2.7">
-<h2 data-number="2.7" class="anchored" data-anchor-id="kindtex-latex-formulas"><span class="header-section-number">2.7</span> <code>^:kind/tex</code> — LaTeX formulas</h2>
-<p>Renders a string as a LaTeX formula via MathJax:</p>
+<section id="kindtex-latex-formulas" class="level2" data-number="3.7">
+<h2 data-number="3.7" class="anchored" data-anchor-id="kindtex-latex-formulas"><span class="header-section-number">3.7</span> <code>^:kind/tex</code> — LaTeX formulas</h2>
+<p>Renders a string as a LaTeX formula via <a href="https://www.mathjax.org/">MathJax</a>:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/tex</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"</span><span class="sc">\\</span><span class="st">int_0^</span><span class="sc">\\</span><span class="st">infty e^{-x^2} dx = </span><span class="sc">\\</span><span class="st">frac{</span><span class="sc">\\</span><span class="st">sqrt{</span><span class="sc">\\</span><span class="st">pi}}{2}"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -384,8 +389,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindcode-code-display" class="level2" data-number="2.8">
-<h2 data-number="2.8" class="anchored" data-anchor-id="kindcode-code-display"><span class="header-section-number">2.8</span> <code>^:kind/code</code> — code display</h2>
+<section id="kindcode-code-display" class="level2" data-number="3.8">
+<h2 data-number="3.8" class="anchored" data-anchor-id="kindcode-code-display"><span class="header-section-number">3.8</span> <code>^:kind/code</code> — code display</h2>
 <p>Renders a string as syntax-highlighted Clojure code (for display, not evaluation):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/code</span></span>
@@ -396,8 +401,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindvega-lite-vega-lite-charts" class="level2" data-number="2.9">
-<h2 data-number="2.9" class="anchored" data-anchor-id="kindvega-lite-vega-lite-charts"><span class="header-section-number">2.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</h2>
+<section id="kindvega-lite-vega-lite-charts" class="level2" data-number="3.9">
+<h2 data-number="3.9" class="anchored" data-anchor-id="kindvega-lite-vega-lite-charts"><span class="header-section-number">3.9</span> <code>^:kind/vega-lite</code> — Vega-Lite charts</h2>
 <p>Renders a map as a <a href="https://vega.github.io/vega-lite/">Vega-Lite</a> chart. The JS library is loaded automatically from CDN:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/vega-lite</span></span>
@@ -410,8 +415,8 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="kindplotly-plotly-charts" class="level2" data-number="2.10">
-<h2 data-number="2.10" class="anchored" data-anchor-id="kindplotly-plotly-charts"><span class="header-section-number">2.10</span> <code>^:kind/plotly</code> — Plotly charts</h2>
+<section id="kindplotly-plotly-charts" class="level2" data-number="3.10">
+<h2 data-number="3.10" class="anchored" data-anchor-id="kindplotly-plotly-charts"><span class="header-section-number">3.10</span> <code>^:kind/plotly</code> — Plotly charts</h2>
 <p>Renders a map as a <a href="https://plotly.com/javascript/">Plotly.js</a> chart. The spec should have <code>:data</code> and <code>:layout</code> keys:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/plotly</span></span>
@@ -422,9 +427,9 @@ window.Quarto = {
 </div>
 </div>
 </section>
-<section id="annotating-in-library-functions" class="level2" data-number="2.11">
-<h2 data-number="2.11" class="anchored" data-anchor-id="annotating-in-library-functions"><span class="header-section-number">2.11</span> Annotating in library functions</h2>
-<p>The <code>^:kind/...</code> reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with <a href="https://clojuredocs.org/clojure.core/with-meta"><code>with-meta</code></a> or <code>vary-meta</code>, which means <strong>library functions can annotate their return values</strong>. The caller doesn’t need to know about the rendering — the function handles it.</p>
+<section id="annotating-in-library-functions" class="level2" data-number="3.11">
+<h2 data-number="3.11" class="anchored" data-anchor-id="annotating-in-library-functions"><span class="header-section-number">3.11</span> Annotating in library functions</h2>
+<p>The <code>^:kind/...</code> reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with <a href="https://clojuredocs.org/clojure.core/with-meta"><code>with-meta</code></a> or <a href="https://clojuredocs.org/clojure.core/vary-meta"><code>vary-meta</code></a>, which means <strong>library functions can annotate their return values</strong>. The caller doesn’t need to know about the rendering — the function handles it.</p>
 <p>For example, a function that builds an SVG bar chart and tags it as hiccup:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>(<span class="bu">defn</span><span class="fu"> bar-chart </span>[labels values]</span>
@@ -460,10 +465,10 @@ window.Quarto = {
 <svg width="170" height="145" xmlns="http://www.w3.org/2000/svg"><g><rect x="10" y="60" width="40" height="60" fill="steelblue"></rect><text x="30" y="135" text-anchor="middle" font-size="12">a</text></g><g><rect x="60" y="0" width="40" height="120" fill="steelblue"></rect><text x="80" y="135" text-anchor="middle" font-size="12">b</text></g><g><rect x="110" y="30" width="40" height="90" fill="steelblue"></rect><text x="130" y="135" text-anchor="middle" font-size="12">c</text></g></svg>
 </div>
 </div>
-<p>This is the key idea behind Kindly: rendering intent lives in the data, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.</p>
+<p>This is a key idea behind Kindly: rendering intent lives in the metadata of Jank forms or values, not in the document markup. Libraries can provide visualization functions that “just work” in any Kindly-aware tool — Janqua, Clay, or others.</p>
 </section>
-<section id="why-wrap-strings-in-vectors" class="level2" data-number="2.12">
-<h2 data-number="2.12" class="anchored" data-anchor-id="why-wrap-strings-in-vectors"><span class="header-section-number">2.12</span> Why wrap strings in vectors?</h2>
+<section id="why-wrap-strings-in-vectors" class="level2" data-number="3.12">
+<h2 data-number="3.12" class="anchored" data-anchor-id="why-wrap-strings-in-vectors"><span class="header-section-number">3.12</span> Why wrap strings in vectors?</h2>
 <p>In Clojure (and Jank), metadata can only be attached to collections — vectors, maps, sets — not to primitive types like strings or numbers. So <code>^:kind/html "hello"</code> won’t work.</p>
 <p>The convention is to wrap the value in a vector:</p>
 <div class="cell">
@@ -474,116 +479,8 @@ window.Quarto = {
 </div>
 <p>Janqua automatically unwraps the vector for all string-valued kinds (<code>kind/html</code>, <code>kind/md</code>, <code>kind/mermaid</code>, <code>kind/graphviz</code>, <code>kind/tex</code>, <code>kind/code</code>), extracting the first element for rendering.</p>
 </section>
-<section id="code-block-attributes" class="level2" data-number="2.13">
-<h2 data-number="2.13" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">2.13</span> Code block attributes</h2>
-<p>The Quarto-standard attributes <code>echo</code> and <code>eval</code> go on the code fence and control display:</p>
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th style="text-align: left;">Attribute</th>
-<th style="text-align: left;">Effect</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><code>echo=false</code></td>
-<td style="text-align: left;">Hide the source code, show only the result</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><code>eval=false</code></td>
-<td style="text-align: left;">Show code without evaluating it</td>
-</tr>
-</tbody>
-</table>
-<div class="cell">
-<div class="cell-output cell-output-display">
-<div>Only the rendered HTML appears — no source code shown</div>
-</div>
-</div>
-<p>See the <a href="https://quarto.org/docs/reference/cells/">Quarto documentation on code cells</a> for more.</p>
-</section>
-<section id="per-block-options" class="level2" data-number="2.14">
-<h2 data-number="2.14" class="anchored" data-anchor-id="per-block-options"><span class="header-section-number">2.14</span> Per-block options</h2>
-<p>Janqua also recognizes a few knobs you can set in three places, with <strong>precedence: fence attribute &gt; <code>:kindly/options</code> on the value &gt; frontmatter <code>jank:</code> map &gt; built-in default</strong>.</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Option</th>
-<th style="text-align: left;">Type</th>
-<th style="text-align: left;">Default</th>
-<th style="text-align: left;">Notes</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;"><code>timeout</code></td>
-<td style="text-align: left;">integer (ms)</td>
-<td style="text-align: left;"><code>10000</code></td>
-<td style="text-align: left;">Per-block eval timeout. Fence + frontmatter only — set before the value exists, so it has no Kindly form.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><code>hide-stdout</code></td>
-<td style="text-align: left;">boolean</td>
-<td style="text-align: left;"><code>false</code></td>
-<td style="text-align: left;">Suppress captured stdout while keeping the return value.</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><code>width</code></td>
-<td style="text-align: left;">integer (px)</td>
-<td style="text-align: left;">varies</td>
-<td style="text-align: left;">Chart width. ECharts and Cytoscape need a sized container, so they default to <code>600</code>; other chart kinds auto-fit when unset.</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><code>height</code></td>
-<td style="text-align: left;">integer (px)</td>
-<td style="text-align: left;">varies</td>
-<td style="text-align: left;">Chart height. ECharts and Cytoscape default to <code>400</code>; other chart kinds auto-fit when unset.</td>
-</tr>
-</tbody>
-</table>
-<section id="fence-attribute" class="level3" data-number="2.14.1">
-<h3 data-number="2.14.1" class="anchored" data-anchor-id="fence-attribute"><span class="header-section-number">2.14.1</span> Fence attribute</h3>
-<p>Set on the code fence:</p>
-<pre><code>```{.clojure .jank timeout=30000 hide-stdout=true}
-(do (println "noisy debug")
-    (Thread/sleep 100)
-    42)
-```</code></pre>
-</section>
-<section id="kindlyoptions-on-the-value" class="level3" data-number="2.14.2">
-<h3 data-number="2.14.2" class="anchored" data-anchor-id="kindlyoptions-on-the-value"><span class="header-section-number">2.14.2</span> <code>:kindly/options</code> on the value</h3>
-<p>Annotate the value’s metadata under <code>:kindly/options</code>:</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/kind</span> <span class="at">:kind/plotly</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">:kindly/options</span> {<span class="at">:width</span> <span class="dv">800</span> <span class="at">:height</span> <span class="dv">500</span>}}</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>{<span class="at">:data</span> [{<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>] <span class="at">:y</span> [<span class="dv">10</span> <span class="dv">20</span> <span class="dv">15</span>] <span class="at">:type</span> <span class="st">"bar"</span>}]</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:layout</span> {<span class="at">:title</span> <span class="st">"Sized via :kindly/options"</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div id="janqua-plot-5" style="width:800px;height:500px;"></div><script>var spec={"data": [{"x": [1, 2, 3], "y": [10, 20, 15], "type": "bar"}], "layout": {"title": "Sized via :kindly/options"}};Plotly.newPlot("janqua-plot-5", spec.data, spec.layout);</script>
-</div>
-</div>
-<p>Library functions can attach these via <code>with-meta</code> / <code>vary-meta</code>, so callers don’t need to set them at the call site.</p>
-</section>
-<section id="frontmatter" class="level3" data-number="2.14.3">
-<h3 data-number="2.14.3" class="anchored" data-anchor-id="frontmatter"><span class="header-section-number">2.14.3</span> Frontmatter</h3>
-<p>Doc-wide defaults go in the YAML frontmatter:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filters</span><span class="kw">:</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> jank</span></span>
-<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="fu">jank</span><span class="kw">:</span></span>
-<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">timeout</span><span class="kw">:</span><span class="at"> </span><span class="dv">30000</span></span>
-<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hide-stdout</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
-<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-</section>
-<section id="summary" class="level2" data-number="2.15">
-<h2 data-number="2.15" class="anchored" data-anchor-id="summary"><span class="header-section-number">2.15</span> Summary</h2>
+<section id="summary-of-kinds" class="level2" data-number="3.13">
+<h2 data-number="3.13" class="anchored" data-anchor-id="summary-of-kinds"><span class="header-section-number">3.13</span> Summary of kinds</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -646,17 +543,17 @@ window.Quarto = {
 <tr class="odd">
 <td style="text-align: left;"><code>^:kind/echarts</code></td>
 <td style="text-align: left;">map</td>
-<td style="text-align: left;">ECharts chart</td>
+<td style="text-align: left;"><a href="https://echarts.apache.org/">ECharts</a> chart</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><code>^:kind/cytoscape</code></td>
 <td style="text-align: left;">map</td>
-<td style="text-align: left;">Cytoscape graph</td>
+<td style="text-align: left;"><a href="https://js.cytoscape.org/">Cytoscape</a> graph</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>^:kind/highcharts</code></td>
 <td style="text-align: left;">map</td>
-<td style="text-align: left;">Highcharts chart</td>
+<td style="text-align: left;"><a href="https://www.highcharts.com/">Highcharts</a> chart</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><em>(none)</em></td>
@@ -1072,13 +969,13 @@ window.Quarto = {
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./getting-started.html" class="pagination-link" aria-label="Getting Started">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Getting Started</span></span>
+      <a href="./workflow.html" class="pagination-link" aria-label="Workflow">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Workflow</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./how-it-works.html" class="pagination-link" aria-label="How It Works">
-        <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./authoring.html" class="pagination-link" aria-label="Authoring Jank documents">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Getting Started – Janqua</title>
+<title>4&nbsp; Authoring Jank documents – Janqua</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -68,8 +68,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./workflow.html" rel="next">
-<link href="./index.html" rel="prev">
+<link href="./how-it-works.html" rel="next">
+<link href="./kindly-kinds.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -107,7 +107,53 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+/* Distinguish Jank output blocks from input code */
+.cell-output pre code.sourceCode {
+  background-color: transparent;
+  border-left: 3px solid #e0e0e0;
+  padding-left: 0.8em;
+}
 
+/* Cap stdout-block height so a noisy `(println …)` (e.g. a debug
+   `dotimes 1000`) doesn't push everything below it off the page.
+   Display blocks (charts, return values) and error blocks stay
+   uncapped — those need to remain fully visible. */
+.cell-output-stdout pre {
+  max-height: 30em;
+  overflow-y: auto;
+}
+</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -120,7 +166,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./getting-started.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Getting Started</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./authoring.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -156,7 +202,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./getting-started.html" class="sidebar-item-text sidebar-link active">
+  <a href="./getting-started.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Getting Started</span></span></a>
   </div>
 </li>
@@ -174,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./authoring.html" class="sidebar-item-text sidebar-link">
+  <a href="./authoring.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></span></a>
   </div>
 </li>
@@ -200,12 +246,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#prerequisites" id="toc-prerequisites" class="nav-link active" data-scroll-target="#prerequisites"><span class="header-section-number">1.1</span> Prerequisites</a></li>
-  <li><a href="#create-a-project" id="toc-create-a-project" class="nav-link" data-scroll-target="#create-a-project"><span class="header-section-number">1.2</span> Create a project</a></li>
-  <li><a href="#install-the-extension" id="toc-install-the-extension" class="nav-link" data-scroll-target="#install-the-extension"><span class="header-section-number">1.3</span> Install the extension</a></li>
-  <li><a href="#write-a-document" id="toc-write-a-document" class="nav-link" data-scroll-target="#write-a-document"><span class="header-section-number">1.4</span> Write a document</a></li>
-  <li><a href="#render-it" id="toc-render-it" class="nav-link" data-scroll-target="#render-it"><span class="header-section-number">1.5</span> Render it</a></li>
-  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps"><span class="header-section-number">1.6</span> Next steps</a></li>
+  <li><a href="#code-block-attributes" id="toc-code-block-attributes" class="nav-link active" data-scroll-target="#code-block-attributes"><span class="header-section-number">4.1</span> Code block attributes</a></li>
+  <li><a href="#per-block-options" id="toc-per-block-options" class="nav-link" data-scroll-target="#per-block-options"><span class="header-section-number">4.2</span> Per-block options</a>
+  <ul class="collapse">
+  <li><a href="#fence-attribute" id="toc-fence-attribute" class="nav-link" data-scroll-target="#fence-attribute"><span class="header-section-number">4.2.1</span> Fence attribute</a></li>
+  <li><a href="#frontmatter-timeout-and-hide-stdout-only" id="toc-frontmatter-timeout-and-hide-stdout-only" class="nav-link" data-scroll-target="#frontmatter-timeout-and-hide-stdout-only"><span class="header-section-number">4.2.2</span> Frontmatter (<code>timeout</code> and <code>hide-stdout</code> only)</a></li>
+  <li><a href="#kindlyoptions-width-and-height-only" id="toc-kindlyoptions-width-and-height-only" class="nav-link" data-scroll-target="#kindlyoptions-width-and-height-only"><span class="header-section-number">4.2.3</span> <code>:kindly/options</code> (<code>width</code> and <code>height</code> only)</a></li>
+  </ul></li>
+  <li><a href="#combining-with-other-filters" id="toc-combining-with-other-filters" class="nav-link" data-scroll-target="#combining-with-other-filters"><span class="header-section-number">4.3</span> Combining with other filters</a></li>
+  <li><a href="#document-level-quarto-features" id="toc-document-level-quarto-features" class="nav-link" data-scroll-target="#document-level-quarto-features"><span class="header-section-number">4.4</span> Document-level Quarto features</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/scicloj/janqua/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></nav>
     </div>
@@ -214,7 +263,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Getting Started</span></h1>
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></h1>
 </div>
 
 
@@ -231,72 +280,163 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Janqua is currently tested only on Linux. macOS hasn’t been verified — if you try it, please <a href="https://github.com/scicloj/janqua/issues">open an issue</a> with what you find.</p>
-<section id="prerequisites" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="prerequisites"><span class="header-section-number">1.1</span> Prerequisites</h2>
-<ol type="1">
-<li><strong><a href="https://quarto.org/docs/get-started/">Quarto</a></strong> — the publishing system</li>
-<li><strong><a href="https://jank-lang.org">Jank</a></strong> — the Jank compiler and REPL</li>
-<li><strong><a href="https://github.com/babashka/babashka#installation">Babashka</a></strong> — fast Clojure scripting runtime</li>
-<li><strong><a href="https://github.com/babashka/bbin#installation">bbin</a></strong> — tool installer for Babashka</li>
-<li><strong>clj-nrepl-eval</strong> — an <a href="https://nrepl.org/">nREPL</a> client. It’s provided by <a href="https://github.com/bhauman/clojure-mcp-light">clojure-mcp-light</a> (the bbin wrapper exposes it as the <code>clj-nrepl-eval</code> command):</li>
-</ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">bbin</span> install https://github.com/bhauman/clojure-mcp-light.git <span class="at">--tag</span> v0.2.1 <span class="at">--as</span> clj-nrepl-eval <span class="at">--main-opts</span> <span class="st">'["-m" "clojure-mcp-light.nrepl-eval"]'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Verify everything is available:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> <span class="at">--version</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">jank</span> <span class="at">--version</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="ex">bb</span> <span class="at">--version</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ex">clj-nrepl-eval</span> <span class="at">--help</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The previous chapter (<a href="./kindly-kinds.html">Kindly kinds</a>) covered how to control the rendering of a <em>value</em>. This chapter covers the knobs <em>around</em> <code>.jank</code> blocks — display attributes (<code>echo</code>, <code>eval</code>), Janqua’s <code>output=</code> override, per-block options (timing, sizing, output suppression) — and finishes with the document-level Quarto features (math, callouts) that pair with live evaluation.</p>
+<section id="code-block-attributes" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="code-block-attributes"><span class="header-section-number">4.1</span> Code block attributes</h2>
+<p>The Quarto-standard <code>echo</code> and <code>eval</code> attributes go on the <strong>code-block fence</strong> (the opening line of a code block, e.g.&nbsp;<code>```{.clojure .jank echo=false}</code>):</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>echo=false</code></td>
+<td style="text-align: left;">Hide the source code, show only the result</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>eval=false</code></td>
+<td style="text-align: left;">Show code without evaluating it</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<div class="cell-output cell-output-display">
+<div>Only the rendered HTML appears — no source code shown</div>
+</div>
+</div>
+<p>Janqua also recognizes an <code>output=</code> attribute that picks a renderer when the value isn’t tagged with Kindly metadata:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>output=html</code></td>
+<td style="text-align: left;">Render the value as raw HTML</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>output=markdown</code></td>
+<td style="text-align: left;">Parse the value as markdown</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>output=hidden</code></td>
+<td style="text-align: left;">Suppress both source and result</td>
+</tr>
+</tbody>
+</table>
+<p>When both <code>:kindly/kind</code> metadata on the value and <code>output=</code> on the fence are set, the Kindly metadata wins.</p>
+<p>See the <a href="https://quarto.org/docs/reference/cells/">Quarto documentation on code cells</a> for more on the standard attributes.</p>
 </section>
-<section id="create-a-project" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="create-a-project"><span class="header-section-number">1.2</span> Create a project</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> my-jank-doc</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> my-jank-doc</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="per-block-options" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="per-block-options"><span class="header-section-number">4.2</span> Per-block options</h2>
+<p>These are Janqua-specific knobs — not part of the Kindly convention.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Option</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Default</th>
+<th style="text-align: left;">Where to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>timeout</code></td>
+<td style="text-align: left;">integer (ms)</td>
+<td style="text-align: left;"><code>10000</code></td>
+<td style="text-align: left;">fence, frontmatter</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>hide-stdout</code></td>
+<td style="text-align: left;">boolean</td>
+<td style="text-align: left;"><code>false</code></td>
+<td style="text-align: left;">fence, frontmatter</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>width</code></td>
+<td style="text-align: left;">integer (px)</td>
+<td style="text-align: left;">per chart kind</td>
+<td style="text-align: left;">fence, <code>:kindly/options</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>height</code></td>
+<td style="text-align: left;">integer (px)</td>
+<td style="text-align: left;">per chart kind</td>
+<td style="text-align: left;">fence, <code>:kindly/options</code></td>
+</tr>
+</tbody>
+</table>
+<p>ECharts and Cytoscape default to 600 × 400 pixels because their libraries refuse to render to a size-less container. Other chart kinds (Plotly, Vega-Lite, Highcharts) auto-fit and have no built-in pixel default.</p>
+<p><code>timeout</code> and <code>hide-stdout</code> are evaluation/runtime concerns. They’re set on the <strong>code-block fence</strong> (the opening line of a code block) or as document-wide defaults in the <strong>frontmatter</strong> (the YAML header at the top of a <code>.qmd</code> file).</p>
+<p><code>width</code> and <code>height</code> are layout concerns, so Janqua also reads them from the value’s <code>:kindly/options</code> metadata. Library functions can attach chart dimensions via <code>with-meta</code> so callers don’t have to.</p>
+<p>For each option, the highest-priority source that sets it wins, falling back through the others to the built-in default.</p>
+<section id="fence-attribute" class="level3" data-number="4.2.1">
+<h3 data-number="4.2.1" class="anchored" data-anchor-id="fence-attribute"><span class="header-section-number">4.2.1</span> Fence attribute</h3>
+<p>Set on the opening line of a code block. All four options work here:</p>
+<pre><code>```{.clojure .jank timeout=30000 hide-stdout=true}
+(do (println "noisy debug")
+    42)
+```</code></pre>
+<pre><code>```{.clojure .jank width=400 height=250}
+^:kind/plotly
+{:data [{:x [1 2 3 4 5] :y [4 1 5 3 2] :type "bar"}]
+ :layout {:title "Sized 400×250"}}
+```</code></pre>
 </section>
-<section id="install-the-extension" class="level2" data-number="1.3">
-<h2 data-number="1.3" class="anchored" data-anchor-id="install-the-extension"><span class="header-section-number">1.3</span> Install the extension</h2>
-<p>Run this <strong>inside your project directory</strong> — it creates an <code>_extensions/</code> folder there:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> add scicloj/janqua</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Sanity check that the filter files landed:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ls</span> _extensions/jank/</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>You should see <code>jank.lua</code>, <code>jank-lifecycle.sh</code>, <code>jank.css</code>, and <code>_extension.yml</code>.</p>
+<section id="frontmatter-timeout-and-hide-stdout-only" class="level3" data-number="4.2.2">
+<h3 data-number="4.2.2" class="anchored" data-anchor-id="frontmatter-timeout-and-hide-stdout-only"><span class="header-section-number">4.2.2</span> Frontmatter (<code>timeout</code> and <code>hide-stdout</code> only)</h3>
+<p>Doc-wide defaults for <code>timeout</code> and <code>hide-stdout</code> go in the YAML header:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filters</span><span class="kw">:</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> jank</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">jank</span><span class="kw">:</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">timeout</span><span class="kw">:</span><span class="at"> </span><span class="dv">30000</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">hide-stdout</span><span class="kw">:</span><span class="at"> </span><span class="ch">true</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">---</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><code>width</code> and <code>height</code> aren’t read from frontmatter — set them per block via the fence or via <code>:kindly/options</code>.</p>
 </section>
-<section id="write-a-document" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="write-a-document"><span class="header-section-number">1.4</span> Write a document</h2>
-<p>Create a file called <code>hello.qmd</code>:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Hello Jank"</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="an">filters:</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">  - jank</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="in">```{.clojure .jank}</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="op">(+</span> <span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span><span class="op">)</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="in">```{.clojure .jank}</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="op">^:</span>kind<span class="op">/</span>hiccup</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="op">[:</span>div <span class="op">{:</span>style <span class="st">"color: coral; font-size: 24px;"</span><span class="op">}</span> <span class="st">"Hello from Jank!"</span><span class="op">]</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Note the <code>{.clojure .jank}</code> syntax: <code>.clojure</code> enables syntax highlighting (in editors and rendered output), and <code>.jank</code> tells the Janqua filter to evaluate the block. Both use dot prefixes — that’s <a href="https://pandoc.org/MANUAL.html#divs-and-spans">Pandoc class syntax</a>.</p>
-<p>The <code>filters: [jank]</code> in the <a href="https://quarto.org/docs/authoring/front-matter.html">frontmatter</a> (the YAML header at the top of the file, between the <code>---</code> markers) tells Quarto to use the Janqua filter.</p>
+<section id="kindlyoptions-width-and-height-only" class="level3" data-number="4.2.3">
+<h3 data-number="4.2.3" class="anchored" data-anchor-id="kindlyoptions-width-and-height-only"><span class="header-section-number">4.2.3</span> <code>:kindly/options</code> (<code>width</code> and <code>height</code> only)</h3>
+<p>Annotate the value’s metadata under <code>:kindly/options</code>:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>^{<span class="at">:kindly/kind</span> <span class="at">:kind/plotly</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">:kindly/options</span> {<span class="at">:width</span> <span class="dv">800</span> <span class="at">:height</span> <span class="dv">500</span>}}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>{<span class="at">:data</span> [{<span class="at">:x</span> [<span class="dv">1</span> <span class="dv">2</span> <span class="dv">3</span>] <span class="at">:y</span> [<span class="dv">10</span> <span class="dv">20</span> <span class="dv">15</span>] <span class="at">:type</span> <span class="st">"bar"</span>}]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a> <span class="at">:layout</span> {<span class="at">:title</span> <span class="st">"Sized via :kindly/options"</span>}}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="janqua-plot-1" style="width:800px;height:500px;"></div><script src="https://cdn.plot.ly/plotly-2.35.0.min.js" integrity="sha384-TAqBiqItCr14J//ULLD26bSQ8Z6uPnlisSwkvWaqP8SCSiDkgR8jNknuAv8uxSOT" crossorigin="anonymous"></script><script>var spec={"data": [{"x": [1, 2, 3], "y": [10, 20, 15], "type": "bar"}], "layout": {"title": "Sized via :kindly/options"}};Plotly.newPlot("janqua-plot-1", spec.data, spec.layout);</script>
+</div>
+</div>
+<p>Library functions can attach these via <code>with-meta</code> / <code>vary-meta</code>, so callers don’t need to set them at the call site.</p>
 </section>
-<section id="render-it" class="level2" data-number="1.5">
-<h2 data-number="1.5" class="anchored" data-anchor-id="render-it"><span class="header-section-number">1.5</span> Render it</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> render hello.qmd</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This starts a Jank nREPL server (if one isn’t already running), evaluates the code blocks, and produces <code>hello.html</code>.</p>
-<p>For a live-reloading workflow, use <code>quarto preview</code> instead — it re-renders automatically each time you save:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">quarto</span> preview hello.qmd</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This opens a browser with live preview. Edit your <code>.qmd</code>, save, and the page refreshes with updated results. Press Ctrl-C to stop.</p>
 </section>
-<section id="next-steps" class="level2" data-number="1.6">
-<h2 data-number="1.6" class="anchored" data-anchor-id="next-steps"><span class="header-section-number">1.6</span> Next steps</h2>
-<ul>
-<li>See <a href="./workflow.html">Workflow</a> for managing the Jank process, auto-start tuning, and publishing to GitHub Pages</li>
-<li>See <a href="./kindly-kinds.html">Kindly kinds</a> for controlling how each result renders (HTML, charts, diagrams, math, …)</li>
-<li>See <a href="./authoring.html">Authoring Jank documents</a> for code-block attributes and per-block options</li>
-<li>See the <a href="./demo.html">Demo</a> for evaluated examples</li>
-</ul>
+<section id="combining-with-other-filters" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="combining-with-other-filters"><span class="header-section-number">4.3</span> Combining with other filters</h2>
+<p>If you list more than one filter in <code>filters:</code>, put <code>jank</code> first — Janqua needs the <code>.jank</code> class to still be on the block when it runs:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filters</span><span class="kw">:</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> jank</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> some-other-filter</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="document-level-quarto-features" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="document-level-quarto-features"><span class="header-section-number">4.4</span> Document-level Quarto features</h2>
+<p>Quarto’s authoring features apply to a <code>.qmd</code> file the same way they would in any Quarto document — Janqua only intervenes for <code>.jank</code> code blocks. A few worth knowing:</p>
+<p><strong>Math.</strong> Quarto recognizes LaTeX math in prose: write <code>$\sqrt{x^2 + y^2}$</code> for inline math like <span class="math inline">\(\sqrt{x^2 + y^2}\)</span>, or <code>$$ ... $$</code> for a display equation:</p>
+<p><span class="math display">\[\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}\]</span></p>
+<p>The same Quarto pipeline handles math returned from <code>^:kind/md</code> — Janqua emits the markdown string into Pandoc’s AST and Quarto then processes the math:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/md</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>[<span class="st">"The area of a circle is $A = </span><span class="sc">\\</span><span class="st">pi r^2$."</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<p>The area of a circle is <span class="math inline">\(A = \pi r^2\)</span>.</p>
+</div>
+</div>
+<p><strong>Callouts</strong>, <strong>frontmatter</strong> (title, theme, format options), <strong>cross-references</strong>, and <strong>citations</strong> are all standard Quarto. See the <a href="https://quarto.org/docs/authoring/">Quarto authoring guide</a> for the full set.</p>
 
 
 </section>
@@ -704,13 +844,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./index.html" class="pagination-link" aria-label="Overview">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Overview</span>
+      <a href="./kindly-kinds.html" class="pagination-link" aria-label="Kindly kinds">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Kindly kinds</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./workflow.html" class="pagination-link" aria-label="Workflow">
-        <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Workflow</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./how-it-works.html" class="pagination-link" aria-label="How It Works">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">How It Works</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

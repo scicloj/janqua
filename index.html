@@ -2,13 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.24">
+<meta name="generator" content="quarto-1.9.36">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Janqua</title>
 <style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
 div.columns{display: flex; gap: min(4vw, 1.5em);}
@@ -68,15 +71,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="./getting-started.html" rel="next">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-c712ec7de6bdf70644c7d4934cf2a4f5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-47c769d3d3297953383b17cda1be3526.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "sidebar",
   "copy-button": false,
@@ -104,6 +106,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<style>
+/* Distinguish Jank output blocks from input code */
+.cell-output pre code.sourceCode {
+  background-color: transparent;
+  border-left: 3px solid #e0e0e0;
+  padding-left: 0.8em;
+}
+
+/* Cap stdout-block height so a noisy `(println …)` (e.g. a debug
+   `dotimes 1000`) doesn't push everything below it off the page.
+   Display blocks (charts, return values) and error blocks stay
+   uncapped — those need to remain fully visible. */
+.cell-output-stdout pre {
+  max-height: 30em;
+  overflow-y: auto;
+}
+</style>
 
 
 </head>
@@ -130,9 +149,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header sidebar-header-stacked">
-      <a href="./index.html" class="sidebar-logo-link">
-      </a>
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Janqua</a> 
         <div class="sidebar-tools-main">
@@ -161,20 +178,32 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./kindly.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Kindly Annotations</span></span></a>
+  <a href="./workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Workflow</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./kindly-kinds.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Kindly kinds</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./authoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Authoring Jank documents</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./how-it-works.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">How It Works</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">How It Works</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./example.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Live Demo</span></span></a>
+  <a href="./demo.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Demo</span></span></a>
   </div>
 </li>
     </ul>
@@ -191,9 +220,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#what-is-quarto" id="toc-what-is-quarto" class="nav-link" data-scroll-target="#what-is-quarto">What is Quarto?</a></li>
   <li><a href="#what-is-jank" id="toc-what-is-jank" class="nav-link" data-scroll-target="#what-is-jank">What is Jank?</a></li>
+  <li><a href="#use-janqua-for" id="toc-use-janqua-for" class="nav-link" data-scroll-target="#use-janqua-for">Use Janqua for…</a></li>
   <li><a href="#clojure-ecosystem-connection" id="toc-clojure-ecosystem-connection" class="nav-link" data-scroll-target="#clojure-ecosystem-connection">Clojure ecosystem connection</a></li>
   <li><a href="#how-it-works" id="toc-how-it-works" class="nav-link" data-scroll-target="#how-it-works">How it works</a></li>
-  <li><a href="#future-goals" id="toc-future-goals" class="nav-link" data-scroll-target="#future-goals">Future goals</a></li>
+  <li><a href="#roadmap" id="toc-roadmap" class="nav-link" data-scroll-target="#roadmap">Roadmap</a></li>
   <li><a href="#chapters" id="toc-chapters" class="nav-link" data-scroll-target="#chapters">Chapters</a></li>
   </ul></li>
   </ul>
@@ -224,8 +254,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="overview" class="level1 unnumbered">
 <h1 class="unnumbered">Overview</h1>
-<p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for evaluating <a href="https://jank-lang.org">Jank</a> code blocks in documents.</p>
-<p>Write Jank code in <code>.qmd</code> files and get live results — code output, inline <a href="https://en.wikipedia.org/wiki/SVG">SVG</a>, <a href="https://plotly.com/javascript/">Plotly.js</a> charts, markdown tables, and more. Use it for publishing documents or for interactive data exploration with <code>quarto preview</code>, which re-renders on every save. Uses the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering, compatible with the <a href="https://clojure.org/">Clojure</a> ecosystem.</p>
+<p><strong>Janqua</strong> is a <a href="https://quarto.org">Quarto</a> extension for writing <a href="https://jank-lang.org">Jank</a> code in visual documents. Each <code>{.clojure .jank}</code> block in a <code>.qmd</code> file is evaluated by a Jank REPL during rendering, producing code output, charts, diagrams, tables, or computed HTML.</p>
+<p>Charts render via <a href="https://plotly.com/javascript/">Plotly</a>, <a href="https://vega.github.io/vega-lite/">Vega-Lite</a>, <a href="https://echarts.apache.org/">ECharts</a>, <a href="https://js.cytoscape.org/">Cytoscape</a>, or <a href="https://www.highcharts.com/">Highcharts</a>; diagrams via <a href="https://mermaid.js.org/">Mermaid</a> and <a href="https://graphviz.org/">Graphviz</a>. Rendering follows the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention, the same way <a href="https://scicloj.github.io/clay/">Clay</a> handles Clojure docs — so the patterns are familiar if you’re coming from Clay, and ready-to-publish if you’ve never written a notebook before.</p>
+<p>Janqua also opens the door to publishing Jank work on <a href="https://clojurecivitas.github.io/">Clojure Civitas</a>, the Clojure community’s collaborative space.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -241,22 +272,33 @@ Note
 </div>
 <section id="what-is-quarto" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-quarto">What is Quarto?</h2>
-<p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
+<p><a href="https://quarto.org">Quarto</a> is an open-source publishing system for technical documents — widely used in scientific communities for blog posts, books, academic papers, and reproducible research. You write <code>.qmd</code> (Quarto Markdown) files mixing prose and code, and Quarto renders them to HTML, PDF, slides, and other formats.</p>
+<p>Quarto has been used in multiple Clojure projects, most often through <a href="https://scicloj.github.io/clay/">Clay</a> — a Clojure tool that generates Quarto markdown from Clojure namespaces.</p>
 <p>Quarto supports several project types:</p>
 <ul>
-<li><strong>Single documents</strong> — a standalone <code>.qmd</code> file rendered to HTML</li>
+<li><strong>Single documents</strong> — a standalone <code>.qmd</code> file</li>
 <li><strong><a href="https://quarto.org/docs/websites/">Websites</a></strong> — multiple pages with navigation, like a documentation site</li>
 <li><strong><a href="https://quarto.org/docs/books/">Books</a></strong> — chapters rendered as a navigable book (like this one)</li>
 </ul>
 </section>
 <section id="what-is-jank" class="level2">
 <h2 class="anchored" data-anchor-id="what-is-jank">What is Jank?</h2>
-<p><a href="https://jank-lang.org">Jank</a> is a <a href="https://clojure.org/">Clojure</a> dialect that compiles to native code via C++. It aims for full Clojure compatibility with the performance of a native runtime. Jank includes an <a href="https://nrepl.org/">nREPL</a> server, which Janqua uses to evaluate code interactively during document rendering.</p>
+<p><a href="https://jank-lang.org">Jank</a> is a dialect of <a href="https://clojure.org/">Clojure</a> hosted on C++ and an <a href="https://llvm.org/">LLVM</a>-based <a href="https://en.wikipedia.org/wiki/Just-in-time_compilation">JIT</a>. Its distinguishing feature is seamless interop with C and C++: Jank source can reach into C++ libraries to access and define types, functions, and templates directly — <code>cpp/</code> forms in your code call into the native ecosystem without bindings or wrappers. Jank includes an <a href="https://nrepl.org/">nREPL</a> server, which Janqua uses to evaluate code interactively during document rendering.</p>
+</section>
+<section id="use-janqua-for" class="level2">
+<h2 class="anchored" data-anchor-id="use-janqua-for">Use Janqua for…</h2>
+<ul>
+<li><strong>Tutorials and documentation</strong> — about Jank itself or libraries built on it, with live-evaluated examples woven into the narrative</li>
+<li><strong>Research reports and data analysis</strong> — figures, tables, math, and prose in a single reproducible document</li>
+<li><strong>Interactive exploration</strong> — iterate quickly with <code>quarto preview</code>, which re-renders the page each time you save</li>
+<li><strong>Sharing on <a href="https://clojurecivitas.github.io/">Clojure Civitas</a></strong> — Jank posts on the Clojure community’s collaborative space</li>
+</ul>
 </section>
 <section id="clojure-ecosystem-connection" class="level2">
 <h2 class="anchored" data-anchor-id="clojure-ecosystem-connection">Clojure ecosystem connection</h2>
-<p><a href="https://scicloj.github.io/clay">Clay</a> is a Clojure tool for data visualization and <a href="https://en.wikipedia.org/wiki/Literate_programming">literate programming</a>. Clay generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows. <a href="https://clojurecivitas.org/">Clojure Civitas</a>, the community blog, is built this way. Civitas can also render <code>.qmd</code> files directly (not just Clay-generated ones), so Janqua documents are expected to work well with it.</p>
-<p>Janqua brings a similar experience to Jank: you write Jank code directly in <code>.qmd</code> files, and the Quarto filter evaluates it during rendering. Both Janqua and Clay use the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations, so code patterns are transferable between the two ecosystems.</p>
+<p><a href="https://scicloj.github.io/clay/">Clay</a> generates Quarto markdown from Clojure namespaces, then uses Quarto as a rendering engine to produce HTML pages, books, and slideshows — the established path for Clojure documents in the Quarto world.</p>
+<p>Janqua takes a different approach: rather than generating Quarto markdown from a Jank namespace, the Quarto filter evaluates <code>{.clojure .jank}</code> blocks embedded directly in <code>.qmd</code> files. It follows the <a href="https://scicloj.github.io/kindly-noted/">Kindly</a> convention for rendering annotations — with partial coverage at this stage — so familiar Kindly metadata patterns apply when authoring Jank documents.</p>
+<p>The two approaches are different and somewhat complementary, both following the Kindly convention.</p>
 </section>
 <section id="how-it-works" class="level2">
 <h2 class="anchored" data-anchor-id="how-it-works">How it works</h2>
@@ -264,31 +306,37 @@ Note
 <li>You write a <code>.qmd</code> file with <code>{.clojure .jank}</code> code blocks</li>
 <li>When Quarto renders the document, the Janqua filter intercepts these blocks</li>
 <li>Each block is sent to a Jank nREPL server for evaluation</li>
-<li>Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on <a href="./kindly.html">Kindly annotations</a></li>
+<li>Results are inserted into the document — as code output, HTML, charts, diagrams, or markdown — based on <a href="./kindly-kinds.html">Kindly kinds</a></li>
 </ol>
+<div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode clojure code-with-copy"><code class="sourceCode clojure"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>^<span class="at">:kind/hiccup</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>[<span class="at">:div</span> {<span class="at">:style</span> <span class="st">"color: coral; font-size: 24px;"</span>}</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Hello from Jank!"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
 <div style="color: coral; font-size: 24px;">Hello from Jank!</div>
-<p>The Jank process starts automatically on first render and stays running for fast re-evaluation. See <a href="./getting-started.html">Getting Started</a> to try it out, or jump to the <a href="./example.html">Live Demo</a> to see evaluated examples.</p>
+</div>
+</div>
+<p>The Jank process starts automatically on first render and stays running for fast re-evaluation. See <a href="./getting-started.html">Getting Started</a> to try it out, or jump to the <a href="./demo.html">Demo</a> to see evaluated examples.</p>
 </section>
-<section id="future-goals" class="level2">
-<h2 class="anchored" data-anchor-id="future-goals">Future goals</h2>
+<section id="roadmap" class="level2">
+<h2 class="anchored" data-anchor-id="roadmap">Roadmap</h2>
+<p>Full Kindly support and Clay support for Jank are the larger goals.</p>
 <ul>
-<li><strong><a href="https://clojurecivitas.org/">Clojure Civitas</a> integration</strong> — enabling community members to publish Jank posts on the blog</li>
 <li><strong>Broader Kindly support</strong> — more visualization kinds (tables, images, etc.)</li>
 <li><strong>Easier setup</strong> — reducing the number of prerequisites and simplifying installation</li>
-<li><strong><a href="https://scicloj.github.io/clay">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
-<li><strong>Jupyter support</strong> — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments</li>
+<li><strong><a href="https://scicloj.github.io/clay/">Clay</a> support for Jank</strong> — a namespace-as-a-notebook experience, where Jank source files render as documents without writing <code>.qmd</code> by hand</li>
+<li><strong>Jupyter support</strong> — a Jank kernel for <a href="https://jupyter.org/">Jupyter</a> notebooks, enabling interactive Jank development in <a href="https://jupyterlab.readthedocs.io/">JupyterLab</a> and other Jupyter-compatible environments</li>
 </ul>
 </section>
 <section id="chapters" class="level2">
 <h2 class="anchored" data-anchor-id="chapters">Chapters</h2>
 <ul>
 <li><a href="./getting-started.html">Getting Started</a> — prerequisites, installation, first document, rendering</li>
-<li><a href="./kindly.html">Kindly Annotations</a> — controlling output format with metadata</li>
+<li><a href="./workflow.html">Workflow</a> — managing the Jank process, auto-start tuning, publishing</li>
+<li><a href="./kindly-kinds.html">Kindly kinds</a> — controlling how a value renders (HTML, charts, diagrams, math, …)</li>
+<li><a href="./authoring.html">Authoring Jank documents</a> — code-block attributes, per-block options, and document-level Quarto features</li>
 <li><a href="./how-it-works.html">How It Works</a> — architecture, port discovery, process management, evaluation pipeline</li>
-<li><a href="./example.html">Live Demo</a> — evaluated examples of all output kinds</li>
+<li><a href="./demo.html">Demo</a> — evaluated examples of all output kinds</li>
 </ul>
 
 
