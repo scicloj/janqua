@@ -4,7 +4,7 @@ This chapter explains the internals of Janqua — how your `{.clojure .jank}` co
 
 ## Architecture overview
 
-Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls Pandoc under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class (typically written as `{.clojure .jank}` for editor syntax highlighting), evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
+Janqua is a [Pandoc Lua filter](https://pandoc.org/lua-filters.html). When Quarto renders a `.qmd` file, it calls [Pandoc](https://pandoc.org/) under the hood. Pandoc reads the document, builds an abstract syntax tree (AST), and then runs any filters specified in the frontmatter. The Janqua filter intercepts code blocks marked with the `.jank` class (typically written as `{.clojure .jank}` for editor syntax highlighting), evaluates them via a Jank [nREPL](https://nrepl.org/) server, and replaces them with the appropriate output.
 
 ```{mermaid}
 flowchart LR
@@ -96,15 +96,15 @@ The filter examines the `:janqua/kind` field from the wrapper response:
 | `:kind/html` | String is inserted as raw HTML |
 | `:kind/md` | String is parsed as Markdown and inserted |
 | `:kind/hidden` | Output is suppressed (code still evaluates) |
-| `:kind/mermaid` | String is rendered as a Mermaid diagram (client-side JS) |
-| `:kind/graphviz` | String is rendered as a Graphviz diagram (client-side JS via `viz-js`) |
+| `:kind/mermaid` | String is rendered as a [Mermaid](https://mermaid.js.org/) diagram (client-side JS) |
+| `:kind/graphviz` | String is rendered as a [Graphviz](https://graphviz.org/) diagram (client-side JS via [`viz-js`](https://github.com/mdaines/viz-js)) |
 | `:kind/tex` | String is rendered as a LaTeX formula |
 | `:kind/code` | String is displayed as syntax-highlighted Clojure code |
-| `:kind/vega-lite` | Map is rendered as a Vega-Lite chart |
-| `:kind/plotly` | Map is rendered as a Plotly chart |
-| `:kind/echarts` | Map is rendered as an ECharts chart |
-| `:kind/cytoscape` | Map is rendered as a Cytoscape graph |
-| `:kind/highcharts` | Map is rendered as a Highcharts chart |
+| `:kind/vega-lite` | Map is rendered as a [Vega-Lite](https://vega.github.io/vega-lite/) chart |
+| `:kind/plotly` | Map is rendered as a [Plotly](https://plotly.com/javascript/) chart |
+| `:kind/echarts` | Map is rendered as an [ECharts](https://echarts.apache.org/) chart |
+| `:kind/cytoscape` | Map is rendered as a [Cytoscape](https://js.cytoscape.org/) graph |
+| `:kind/highcharts` | Map is rendered as a [Highcharts](https://www.highcharts.com/) chart |
 | *(none)* | Value is shown as a syntax-highlighted code block |
 
 For string-valued kinds (`kind/html`, `kind/md`, `kind/mermaid`, `kind/graphviz`, `kind/tex`, `kind/code`), strings can't hold metadata directly (they're primitives in Jank). The convention is to wrap them in a vector: `^:kind/html ["<b>bold</b>"]` — the filter auto-unwraps the first element.
@@ -135,7 +135,7 @@ Each chart kind loads its own library (e.g., Plotly.js, Vega-Lite + Vega Embed, 
 Mermaid and Graphviz diagrams can't use Quarto's native `{mermaid}` / `{dot}` blocks — those are processed as executable cells in an earlier pipeline stage, before Lua filters run.
 
 - **Mermaid**: The filter loads the Mermaid JS library from CDN and calls `mermaid.render()` client-side, similar to the JS chart pattern.
-- **Graphviz**: The filter loads `viz-js` (a WebAssembly build of Graphviz) from CDN and calls `viz.renderSVGElement()` client-side. No local `dot` install needed.
+- **Graphviz**: The filter loads [`viz-js`](https://github.com/mdaines/viz-js) (a [WebAssembly](https://webassembly.org/) build of Graphviz) from CDN and calls `viz.renderSVGElement()` client-side. No local `dot` install needed.
 
 ## Error handling
 

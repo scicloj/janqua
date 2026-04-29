@@ -73,7 +73,7 @@ Renders a string as a [Mermaid](https://mermaid.js.org/) diagram. The Mermaid JS
 
 ## `^:kind/graphviz` — Graphviz diagrams
 
-Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. The `viz-js` library is loaded from CDN; no local Graphviz install needed:
+Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. The [`viz-js`](https://github.com/mdaines/viz-js) library is loaded from CDN; no local Graphviz install needed:
 
 ```{.clojure .jank}
 ^:kind/graphviz
@@ -82,7 +82,7 @@ Renders a string as a [Graphviz](https://graphviz.org/) DOT diagram. The `viz-js
 
 ## `^:kind/tex` — LaTeX formulas
 
-Renders a string as a LaTeX formula via MathJax:
+Renders a string as a LaTeX formula via [MathJax](https://www.mathjax.org/):
 
 ```{.clojure .jank}
 ^:kind/tex
@@ -122,7 +122,7 @@ Renders a map as a [Plotly.js](https://plotly.com/javascript/) chart. The spec s
 
 ## Annotating in library functions
 
-The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with [`with-meta`](https://clojuredocs.org/clojure.core/with-meta) or `vary-meta`, which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
+The `^:kind/...` reader syntax attaches metadata at the call site. But metadata can also be attached programmatically with [`with-meta`](https://clojuredocs.org/clojure.core/with-meta) or [`vary-meta`](https://clojuredocs.org/clojure.core/vary-meta), which means **library functions can annotate their return values**. The caller doesn't need to know about the rendering — the function handles it.
 
 For example, a function that builds an SVG bar chart and tags it as hiccup:
 
@@ -185,7 +185,7 @@ Janqua automatically unwraps the vector for all string-valued kinds (`kind/html`
 | `^:kind/code` | `[string]` | syntax-highlighted code |
 | `^:kind/vega-lite` | map | Vega-Lite chart |
 | `^:kind/plotly` | map | Plotly chart |
-| `^:kind/echarts` | map | ECharts chart |
-| `^:kind/cytoscape` | map | Cytoscape graph |
-| `^:kind/highcharts` | map | Highcharts chart |
+| `^:kind/echarts` | map | [ECharts](https://echarts.apache.org/) chart |
+| `^:kind/cytoscape` | map | [Cytoscape](https://js.cytoscape.org/) graph |
+| `^:kind/highcharts` | map | [Highcharts](https://www.highcharts.com/) chart |
 | _(none)_ | any | code output |

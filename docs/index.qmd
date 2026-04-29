@@ -7,7 +7,7 @@ filters:
 
 **Janqua** is a [Quarto](https://quarto.org) extension for writing [Jank](https://jank-lang.org) code in visual documents. Each `{.clojure .jank}` block in a `.qmd` file is evaluated by a Jank REPL during rendering, producing code output, charts, diagrams, tables, or computed HTML.
 
-Charts render via Plotly, Vega-Lite, ECharts, Cytoscape, or Highcharts; diagrams via Mermaid and Graphviz. Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
+Charts render via [Plotly](https://plotly.com/javascript/), [Vega-Lite](https://vega.github.io/vega-lite/), [ECharts](https://echarts.apache.org/), [Cytoscape](https://js.cytoscape.org/), or [Highcharts](https://www.highcharts.com/); diagrams via [Mermaid](https://mermaid.js.org/) and [Graphviz](https://graphviz.org/). Rendering follows the [Kindly](https://scicloj.github.io/kindly-noted/) convention, the same way [Clay](https://scicloj.github.io/clay/) handles Clojure docs — so the patterns are familiar if you're coming from Clay, and ready-to-publish if you've never written a notebook before.
 
 Janqua also opens the door to publishing Jank work on [Clojure Civitas](https://clojurecivitas.github.io/), the Clojure community's collaborative space.
 
@@ -29,7 +29,7 @@ Quarto supports several project types:
 
 ## What is Jank?
 
-[Jank](https://jank-lang.org) is a dialect of [Clojure](https://clojure.org/) hosted on C++ and an LLVM-based JIT. Its distinguishing feature is seamless interop with C and C++: Jank source can reach into C++ libraries to access and define types, functions, and templates directly — `cpp/` forms in your code call into the native ecosystem without bindings or wrappers. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
+[Jank](https://jank-lang.org) is a dialect of [Clojure](https://clojure.org/) hosted on C++ and an [LLVM](https://llvm.org/)-based [JIT](https://en.wikipedia.org/wiki/Just-in-time_compilation). Its distinguishing feature is seamless interop with C and C++: Jank source can reach into C++ libraries to access and define types, functions, and templates directly — `cpp/` forms in your code call into the native ecosystem without bindings or wrappers. Jank includes an [nREPL](https://nrepl.org/) server, which Janqua uses to evaluate code interactively during document rendering.
 
 ## Use Janqua for…
 
@@ -68,7 +68,7 @@ Full Kindly support and Clay support for Jank are the larger goals.
 - **Broader Kindly support** — more visualization kinds (tables, images, etc.)
 - **Easier setup** — reducing the number of prerequisites and simplifying installation
 - **[Clay](https://scicloj.github.io/clay/) support for Jank** — a namespace-as-a-notebook experience, where Jank source files render as documents without writing `.qmd` by hand
-- **Jupyter support** — a Jank kernel for Jupyter notebooks, enabling interactive Jank development in JupyterLab and other Jupyter-compatible environments
+- **Jupyter support** — a Jank kernel for [Jupyter](https://jupyter.org/) notebooks, enabling interactive Jank development in [JupyterLab](https://jupyterlab.readthedocs.io/) and other Jupyter-compatible environments
 
 ## Chapters
 
