@@ -44,7 +44,6 @@ clojure -Ttools install io.github.seancorfield/clj-new '{:git/tag "v1.2.404" :gi
 clojure -Ttools install-latest :lib io.github.seancorfield/deps-new :as new && \
 clojure -Ttools list
 
-RUN bbin install io.github.bhauman/clojure-mcp-light
 RUN bbin install https://github.com/bhauman/clojure-mcp-light.git --tag v0.2.1 --as clj-nrepl-eval --main-opts '["-m" "clojure-mcp-light.nrepl-eval"]'
 
 ENV PATH="$PATH:$HOME/.local/bin"
